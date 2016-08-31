@@ -1,0 +1,293 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000"
+    tools:context="com.excel.appstvlauncher2ndgen.ShortcutsActivity" >
+	
+    <RelativeLayout 
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:padding="40dp"
+        >
+        
+        <LinearLayout 
+            android:id="@+id/ll_left"
+            android:layout_width="300dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+            
+            <LinearLayout 
+	            android:id="@+id/ll_left_min"
+	            android:layout_width="match_parent"
+	            android:layout_height="match_parent"
+	            android:orientation="vertical">
+            
+	            <TextView 
+	                android:layout_width="match_parent"
+	                android:layout_height="wrap_content" 
+	                android:layout_margin="10dp"
+	                android:padding="10dp"
+	                android:gravity="center"
+	                android:textColor="@color/white"
+	                android:textSize="22sp"
+	                android:background="#404040"
+	                android:text="Mac Address" />
+	            
+	            <TextView 
+	                android:layout_width="match_parent"
+	                android:layout_height="wrap_content" 
+	                android:layout_margin="10dp"
+	                android:padding="10dp"
+	                android:gravity="center"
+	                android:textColor="@color/white"
+	                android:textSize="22sp"
+	                android:background="#404040"
+	                android:text="Firmware Version" />
+	            
+	            <TextView 
+	                android:layout_width="match_parent"
+	                android:layout_height="wrap_content" 
+	                android:layout_margin="10dp"
+	                android:padding="10dp"
+	                android:gravity="center"
+	                android:textColor="@color/white"
+	                android:textSize="22sp"
+	                android:background="#404040"
+	                android:text="Room Number" />
+	            
+	            <TextView 
+	                android:layout_width="match_parent"
+	                android:layout_height="wrap_content" 
+	                android:layout_margin="10dp"
+	                android:padding="10dp"
+	                android:gravity="center"
+	                android:textColor="@color/white"
+	                android:textSize="22sp"
+	                android:background="#404040"
+	                android:text="Reboot Box" />
+            
+            </LinearLayout>
+            
+            <LinearLayout 
+	            android:id="@+id/ll_left_remaining"
+	            android:layout_width="match_parent"
+	            android:layout_height="match_parent"
+	            android:orientation="vertical">
+	            
+                <TextView 
+	                android:layout_width="match_parent"
+	                android:layout_height="wrap_content" 
+	                android:layout_margin="10dp"
+	                android:padding="10dp"
+	                android:gravity="center"
+	                android:textColor="@color/white"
+	                android:textSize="22sp"
+	                android:background="#404040"
+	                android:text="Root Browser" />
+                
+                <TextView 
+	                android:layout_width="match_parent"
+	                android:layout_height="wrap_content" 
+	                android:layout_margin="10dp"
+	                android:padding="10dp"
+	                android:gravity="center"
+	                android:textColor="@color/white"
+	                android:textSize="22sp"
+	                android:background="#404040"
+	                android:text="MBox Settings" />
+                
+                <TextView 
+	                android:layout_width="match_parent"
+	                android:layout_height="wrap_content" 
+	                android:layout_margin="10dp"
+	                android:padding="10dp"
+	                android:gravity="center"
+	                android:textColor="@color/white"
+	                android:textSize="22sp"
+	                android:background="#404040"
+	                android:text="Android Settings" />
+	            
+                <TextView 
+	                android:layout_width="match_parent"
+	                android:layout_height="wrap_content" 
+	                android:layout_margin="10dp"
+	                android:padding="10dp"
+	                android:gravity="center"
+	                android:textColor="@color/white"
+	                android:textSize="22sp"
+	                android:background="#404040"
+	                android:text="Shell Terminal" />
+                
+                <TextView 
+	                android:layout_width="match_parent"
+	                android:layout_height="wrap_content" 
+	                android:layout_margin="10dp"
+	                android:padding="10dp"
+	                android:gravity="center"
+	                android:textColor="@color/white"
+	                android:textSize="22sp"
+	                android:background="#404040"
+	                android:text="TV Backup App" />
+                
+                <TextView 
+	                android:layout_width="match_parent"
+	                android:layout_height="wrap_content" 
+	                android:layout_margin="10dp"
+	                android:padding="10dp"
+	                android:gravity="center"
+	                android:textColor="@color/white"
+	                android:textSize="22sp"
+	                android:background="#404040"
+	                android:text="Reboot to Recovery" />
+            </LinearLayout>
+           
+            
+        </LinearLayout>
+        
+        <LinearLayout 
+            android:id="@+id/ll_right"
+            android:layout_width="300dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_toRightOf="@+id/ll_left">
+            
+            <LinearLayout 
+	            android:id="@+id/ll_right_min"
+	            android:layout_width="match_parent"
+	            android:layout_height="match_parent"
+	            android:orientation="vertical">
+            
+	            <TextView 
+	                android:id="@+id/tv_mac_address"
+	                android:layout_width="match_parent"
+	                android:layout_height="wrap_content" 
+	                android:layout_margin="10dp"
+	                android:padding="10dp"
+	                android:gravity="center"
+	                android:textColor="@color/white"
+	                android:textSize="22sp"
+	                android:text="00:00:00:00:00:0f" />
+	            
+	            <TextView 
+	                android:id="@+id/tv_firmware_version"
+	                android:layout_width="match_parent"
+	                android:layout_height="50dp" 
+	                android:layout_margin="10dp"
+	                android:padding="10dp"
+	                android:gravity="center"
+	                android:textColor="@color/white"
+	                android:textSize="22sp"
+	                android:text="HGC.12June.v1.5" />
+	            
+	            <Button
+	                android:id="@+id/bt_room_no"
+	                android:layout_width="match_parent"
+	                android:layout_height="50dp" 
+	                android:layout_margin="10dp"
+	                android:padding="10dp"
+	                android:gravity="center"
+	                android:textColor="@color/white"
+	                android:textSize="22sp"
+	                android:background="@drawable/button_click"
+	                android:text="ROOM1234" />
+	            
+	            <Button
+	                android:id="@+id/bt_reboot_box"
+	                android:layout_width="match_parent"
+	                android:layout_height="50dp" 
+	                android:layout_margin="10dp"
+	                android:padding="10dp"
+	                android:gravity="center"
+	                android:textColor="@color/white"
+	                android:textSize="22sp"
+	                android:background="@drawable/button_click"
+	                android:text="Reboot" />
+	            
+	        </LinearLayout>
+	        
+            <LinearLayout 
+	            android:id="@+id/ll_right_remaining"
+	            android:layout_width="match_parent"
+	            android:layout_height="match_parent"
+	            android:orientation="vertical">
+	            
+                <Button
+	                android:id="@+id/bt_root_browser"
+	                android:layout_width="match_parent"
+	                android:layout_height="50dp" 
+	                android:layout_margin="10dp"
+	                android:padding="10dp"
+	                android:gravity="center"
+	                android:textColor="@color/white"
+	                android:textSize="22sp"
+	                android:background="@drawable/button_click"
+	                android:text="Open" />
+                
+                <Button
+	                android:id="@+id/bt_mbox"
+	                android:layout_width="match_parent"
+	                android:layout_height="50dp" 
+	                android:layout_margin="10dp"
+	                android:padding="10dp"
+	                android:gravity="center"
+	                android:textColor="@color/white"
+	                android:textSize="22sp"
+	                android:background="@drawable/button_click"
+	                android:text="Open MBox" />
+                
+                <Button
+	                android:id="@+id/bt_settings"
+	                android:layout_width="match_parent"
+	                android:layout_height="50dp" 
+	                android:layout_margin="10dp"
+	                android:padding="10dp"
+	                android:gravity="center"
+	                android:textColor="@color/white"
+	                android:textSize="22sp"
+	                android:background="@drawable/button_click"
+	                android:text="Open Settings" />
+                
+                <Button
+	                android:id="@+id/bt_terminal"
+	                android:layout_width="match_parent"
+	                android:layout_height="50dp" 
+	                android:layout_margin="10dp"
+	                android:padding="10dp"
+	                android:gravity="center"
+	                android:textColor="@color/white"
+	                android:textSize="22sp"
+	                android:background="@drawable/button_click"
+	                android:text="Open Shell" />
+                
+                <Button
+	                android:id="@+id/bt_tv_channels_backup"
+	                android:layout_width="match_parent"
+	                android:layout_height="50dp" 
+	                android:layout_margin="10dp"
+	                android:padding="10dp"
+	                android:gravity="center"
+	                android:textColor="@color/white"
+	                android:textSize="22sp"
+	                android:background="@drawable/button_click"
+	                android:text="Open Backup App" />
+                
+                <Button
+	                android:id="@+id/bt_reboot_recovery"
+	                android:layout_width="match_parent"
+	                android:layout_height="50dp" 
+	                android:layout_margin="10dp"
+	                android:padding="10dp"
+	                android:gravity="center"
+	                android:textColor="@color/white"
+	                android:textSize="22sp"
+	                android:background="@drawable/button_click"
+	                android:text="Reboot to Recovery" />
+            </LinearLayout>
+            
+        </LinearLayout>
+        
+    </RelativeLayout>
+
+</ScrollView>
