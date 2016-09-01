@@ -24,7 +24,8 @@ import com.excel.excelclasslibrary.UtilShell;
 public class ShortcutsActivity extends Activity {
 	
 	TextView tv_mac_address, tv_firmware_version;
-	Button bt_room_no, bt_reboot, bt_root_browser, bt_mbox, bt_settings, bt_terminal, bt_tv_channels_backup, bt_reboot_recovery;
+	Button bt_room_no, bt_reboot, bt_root_browser, bt_mbox, bt_settings,
+			bt_terminal, bt_tv_channels_backup, bt_reboot_recovery, bt_ip_address;
 	Context context = this;
 	final static String TAG = "MinimumShortcutsActivity";
 	ConfigurationReader configurationReader;
@@ -66,7 +67,10 @@ public class ShortcutsActivity extends Activity {
 		
 		// Reboot Box
 		rebootBoxButtonClick();
-		
+
+		// show IP Address
+		ipAddressRetrieve();
+
 		// Root Browser Click
 		rootBrowserClick();
 		
@@ -101,6 +105,7 @@ public class ShortcutsActivity extends Activity {
 		bt_terminal = (Button) findViewById( R.id.bt_terminal );
 		bt_tv_channels_backup = (Button) findViewById( R.id.bt_tv_channels_backup );
 		bt_reboot_recovery = (Button) findViewById( R.id.bt_reboot_recovery );
+		bt_ip_address = (Button) findViewById( R.id.bt_ip_address );
 	}
 	
 	public void setMacAddress(){
@@ -175,7 +180,16 @@ public class ShortcutsActivity extends Activity {
 			}
 		});
 	}
-	
+
+	public void ipAddressRetrieve(){
+		String ip = UtilNetwork.getLocalIpAddressIPv4( context );
+		if( ip == null ){
+			bt_ip_address.setText( "Network Disconnected" );
+			return;
+		}
+		bt_ip_address.setText( ip );
+	}
+
 	public void rootBrowserClick(){
 		bt_root_browser.setOnClickListener( new OnClickListener() {
 			

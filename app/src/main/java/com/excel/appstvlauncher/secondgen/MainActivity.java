@@ -43,8 +43,6 @@ import static com.excel.appstvlauncher.secondgen.Constants.LAUNCHER_IDLE_TIMEOUT
 import static com.excel.appstvlauncher.secondgen.Constants.PATH_LAUNCHER_CONFIG_FILE;
 import static com.excel.appstvlauncher.secondgen.Constants.TEN_SECONDS_MILLIS;
 
-
-
 public class MainActivity extends ActionBarActivity{
 
 	final static String TAG = "MainActivity";

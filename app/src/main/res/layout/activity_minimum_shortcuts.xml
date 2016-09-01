@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000"
-    tools:context="com.excel.appstvlauncher2ndgen.ShortcutsActivity" >
+    tools:context="com.excel.appstvlauncher.secondgen.ShortcutsActivity" >
 	
     <RelativeLayout 
         android:layout_width="match_parent"
@@ -67,6 +67,17 @@
 	                android:textSize="22sp"
 	                android:background="#404040"
 	                android:text="Reboot Box" />
+
+				<TextView
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_margin="10dp"
+					android:padding="10dp"
+					android:gravity="center"
+					android:textColor="@color/white"
+					android:textSize="22sp"
+					android:background="#404040"
+					android:text="IP Address" />
             
             </LinearLayout>
             
@@ -141,6 +152,8 @@
 	                android:textSize="22sp"
 	                android:background="#404040"
 	                android:text="Reboot to Recovery" />
+
+
             </LinearLayout>
            
             
@@ -192,18 +205,30 @@
 	                android:textSize="22sp"
 	                android:background="@drawable/button_click"
 	                android:text="ROOM1234" />
-	            
-	            <Button
-	                android:id="@+id/bt_reboot_box"
-	                android:layout_width="match_parent"
-	                android:layout_height="50dp" 
-	                android:layout_margin="10dp"
-	                android:padding="10dp"
-	                android:gravity="center"
-	                android:textColor="@color/white"
-	                android:textSize="22sp"
-	                android:background="@drawable/button_click"
-	                android:text="Reboot" />
+
+				<Button
+					android:id="@+id/bt_reboot_box"
+					android:layout_width="match_parent"
+					android:layout_height="50dp"
+					android:layout_margin="10dp"
+					android:padding="10dp"
+					android:gravity="center"
+					android:textColor="@color/white"
+					android:textSize="22sp"
+					android:background="@drawable/button_click"
+					android:text="Reboot" />
+
+				<Button
+					android:id="@+id/bt_ip_address"
+					android:layout_width="match_parent"
+					android:layout_height="50dp"
+					android:layout_margin="10dp"
+					android:padding="10dp"
+					android:gravity="center"
+					android:textColor="@color/white"
+					android:textSize="22sp"
+					android:background="@drawable/button_click"
+					android:text="Network Disconnected" />
 	            
 	        </LinearLayout>
 	        
