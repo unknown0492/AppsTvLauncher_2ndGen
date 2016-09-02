@@ -25,7 +25,8 @@ public class ShortcutsActivity extends Activity {
 	
 	TextView tv_mac_address, tv_firmware_version;
 	Button bt_room_no, bt_reboot, bt_root_browser, bt_mbox, bt_settings,
-			bt_terminal, bt_tv_channels_backup, bt_reboot_recovery, bt_ip_address;
+			bt_terminal, bt_tv_channels_backup, bt_reboot_recovery, bt_ip_address,
+			bt_run_ots;
 	Context context = this;
 	final static String TAG = "MinimumShortcutsActivity";
 	ConfigurationReader configurationReader;
@@ -71,6 +72,9 @@ public class ShortcutsActivity extends Activity {
 		// show IP Address
 		ipAddressRetrieve();
 
+		// Run OTS
+		runOTSButtonClick();
+
 		// Root Browser Click
 		rootBrowserClick();
 		
@@ -89,7 +93,14 @@ public class ShortcutsActivity extends Activity {
 		// Reboot To Recovery
 		rebootToRecovery();
 	}
-	
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		configurationReader = ConfigurationReader.reInstantiate();
+	}
+
 	public void initViews(){
 		tv_firmware_version = (TextView) findViewById( R.id.tv_firmware_version );
 		tv_mac_address = (TextView) findViewById( R.id.tv_mac_address );
@@ -106,6 +117,7 @@ public class ShortcutsActivity extends Activity {
 		bt_tv_channels_backup = (Button) findViewById( R.id.bt_tv_channels_backup );
 		bt_reboot_recovery = (Button) findViewById( R.id.bt_reboot_recovery );
 		bt_ip_address = (Button) findViewById( R.id.bt_ip_address );
+		bt_run_ots = (Button) findViewById( R.id.bt_run_ots );
 	}
 	
 	public void setMacAddress(){
@@ -188,6 +200,33 @@ public class ShortcutsActivity extends Activity {
 			return;
 		}
 		bt_ip_address.setText( ip );
+	}
+
+	public void runOTSButtonClick(){
+		final String is_ots_completed = configurationReader.getIsOtsCompleted();
+		if( is_ots_completed.equals( "1" ) ){
+			bt_run_ots.setText( "OTA Completed" );
+		}
+		else{
+			bt_run_ots.setText( "Click To Run OTS" );
+		}
+
+		bt_run_ots.setOnClickListener( new OnClickListener() {
+
+			@Override
+			public void onClick( View v ) {
+
+				if( is_ots_completed.equals( "1" ) ){
+					CustomItems.showCustomToast( context, "warning", "One Time Setup has already been completed !", 5000 );
+					return;
+				}
+				else{
+					UtilMisc.startApplicationUsingPackageName( context, "com.excel.onetimesetup.secondgen" );
+					return;
+				}
+			}
+
+		});
 	}
 
 	public void rootBrowserClick(){

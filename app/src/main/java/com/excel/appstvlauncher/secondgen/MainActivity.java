@@ -41,6 +41,7 @@ import java.util.Timer;
 
 import static com.excel.appstvlauncher.secondgen.Constants.LAUNCHER_IDLE_TIMEOUT_SECONDS;
 import static com.excel.appstvlauncher.secondgen.Constants.PATH_LAUNCHER_CONFIG_FILE;
+import static com.excel.appstvlauncher.secondgen.Constants.PATH_LAUNCHER_CONFIG_FILE_SYSTEM;
 import static com.excel.appstvlauncher.secondgen.Constants.TEN_SECONDS_MILLIS;
 
 public class MainActivity extends ActionBarActivity{
@@ -308,42 +309,47 @@ public class MainActivity extends ActionBarActivity{
     	 *
     	 */
     	File configuration_file = new File( Environment.getExternalStorageDirectory() + File.separator + PATH_LAUNCHER_CONFIG_FILE );
-
+		String launcher_config_json = "";
     	// Step-1
-    	if( configuration_file.exists() ){
-    		// Step-2
-    		String launcher_config_json = UtilFile.readData( configuration_file );
+    	if( configuration_file.exists() ) {
+			// Step-2
+			launcher_config_json = UtilFile.readData(configuration_file);
+		}
+		else{
+			launcher_config_json = UtilFile.readData( new File( PATH_LAUNCHER_CONFIG_FILE_SYSTEM ) );
+		}
 
-    		// Step-3
-    		ljr = new LauncherJSONReader( launcher_config_json );
+		// Step-3
+		ljr = new LauncherJSONReader( launcher_config_json );
 
-    		// Step-4
-    		int main_items_count = ljr.getMainItemsCount();
+		// Step-4
+		int main_items_count = ljr.getMainItemsCount();
 
-    		// Step-5
-    		int sub_items_count;
-    		main_menu_values = new String[ main_items_count ];
-    		for( int i = 0 ; i < main_items_count ; i++ ){
-    			sub_items_count = ljr.getSubItemsCount( i );
-    			// Log.d( TAG, "sub_items_count : "+sub_items_count );
+		// Step-5
+		int sub_items_count;
+		main_menu_values = new String[ main_items_count ];
+		for( int i = 0 ; i < main_items_count ; i++ ){
+			sub_items_count = ljr.getSubItemsCount( i );
+			// Log.d( TAG, "sub_items_count : "+sub_items_count );
 
-    			// Step-6
-    			sub_items_count = ljr.getSubItemsCount( i );
+			// Step-6
+			sub_items_count = ljr.getSubItemsCount( i );
 
-    			// Step-7
-    			if( sub_items_count == 0 ){
+			// Step-7
+			if( sub_items_count == 0 ){
 
-    				// Step-8
-    				String item_type = ljr.getMainItemValue( i, "item_type" );
-    				if( item_type.equals( "app" ) ){
+				// Step-8
+				String item_type = ljr.getMainItemValue( i, "item_type" );
+				if( item_type.equals( "app" ) ){
 
-    				}
-    			}
-    			main_menu_values[ i ] = ljr.getMainItemValue( i, "item_name" );
+				}
+			}
+			main_menu_values[ i ] = ljr.getMainItemValue( i, "item_name" );
 
-    		}
-    		ma = new MenuAdapter( R.layout.main_menu_items, this, main_menu_values );
-    	}
+		}
+		ma = new MenuAdapter( R.layout.main_menu_items, this, main_menu_values );
+
+
 
     	setMainMenuAdapter( ma );
         setSubMenuAdapter( sma );
@@ -593,7 +599,12 @@ public class MainActivity extends ActionBarActivity{
 
     public boolean handleMainMenuToSubMenuFocus( int i, KeyEvent keyevent ){
     	if( i == 20 ){
-			ll_sub_menu_items.getChildAt( 0 ).requestFocus();
+			try {
+				ll_sub_menu_items.getChildAt(0).requestFocus();
+			}
+			catch ( Exception e ){
+				Log.e( TAG, "This main menu has no Sub Menu :-(" );
+			}
 			return false;
 		}
     	return false;

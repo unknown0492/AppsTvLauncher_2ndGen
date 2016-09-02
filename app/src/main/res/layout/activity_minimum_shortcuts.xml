@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:background="#000000"
     tools:context="com.excel.appstvlauncher.secondgen.ShortcutsActivity" >
-	
+
     <RelativeLayout 
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -78,6 +78,17 @@
 					android:textSize="22sp"
 					android:background="#404040"
 					android:text="IP Address" />
+
+				<TextView
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_margin="10dp"
+					android:padding="10dp"
+					android:gravity="center"
+					android:textColor="@color/white"
+					android:textSize="22sp"
+					android:background="#404040"
+					android:text="Run OTS" />
             
             </LinearLayout>
             
@@ -229,6 +240,18 @@
 					android:textSize="22sp"
 					android:background="@drawable/button_click"
 					android:text="Network Disconnected" />
+
+				<Button
+					android:id="@+id/bt_run_ots"
+					android:layout_width="match_parent"
+					android:layout_height="50dp"
+					android:layout_margin="10dp"
+					android:padding="10dp"
+					android:gravity="center"
+					android:textColor="@color/white"
+					android:textSize="22sp"
+					android:background="@drawable/button_click"
+					android:text="Run OTS" />
 	            
 	        </LinearLayout>
 	        
