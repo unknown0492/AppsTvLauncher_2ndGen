@@ -1,12 +1,13 @@
 package com.excel.perfecttime;
 
-import java.util.Calendar;
-
 import android.content.Context;
 
 import com.excel.configuration.ConfigurationReader;
 import com.excel.excelclasslibrary.UtilNetwork;
 import com.excel.excelclasslibrary.UtilShell;
+import com.excel.excelclasslibrary.UtilURL;
+
+import java.util.Calendar;
 
 public class PerfectTime {
 	String hours, minutes, seconds, date, day, month, year, time_zone;
@@ -122,7 +123,7 @@ public class PerfectTime {
 	
 	public String getMillisFromInternet(){
 		configurationReader = ConfigurationReader.reInstantiate();
-		String data = UtilNetwork.makeRequestForData( configurationReader.getWebServiceUrl(), "POST", "what_do_you_want=get_millis&time_zone="+configurationReader.getTimezone() );
+		String data = UtilNetwork.makeRequestForData( UtilURL.getWebserviceURL( configurationReader.getCmsIp() ), "POST", "what_do_you_want=get_millis&time_zone="+configurationReader.getTimezone()+"&mac_address="+UtilNetwork.getMacAddress( context ) );
 		//if( data == null )
 		//	return getMillisFromSystem();
 		

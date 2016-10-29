@@ -13,6 +13,7 @@ import android.util.Log;
 import com.excel.appstvlauncher.secondgen.MainActivity;
 import com.excel.configuration.ConfigurationReader;
 import com.excel.excelclasslibrary.UtilNetwork;
+import com.excel.excelclasslibrary.UtilURL;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -74,9 +75,14 @@ public class YahooWeatherService extends Service {
 			String location = params[ 0 ];
 			String YQL = String.format( "select * from weather.forecast where woeid in (select woeid from geo.places(1) where text=\"%s\") AND u='c'", location );
 			String url = String.format( "https://query.yahooapis.com/v1/public/yql?q=%s&format=json&u=c", Uri.encode( YQL ) );
-			// Log.i(TAG,  "inside doInBackground() : "+url );
-			String response = UtilNetwork.makeRequestForData( url, "POST", "" );
-			
+			//Log.i(TAG,  "inside doInBackground() : "+url );
+			//String response = UtilNetwork.makeRequestForData( url, "POST", "" );
+			Log.d( TAG, "Webservice path : "+UtilURL.getWebserviceURL() );
+			String response = UtilNetwork.makeRequestForData( UtilURL.getWebserviceURL(), "POST",
+					UtilURL.getURLParamsFromPairs( new String[][]{ { "what_do_you_want", "get_weather" },
+                            { "city", location },
+                            { "mac_address", UtilNetwork.getMacAddress( context ) } } ) );
+
 			return response;
 		}
 
@@ -88,6 +94,7 @@ public class YahooWeatherService extends Service {
 			
 			// Step-4
 			if( result != null ){
+                // Log.i( TAG,  result );
 				try {
 					JSONObject jsonObject = new JSONObject( result );
 					JSONObject query	  = jsonObject.optJSONObject( "query" );
@@ -155,7 +162,7 @@ public class YahooWeatherService extends Service {
 				public void run() {
 					setWeatherRefreshTimer();
 				}
-			}, 300000 ); // 5 minutes
+			}, Long.parseLong( configurationReader.getWeatherRefreshInterval() ) ); // 5 minutes
 			return;
 		}
 		

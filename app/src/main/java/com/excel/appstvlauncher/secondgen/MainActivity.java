@@ -763,6 +763,7 @@ public class MainActivity extends ActionBarActivity{
 			    // Step-6 from YahooWeatherService.class
 			    if( !isClockAndWeatherFlippingStarted )
 			    	startFlippingClockAndWeather();
+
 			}
 		};
     	LocalBroadcastManager.getInstance( context ).registerReceiver( yahooWeatherReceiver, new IntentFilter( "update_weather" ) );
@@ -777,9 +778,10 @@ public class MainActivity extends ActionBarActivity{
     }
 
     public void resumeYahooWeatherService(){
-    	if( ! isYahooWeatherServicePaused ){
+		isYahooWeatherServicePaused = false;
+    	/*if( ! isYahooWeatherServicePaused ){
     		isYahooWeatherServicePaused = false;
-    	}
+    	}*/
     }
 
     public static boolean isYahooWeatherServicePaused(){

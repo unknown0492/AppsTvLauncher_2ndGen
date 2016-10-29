@@ -107,7 +107,6 @@ public class ShortcutsActivity extends Activity {
 		bt_room_no = (Button) findViewById( R.id.bt_room_no );
 		bt_reboot = (Button) findViewById( R.id.bt_reboot_box );
 		configurationReader = ConfigurationReader.reInstantiate();
-		configurationWriter = ConfigurationWriter.getInstance( context );
 		ll_left_remaining = (LinearLayout) findViewById( R.id.ll_left_remaining );
 		ll_right_remaining = (LinearLayout) findViewById( R.id.ll_right_remaining );
 		bt_root_browser = (Button) findViewById( R.id.bt_root_browser );
@@ -129,6 +128,8 @@ public class ShortcutsActivity extends Activity {
 	}
 	
 	public void roomNumberButtonClick(){
+
+
 		bt_room_no.setText( configurationReader.getRoomNo() );
 		
 		bt_room_no.setOnClickListener( new OnClickListener() {
@@ -160,6 +161,7 @@ public class ShortcutsActivity extends Activity {
 						}
 						
 						// Update the Room Number in the /mnt/sdcard/appstv_data/configuration file
+						configurationWriter = ConfigurationWriter.getInstance( context );
 						room_no = "ROOM" + room_no;
 						if( !configurationWriter.setRoomNumber( room_no ) ){
 							CustomItems.showCustomToast( context, "error", "Failed to update Configuration File", 3000 );
@@ -205,7 +207,7 @@ public class ShortcutsActivity extends Activity {
 	public void runOTSButtonClick(){
 		final String is_ots_completed = configurationReader.getIsOtsCompleted();
 		if( is_ots_completed.equals( "1" ) ){
-			bt_run_ots.setText( "OTA Completed" );
+			bt_run_ots.setText( "OTS Completed" );
 		}
 		else{
 			bt_run_ots.setText( "Click To Run OTS" );
