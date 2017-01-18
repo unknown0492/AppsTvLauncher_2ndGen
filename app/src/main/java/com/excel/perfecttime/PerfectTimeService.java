@@ -17,7 +17,13 @@ public class PerfectTimeService extends Service {
 	final static String TAG = "PerfectTimeService";
 	PerfectTime pt = new PerfectTime( context );
 	// PerfectTime pt;
-	
+
+	public PerfectTimeService(){
+		pt = new PerfectTime( context );
+		pt.setTimeFromSystem();
+		sendUpdateToClock();
+	}
+
 	@Override
 	public IBinder onBind( Intent intent ) {
 		return null;
@@ -193,7 +199,7 @@ public class PerfectTimeService extends Service {
 		return b;
 	}
 	
-	private void sendUpdateToClock(){
+	public void sendUpdateToClock(){
 		Log.d( "sender", "sendUpdateToClock()" );
 		Intent intent = new Intent( "send_update_to_clock" );
 		intent.putExtra( "getHours()", pt.getHours() );

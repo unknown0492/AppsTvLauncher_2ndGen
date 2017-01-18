@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -26,10 +25,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.excel.configuration.ConfigurationReader;
+import com.excel.configuration.LauncherJSONReader;
 import com.excel.excelclasslibrary.UtilFile;
 import com.excel.excelclasslibrary.UtilMisc;
+import com.excel.excelclasslibrary.UtilShell;
+import com.excel.imagemanipulator.DigitalSignage;
 import com.excel.imagemanipulator.DigitalSignageHolder;
-import com.excel.imagemanipulator.ImageManipulator;
 import com.excel.perfecttime.PerfectTimeService;
 import com.excel.yahooweather.YahooWeatherService;
 
@@ -37,12 +38,11 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Stack;
-import java.util.Timer;
 
 import static com.excel.appstvlauncher.secondgen.Constants.LAUNCHER_IDLE_TIMEOUT_SECONDS;
-import static com.excel.appstvlauncher.secondgen.Constants.PATH_LAUNCHER_CONFIG_FILE;
-import static com.excel.appstvlauncher.secondgen.Constants.PATH_LAUNCHER_CONFIG_FILE_SYSTEM;
 import static com.excel.appstvlauncher.secondgen.Constants.TEN_SECONDS_MILLIS;
+import static com.excel.configuration.Constants.PATH_LAUNCHER_CONFIG_FILE;
+import static com.excel.configuration.Constants.PATH_LAUNCHER_CONFIG_FILE_SYSTEM;
 
 public class MainActivity extends ActionBarActivity{
 
@@ -90,18 +90,20 @@ public class MainActivity extends ActionBarActivity{
     boolean isClockAndWeatherFlippingStarted = false;
     RelativeLayout rl_weather, rl_clock;
 
-    DigitalSignageHolder digitalSignageHolder;
-    boolean isDefaultWallpaperActive = true;
+   	DigitalSignageHolder digitalSignageHolder;
+	/* boolean isDefaultWallpaperActive = true;
     boolean isDigitalSignageSwitcherStarted = false;
-    boolean isDigitalSignageSwitcherPaused = false;
+    boolean isDigitalSignageSwitcherPaused = false;*/
+	DigitalSignage ds;
 
-    Timer digitalSignageSwitcher;
+    //Timer digitalSignageSwitcher;
 
     ConfigurationReader configurationReader;
 
     String launcher_config_json = "";
 
     LauncherJSONReader ljr;
+	BroadcastReceiver launcherConfigUpdateReceiver;
 
     Stack<String> key_combination = new Stack<String>();
     static String Z = "KEYCODE_Z";
@@ -118,25 +120,28 @@ public class MainActivity extends ActionBarActivity{
 // yoaaaaa
     }
 
-    @SuppressWarnings("deprecation")
+    /* Launcher Menu Items Related Functions */
+
+	@SuppressWarnings("deprecation")
 	public void init(){
-    	initViews();
+		initViews();
 
-    	tv_collar_text.setText( "Tier Bar and Rooms at Sanctuary Block are undergoing renovation and should be progressively completed by August 2016." );
-        tv_collar_text.startScroll();
+		tv_collar_text.setText( "Tier Bar and Rooms at Sanctuary Block are undergoing renovation and should be progressively completed by August 2016." );
+		tv_collar_text.startScroll();
 
-        setLauncherMenuItems();
+		setLauncherMenuItems();
+		createLauncheritemsUpdateBroadcast();
 
-        startPerfectTimeService();
-        createPerfectTimeReceiver();
-        startClockTicker();
+		startPerfectTimeService();
+		createPerfectTimeReceiver();
+		startClockTicker();
 
-        startDateAndDayNameSwitcher();
+		startDateAndDayNameSwitcher();
 
-        startYahooWeatherService();
-        createYahooWeatherReceiver();
+		startYahooWeatherService();
+		createYahooWeatherReceiver();
 
-        configurationReader = ConfigurationReader.getInstance();
+		configurationReader = ConfigurationReader.getInstance();
         /*Log.d( TAG, "getCountry() : "+","+configurationReader.getCountry()+"," );
         Log.d( TAG, "getTimezone() : "+","+configurationReader.getTimezone()+"," );
         Log.d( TAG, "getCmsIp() : "+","+configurationReader.getCmsIp()+"," );
@@ -145,11 +150,9 @@ public class MainActivity extends ActionBarActivity{
         Log.d( TAG, "getIsRebootScheduled() : "+","+configurationReader.getIsRebootScheduled()+"," );
         Log.d( TAG, "getRebootTime() : "+","+configurationReader.getRebootTime()+"," );
         Log.d( TAG, "getDigitalSignageInterval() : "+","+configurationReader.getDigitalSignageInterval()+"," );*/
+		startScreenCastService();
 
-
-    }
-    
-    /* Launcher Menu Items Related Functions */
+	}
 
     public void setMainMenuAdapter( final MenuAdapter adapter ){
     	for( int i = 0 ; i < ma.getCount(); i++ ){
@@ -327,11 +330,17 @@ public class MainActivity extends ActionBarActivity{
 
 		// Step-5
 		int sub_items_count;
-		main_menu_values = new String[ main_items_count ];
-		for( int i = 0 ; i < main_items_count ; i++ ){
+		/*configurationReader = ConfigurationReader.reInstantiate();
+		String hotspot_enabled = configurationReader.getHotspotEnabled();
+		if( hotspot_enabled.equals( "0" ) )
+			main_menu_values = new String[ main_items_count-1 ];
+		else*/
+			main_menu_values = new String[ main_items_count ];
+
+		for( int i = 0, j=0 ; i < main_items_count ; i++ ){
 			sub_items_count = ljr.getSubItemsCount( i );
 			// Log.d( TAG, "sub_items_count : "+sub_items_count );
-
+			//j = i;
 			// Step-6
 			sub_items_count = ljr.getSubItemsCount( i );
 
@@ -344,6 +353,13 @@ public class MainActivity extends ActionBarActivity{
 
 				}
 			}
+			/*else if( ljr.getMainItemValue( i, "item_type" ).equals( "expandable-hotspot" ) ){
+
+				if( hotspot_enabled.equals( "0" ) ){
+					continue;
+				}
+			}*/
+
 			main_menu_values[ i ] = ljr.getMainItemValue( i, "item_name" );
 
 		}
@@ -355,6 +371,33 @@ public class MainActivity extends ActionBarActivity{
         setSubMenuAdapter( sma );
 
     }
+
+	public void createLauncheritemsUpdateBroadcast(){
+
+		launcherConfigUpdateReceiver = new BroadcastReceiver() {
+
+			@Override
+			public void onReceive( Context context, Intent intent ) {
+				Log.i( TAG, "New Launcher JSON Downloaded" );
+				//setLauncherMenuItems();
+				//PerfectTimeService pts = new PerfectTimeService();
+				//pts.sendUpdateToClock();
+				//startPerfectTimeService();
+				// System.gc();
+
+				recreate();
+				/*Intent in = getIntent();
+				in.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+				finish();
+				startActivity( in );*/
+			}
+		};
+		LocalBroadcastManager.getInstance( context ).registerReceiver( launcherConfigUpdateReceiver, new IntentFilter( "update_launcher_config" ) );
+	}
+
+	public void deleteLauncheritemsUpdateBroadcast(){
+		LocalBroadcastManager.getInstance( this).unregisterReceiver( launcherConfigUpdateReceiver );
+	}
 
     public void processMainMenuItemClick( int index ){
     	// Check item_type for this index
@@ -470,7 +513,7 @@ public class MainActivity extends ActionBarActivity{
 		super.onPause();
 		Log.d( TAG,  "insde onPause()" );
 
-		pauseDigitalSignageSwitcher();
+		ds.pauseDigitalSignageSwitcher();
 		pauseYahooWeatherService();
 
 	}
@@ -485,7 +528,7 @@ public class MainActivity extends ActionBarActivity{
 
 		current_timestamp = System.currentTimeMillis();
 
-		resumeDigitalSignageSwitcher();
+		ds.resumeDigitalSignageSwitcher();
 		resumeYahooWeatherService();
 
 	}
@@ -496,7 +539,7 @@ public class MainActivity extends ActionBarActivity{
 
 		deletePerfectTimeReceiver();
 		deleteYahooWeatherReceiver();
-
+		deleteLauncheritemsUpdateBroadcast();
 	}
 
 	/**********************************************************
@@ -533,8 +576,9 @@ public class MainActivity extends ActionBarActivity{
         rl_weather = (RelativeLayout) findViewById( R.id.rl_weather );
         rl_clock = (RelativeLayout) findViewById( R.id.rl_clock );
         rl_launcher_bg = (RelativeLayout) findViewById( R.id.rl_launcher_bg );
-        digitalSignageHolder = new DigitalSignageHolder( this );
-        digitalSignageSwitcher = new Timer();
+        //digitalSignageHolder = new DigitalSignageHolder( this );
+		ds = new DigitalSignage( context, rl_launcher_bg );
+        //digitalSignageSwitcher = new Timer();
     }
 
     public boolean handleMainMenuOverflow( int i, KeyEvent keyevent ){
@@ -676,6 +720,7 @@ public class MainActivity extends ActionBarActivity{
 				tv_date.setText( date_string );
 				tv_day_name.setText( ( new SimpleDateFormat( "EEEE" )).format( Calendar.getInstance().getTime() ) );
     		}
+
     	};
 
     	LocalBroadcastManager.getInstance( this ).registerReceiver( perfectTimeReceiver, new IntentFilter( "send_update_to_clock" ) );
@@ -737,7 +782,9 @@ public class MainActivity extends ActionBarActivity{
 
 
     }
-    
+
+
+
     
     /* Weather Related Functions */
 
@@ -791,6 +838,8 @@ public class MainActivity extends ActionBarActivity{
     /* Weather Related Functions */
 
 
+
+
     public void startFlippingClockAndWeather(){
     	isClockAndWeatherFlippingStarted = true;
     	new Handler().postDelayed( new Runnable() {
@@ -810,77 +859,7 @@ public class MainActivity extends ActionBarActivity{
 			}
 		}, Long.parseLong( configurationReader.getClockWeatherFlipInterval() ) );
     }
-    
-    
-    /* Digital Signage Functions */
 
-    public void setDefaultWallpaperOnBackground(){
-    	//Bitmap bmp = ImageManipulator.getDecodedBitmap( getResources(), R.drawable.default_bg, 1920, 1020 );
-    	//Drawable dr = new BitmapDrawable( bmp );
-    	Drawable dr = ImageManipulator.getDecodedDrawable( getResources(), R.drawable.default_bg, 1920, 1020 );
-        rl_launcher_bg.setBackgroundDrawable( dr );
-        dr = null;
-    }
-
-    public void setDigitalSignageOnBackground( String path ){
-    	Drawable dr = ImageManipulator.getDecodedDrawable( path, 1920, 1020 );
-    	if( dr == null ){
-    		setDefaultWallpaperOnBackground();
-    		return;
-    	}
-    	rl_launcher_bg.setBackgroundDrawable( dr );
-        dr = null;
-    }
-
-    public void startDigitalSignageSwitcher(){
-    	new Handler().postDelayed( new Runnable() {
-
-			@Override
-			public void run() {
-
-				setDigitalSignageAsWallpaper();
-
-			}
-		}, Long.parseLong( configurationReader.getDigitalSignageInterval() ) );
-    }
-
-    public void pauseDigitalSignageSwitcher(){
-    	Log.d( TAG,  "DigitalSignageSwitcher paused" );
-		isDigitalSignageSwitcherStarted = false;
-    }
-
-    public void resumeDigitalSignageSwitcher(){
-    	if( !isDigitalSignageSwitcherStarted ){
-			isDigitalSignageSwitcherStarted = true;
-			setDigitalSignageAsWallpaper();
-		}
-    }
-
-    public void setDigitalSignageAsWallpaper(){
-
-    	if( digitalSignageHolder.getDigitalSignageCount() == 0 )
-    		digitalSignageHolder.reloadDigitalSignageHolder();
-
-        String currentDigitalSignage = null;
-        if( ( currentDigitalSignage = digitalSignageHolder.getNextDigitalSignage() ) == null ){
-        	setDefaultWallpaperOnBackground();
-        	isDefaultWallpaperActive = true;
-        }
-        else{
-        	// Log.d( TAG, "Current Digital Signage to be Shown : "+currentDigitalSignage );
-        	setDigitalSignageOnBackground( currentDigitalSignage );
-        }
-
-       // if( !isDigitalSignageSwitcherPaused )
-        if( isDigitalSignageSwitcherStarted )
-        	startDigitalSignageSwitcher();
-
-        //if( ! isDigitalSignageSwitcherStarted )
-        	//startDigitalSignageSwitcher();
-
-    }
-    
-    /* Digital Signage Functions */
 
     public void shortCutKeyMonitor( String key_name ){
     	key_combination.push( key_name );
@@ -912,33 +891,9 @@ public class MainActivity extends ActionBarActivity{
      * 
      *********************************************************/
 
-    class CustomItems {
-
-    	public  void showCustomToast( Context context, String type, String text, int duration ){
-        	Toast t = new Toast( context );
-        	LayoutInflater lf = (LayoutInflater) context.getSystemService( Context.LAYOUT_INFLATER_SERVICE );
-    		int resId = -1;
-
-    		if( type.equals( "success" ) ){
-        		resId = R.layout.toast_success;
-        	}
-    		else if( type.equals( "error" ) ){
-        		resId = R.layout.toast_error;
-        	}
-    		else if( type.equals( "warning" ) ){
-        		resId = R.layout.toast_warning;
-        	}
-
-        	RelativeLayout rl = (RelativeLayout) lf.inflate( resId, null );
-    		TextView tv = (TextView) rl.findViewById( R.id.tv_toast_text );
-
-    		tv.setText( text );
-    		t.setView( rl );
-    		t.setDuration( duration );
-    		t.setGravity( Gravity.BOTTOM | Gravity.END, 20, 0 );
-    		t.show();
-        }
-    }
+	private void startScreenCastService(){
+		UtilShell.executeShellCommandWithOp( "am startservice --user 0 com.waxrain.airplaydmr/com.waxrain.airplaydmr.WaxPlayService" );
+	}
 
 }
 

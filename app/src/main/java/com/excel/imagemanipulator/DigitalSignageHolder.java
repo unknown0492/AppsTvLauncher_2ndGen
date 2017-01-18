@@ -7,7 +7,7 @@ import android.util.Log;
 import java.io.File;
 import java.util.Stack;
 
-import static com.excel.appstvlauncher.secondgen.Constants.DIR_DIGITAL_SIGNAGE;
+import static com.excel.configuration.Constants.DIR_DIGITAL_SIGNAGE;
 
 public class DigitalSignageHolder {
 	

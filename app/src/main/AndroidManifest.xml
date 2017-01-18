@@ -42,6 +42,12 @@
         <service android:name="com.excel.yahooweather.YahooWeatherService" >
         </service>
 
+        <receiver android:name="com.excel.appstvlauncher.secondgen.Receiver">
+            <intent-filter>
+                <action android:name="receive_update_launcher_config" />
+            </intent-filter>
+        </receiver>
+
 
         
     </application>

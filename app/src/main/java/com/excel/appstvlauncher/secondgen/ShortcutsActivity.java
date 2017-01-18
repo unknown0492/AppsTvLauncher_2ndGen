@@ -120,7 +120,10 @@ public class ShortcutsActivity extends Activity {
 	}
 	
 	public void setMacAddress(){
-		tv_mac_address.setText( UtilNetwork.getMacAddress( context ) );
+		String mac_address = UtilNetwork.getMacAddress( context );
+		if( mac_address == null )
+			mac_address = "Network Disconnected";
+		tv_mac_address.setText( mac_address );
 	}
 	
 	public void setFirmwareVersion(){
@@ -196,7 +199,13 @@ public class ShortcutsActivity extends Activity {
 	}
 
 	public void ipAddressRetrieve(){
-		String ip = UtilNetwork.getLocalIpAddressIPv4( context );
+		String ip = "";
+		try {
+			ip = UtilNetwork.getLocalIpAddressIPv4(context);
+		}
+		catch( Exception e ){
+			ip = null;
+		}
 		if( ip == null ){
 			bt_ip_address.setText( "Network Disconnected" );
 			return;
