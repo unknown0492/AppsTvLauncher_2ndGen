@@ -236,23 +236,36 @@
 	    
 	    
 	    
-	    
-		<!-- Collar Text --> 
-	    <com.excel.appstvlauncher.secondgen.ScrollTextView
-	        android:id="@+id/tv_collar_text"
-	        android:layout_width="match_parent"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentBottom="true"
-	        android:ellipsize="marquee"
-	        android:focusableInTouchMode="true"
-	        android:marqueeRepeatLimit="marquee_forever"
-	        android:padding="5dp"
-	        android:scrollHorizontally="true"
-	        android:singleLine="true"
-	        android:textColor="#ffffff"
-	        android:textSize="27dp"
-	        android:background="@drawable/submenu_bg" />
-		<!--/ Collar Text -->
+	    <LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_alignParentBottom="true">
+
+			<TextView
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="2"
+				android:text="Some Text" />
+
+			<!-- Collar Text -->
+			<com.excel.appstvlauncher.secondgen.ScrollTextView
+				android:id="@+id/tv_collar_text"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:focusableInTouchMode="true"
+				android:ellipsize="marquee"
+				android:marqueeRepeatLimit="marquee_forever"
+				android:padding="5dp"
+				android:scrollHorizontally="true"
+				android:singleLine="true"
+				android:textColor="#ffffff"
+				android:textSize="27dp"
+				android:background="@drawable/submenu_bg"
+				android:layout_weight="8" />
+			<!--/ Collar Text -->
+
+
+		</LinearLayout>
 
 	    
 	

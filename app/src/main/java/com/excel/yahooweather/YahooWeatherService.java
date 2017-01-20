@@ -56,7 +56,7 @@ public class YahooWeatherService extends Service {
 		if( UtilNetwork.isConnectedToInternet( context ) ){
 			
 			// Step-3
-			new AsyncWeather().execute( configurationReader.getLocation() );
+			new AsyncWeather().execute( configurationReader.getLocation(), configurationReader.getCountry() );
 		}
 		else{	// Step-10
 			
@@ -73,6 +73,7 @@ public class YahooWeatherService extends Service {
 		@Override
 		protected String doInBackground( String... params ) {
 			String location = params[ 0 ];
+			String country = params[ 1 ];
 			String YQL = String.format( "select * from weather.forecast where woeid in (select woeid from geo.places(1) where text=\"%s\") AND u='c'", location );
 			String url = String.format( "https://query.yahooapis.com/v1/public/yql?q=%s&format=json&u=c", Uri.encode( YQL ) );
 			//Log.i(TAG,  "inside doInBackground() : "+url );
@@ -80,8 +81,9 @@ public class YahooWeatherService extends Service {
 			Log.d( TAG, "Webservice path : "+UtilURL.getWebserviceURL() );
 			String response = UtilNetwork.makeRequestForData( UtilURL.getWebserviceURL(), "POST",
 					UtilURL.getURLParamsFromPairs( new String[][]{ { "what_do_you_want", "get_weather" },
-                            { "city", location },
-                            { "mac_address", UtilNetwork.getMacAddress( context ) } } ) );
+							{ "city", location },
+							{ "country", country },
+							{ "mac_address", UtilNetwork.getMacAddress( context ) } } ) );
 
 			return response;
 		}
@@ -94,7 +96,7 @@ public class YahooWeatherService extends Service {
 			
 			// Step-4
 			if( result != null ){
-                // Log.i( TAG,  result );
+                Log.i( TAG,  result );
 				try {
 					JSONObject jsonObject = new JSONObject( result );
 					JSONObject query	  = jsonObject.optJSONObject( "query" );

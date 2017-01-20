@@ -261,8 +261,8 @@ public class ShortcutsActivity extends Activity {
 			
 			@Override
 			public void onClick( View v ) {
-				if( !UtilMisc.startApplicationUsingPackageName( context, "com.giec.settings" ) ){
-					CustomItems.showCustomToast( context, "error", "Giec Settings not found", 5000 );
+				if( !UtilMisc.startApplicationUsingPackageName( context, "com.sdmc.settings" ) ){
+					CustomItems.showCustomToast( context, "error", "SDMC Settings not found", 5000 );
 				}
 			}
 		});

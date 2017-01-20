@@ -50,7 +50,7 @@ public class MainActivity extends ActionBarActivity{
 	TextView tv_first;
 	ScrollTextView tv_collar_text;
 	HorizontalScrollView hsv_menu, hsv_sub_menu;
-	LinearLayout ll_main_menu_items, ll_sub_menu_items;
+	LinearLayout ll_main_menu_items, ll_sub_menu_items, ll_clock_time;
 
 	ImageView iv_menu_left_fade, iv_menu_right_fade;
 
@@ -88,7 +88,8 @@ public class MainActivity extends ActionBarActivity{
     boolean isWeatherShowing = false;
     static boolean isYahooWeatherServicePaused = false;
     boolean isClockAndWeatherFlippingStarted = false;
-    RelativeLayout rl_weather, rl_clock;
+    RelativeLayout rl_clock;
+    LinearLayout rl_weather;
 
    	DigitalSignageHolder digitalSignageHolder;
 	/* boolean isDefaultWallpaperActive = true;
@@ -573,8 +574,9 @@ public class MainActivity extends ActionBarActivity{
         iv_weather = (ImageView) findViewById( R.id.iv_weather );
         tv_temperature = (TextView) findViewById( R.id.tv_temperature );
         tv_text = (TextView) findViewById( R.id.tv_text );
-        rl_weather = (RelativeLayout) findViewById( R.id.rl_weather );
+        rl_weather = (LinearLayout) findViewById( R.id.rl_weather );
         rl_clock = (RelativeLayout) findViewById( R.id.rl_clock );
+        ll_clock_time = (LinearLayout) findViewById( R.id.ll_clock_time );
         rl_launcher_bg = (RelativeLayout) findViewById( R.id.rl_launcher_bg );
         //digitalSignageHolder = new DigitalSignageHolder( this );
 		ds = new DigitalSignage( context, rl_launcher_bg );
@@ -768,17 +770,29 @@ public class MainActivity extends ActionBarActivity{
 			@Override
 			public void run() {
 				if( isDateShowingOnClock ){
-		    		ObjectAnimator.ofFloat( tv_date, "alpha", 1.0f, 0.0f ).setDuration( 1500 ).start();
-		    		ObjectAnimator.ofFloat( tv_day_name, "alpha", 0.0f, 1.0f ).setDuration( 1500 ).start();
+                    tv_date.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            ObjectAnimator.ofFloat( tv_day_name, "rotationX", 270f, 360f ).setDuration( 300 ).start();
+                        }
+                    }).start();
+		    		//ObjectAnimator.ofFloat( tv_date, "rotationX", 0.0f, 90f ).setDuration( 1500 ).start();
+
 		    	}
 		    	else{
-		    		ObjectAnimator.ofFloat( tv_day_name, "alpha", 1.0f, 0.0f ).setDuration( 1500 ).start();
-		    		ObjectAnimator.ofFloat( tv_date, "alpha", 0.0f, 1.0f ).setDuration( 1500 ).start();
+                    tv_day_name.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            ObjectAnimator.ofFloat( tv_date, "rotationX", 270f, 360f ).setDuration( 300 ).start();
+                        }
+                    }).start();
+		    		// ObjectAnimator.ofFloat( tv_day_name, "rotationX", 0.0f, 90f ).setDuration( 1500 ).start();
+		    		// ObjectAnimator.ofFloat( tv_date, "rotationX", 270f, 360f ).setDuration( 1500 ).start();
 		    	}
 				isDateShowingOnClock = !isDateShowingOnClock;
 				startDateAndDayNameSwitcher();
 			}
-		}, 10000 );
+		}, 3000 );
 
 
     }
@@ -847,13 +861,28 @@ public class MainActivity extends ActionBarActivity{
 			@Override
 			public void run() {
 				if( !isWeatherShowing ){
-		    		ObjectAnimator.ofFloat( rl_clock, "alpha", 1.0f, 0.0f ).setDuration( 1500 ).start();
-		    		ObjectAnimator.ofFloat( rl_weather, "alpha", 0.0f, 1.0f ).setDuration( 1500 ).start();
+                    ll_clock_time.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            ObjectAnimator.ofFloat( rl_weather, "rotationX", 270f, 360f ).setDuration( 300 ).start();
+                        }
+                    }).start();
+		    		/*ObjectAnimator.ofFloat( ll_clock_time, "alpha", 1.0f, 0.0f ).setDuration( 1500 ).start();
+		    		ObjectAnimator.ofFloat( rl_weather, "alpha", 0.0f, 1.0f ).setDuration( 1500 ).start();*/
 		    	}
 		    	else{
-		    		ObjectAnimator.ofFloat( rl_weather, "alpha", 1.0f, 0.0f ).setDuration( 1500 ).start();
-		    		ObjectAnimator.ofFloat( rl_clock, "alpha", 0.0f, 1.0f ).setDuration( 1500 ).start();
+                    rl_weather.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            ObjectAnimator.ofFloat( ll_clock_time, "rotationX", 270f, 360f ).setDuration( 300 ).start();
+
+                        }
+                    }).start();
+                    isDateShowingOnClock = false;
+		    		/*ObjectAnimator.ofFloat( rl_weather, "alpha", 1.0f, 0.0f ).setDuration( 1500 ).start();
+		    		ObjectAnimator.ofFloat( ll_clock_time, "alpha", 0.0f, 1.0f ).setDuration( 1500 ).start();*/
 		    	}
+
 				isWeatherShowing = !isWeatherShowing;
 				startFlippingClockAndWeather();
 			}
