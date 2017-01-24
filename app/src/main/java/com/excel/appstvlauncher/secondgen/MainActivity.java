@@ -1,6 +1,7 @@
 package com.excel.appstvlauncher.secondgen;
 
 import android.animation.ObjectAnimator;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -9,7 +10,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -44,7 +44,7 @@ import static com.excel.appstvlauncher.secondgen.Constants.TEN_SECONDS_MILLIS;
 import static com.excel.configuration.Constants.PATH_LAUNCHER_CONFIG_FILE;
 import static com.excel.configuration.Constants.PATH_LAUNCHER_CONFIG_FILE_SYSTEM;
 
-public class MainActivity extends ActionBarActivity{
+public class MainActivity extends Activity {
 
 	final static String TAG = "MainActivity";
 	TextView tv_first;
@@ -69,13 +69,13 @@ public class MainActivity extends ActionBarActivity{
 
     long current_timestamp;
 
-    RelativeLayout rl_elements, rl_launcher_bg;
+    RelativeLayout rl_elements, rl_launcher_bg, rl_tethering_info;
 
     boolean areLauncherElementsHidden = false;
 
     BroadcastReceiver perfectTimeReceiver;
 
-    TextView tv_clock_hours, tv_clock_minutes, tv_date, tv_day_name;
+    TextView tv_clock_hours, tv_clock_minutes, tv_date, tv_day_name, tv_ssid, tv_tethering_password;
 
     String clock_hours, clock_minutes, clock_seconds, clock_date, clock_month, clock_year;
 
@@ -98,6 +98,9 @@ public class MainActivity extends ActionBarActivity{
 	DigitalSignage ds;
 
     //Timer digitalSignageSwitcher;
+    VirussTimer ssid_password_flipper;
+    Runnable ssid_password_runnable;
+    boolean isSSIDShowing = true;
 
     ConfigurationReader configurationReader;
 
@@ -125,7 +128,9 @@ public class MainActivity extends ActionBarActivity{
 
 	@SuppressWarnings("deprecation")
 	public void init(){
-		initViews();
+        configurationReader = ConfigurationReader.getInstance();
+
+        initViews();
 
 		tv_collar_text.setText( "Tier Bar and Rooms at Sanctuary Block are undergoing renovation and should be progressively completed by August 2016." );
 		tv_collar_text.startScroll();
@@ -142,8 +147,7 @@ public class MainActivity extends ActionBarActivity{
 		startYahooWeatherService();
 		createYahooWeatherReceiver();
 
-		configurationReader = ConfigurationReader.getInstance();
-        /*Log.d( TAG, "getCountry() : "+","+configurationReader.getCountry()+"," );
+		/*Log.d( TAG, "getCountry() : "+","+configurationReader.getCountry()+"," );
         Log.d( TAG, "getTimezone() : "+","+configurationReader.getTimezone()+"," );
         Log.d( TAG, "getCmsIp() : "+","+configurationReader.getCmsIp()+"," );
         Log.d( TAG, "getLocation() : "+","+configurationReader.getLocation()+"," );
@@ -414,14 +418,14 @@ public class MainActivity extends ActionBarActivity{
     			return;
     		}
     	}
-    	else if( item_type.equals( "expandable-hotspot" ) ){
+    	/*else if( item_type.equals( "expandable-hotspot" ) ){
     		configurationReader = ConfigurationReader.reInstantiate();
     		String is_hotspot_enabled = configurationReader.getHotspotEnabled();
     		if( is_hotspot_enabled.equals( "0" ) ){
     			showCustomToast( "error", "Hotspot is Unavailable !", 3000 );
     			return;
     		}
-    	}
+    	}*/
     }
 
     public void processSubMenuItemClick( int main_menu_item_index, int sub_item_index ){
@@ -517,6 +521,7 @@ public class MainActivity extends ActionBarActivity{
 		ds.pauseDigitalSignageSwitcher();
 		pauseYahooWeatherService();
 
+        pauseTetheringInfoFlipper();
 	}
 
 
@@ -524,6 +529,7 @@ public class MainActivity extends ActionBarActivity{
 	protected void onResume() {
 		super.onResume();
 		Log.d( TAG,  "insde onResume()" );
+        configurationReader = ConfigurationReader.reInstantiate();
 
 		startLauncherIdleTimer();
 
@@ -531,7 +537,7 @@ public class MainActivity extends ActionBarActivity{
 
 		ds.resumeDigitalSignageSwitcher();
 		resumeYahooWeatherService();
-
+        startTetheringInfoSwitcher();
 	}
 
     @Override
@@ -549,8 +555,9 @@ public class MainActivity extends ActionBarActivity{
      */
 
     public void hideActionBar(){
-    	android.support.v7.app.ActionBar ab = getSupportActionBar();
-        ab.hide();
+    	//android.support.v7.app.ActionBar ab = getSupportActionBar();
+        /*ActionBar ab = getActionBar();
+        ab.hide();*/
     }
 
     public void initViews(){
@@ -578,9 +585,13 @@ public class MainActivity extends ActionBarActivity{
         rl_clock = (RelativeLayout) findViewById( R.id.rl_clock );
         ll_clock_time = (LinearLayout) findViewById( R.id.ll_clock_time );
         rl_launcher_bg = (RelativeLayout) findViewById( R.id.rl_launcher_bg );
+        tv_ssid = (TextView) findViewById( R.id.tv_ssid );
+        tv_tethering_password = (TextView) findViewById(R.id.tv_tethering_password);
+        rl_tethering_info = (RelativeLayout) findViewById( R.id.rl_tethering_info );
         //digitalSignageHolder = new DigitalSignageHolder( this );
 		ds = new DigitalSignage( context, rl_launcher_bg );
         //digitalSignageSwitcher = new Timer();
+
     }
 
     public boolean handleMainMenuOverflow( int i, KeyEvent keyevent ){
@@ -655,6 +666,8 @@ public class MainActivity extends ActionBarActivity{
 		}
     	return false;
     }
+
+
 
     @Override
 	public void onUserInteraction() {
@@ -765,6 +778,7 @@ public class MainActivity extends ActionBarActivity{
     }
 
     public void startDateAndDayNameSwitcher(){
+		// configurationReader = ConfigurationReader.reInstantiate();
     	new Handler().postDelayed( new Runnable() {
 
 			@Override
@@ -773,7 +787,8 @@ public class MainActivity extends ActionBarActivity{
                     tv_date.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
                         @Override
                         public void run() {
-                            ObjectAnimator.ofFloat( tv_day_name, "rotationX", 270f, 360f ).setDuration( 300 ).start();
+                            //ObjectAnimator.ofFloat( tv_day_name, "rotationX", 270f, 360f ).setDuration( 300 ).start();
+                            tv_day_name.animate().rotationXBy( -90f ).setDuration( 300 );
                         }
                     }).start();
 		    		//ObjectAnimator.ofFloat( tv_date, "rotationX", 0.0f, 90f ).setDuration( 1500 ).start();
@@ -783,7 +798,8 @@ public class MainActivity extends ActionBarActivity{
                     tv_day_name.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
                         @Override
                         public void run() {
-                            ObjectAnimator.ofFloat( tv_date, "rotationX", 270f, 360f ).setDuration( 300 ).start();
+                            // ObjectAnimator.ofFloat( tv_date, "rotationX", 270f, 360f ).setDuration( 300 ).start();
+                            tv_date.animate().rotationXBy( -90f ).setDuration( 300 ).start();
                         }
                     }).start();
 		    		// ObjectAnimator.ofFloat( tv_day_name, "rotationX", 0.0f, 90f ).setDuration( 1500 ).start();
@@ -792,13 +808,69 @@ public class MainActivity extends ActionBarActivity{
 				isDateShowingOnClock = !isDateShowingOnClock;
 				startDateAndDayNameSwitcher();
 			}
-		}, 3000 );
+		}, Long.parseLong( configurationReader.getDateTimeFlipInterval() ) );
 
 
     }
 
+    public void startTetheringInfoSwitcher(){
+        Log.d( TAG, "startTetheringInfoSwitcher()" );
+
+        String hotspot_enabled = configurationReader.getHotspotEnabled();
+        Log.d( TAG, "Hotspot Enabled : "+hotspot_enabled );
+        if( hotspot_enabled.equals( "1" ) ) {
+            tv_ssid.setText("SSID : " + configurationReader.getSSID());
+            tv_tethering_password.setText("Pass : " + configurationReader.getHotspotPassword());
+
+            rl_tethering_info.setVisibility( View.VISIBLE );
+
+            ssid_password_flipper = new VirussTimer( Long.parseLong( configurationReader.getTetheringInfoFlipInterval() ) );
+            ssid_password_runnable = new Runnable() {
+
+                @Override
+                public void run() {
+
+                    // Log.d(TAG, "Hotspot is enabled, inside run()");
+                    if (isSSIDShowing) {
+                        tv_ssid.animate().rotationXBy(90f).setDuration(300).withEndAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                //ObjectAnimator.ofFloat( tv_day_name, "rotationX", 270f, 360f ).setDuration( 300 ).start();
+                                tv_tethering_password.animate().rotationXBy(-90f).setDuration(300);
+                            }
+                        }).start();
+                        //ObjectAnimator.ofFloat( tv_date, "rotationX", 0.0f, 90f ).setDuration( 1500 ).start();
+
+                    } else {
+                        tv_tethering_password.animate().rotationXBy(90f).setDuration(300).withEndAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                // ObjectAnimator.ofFloat( tv_date, "rotationX", 270f, 360f ).setDuration( 300 ).start();
+                                tv_ssid.animate().rotationXBy(-90f).setDuration(300).start();
+                            }
+                        }).start();
+                        // ObjectAnimator.ofFloat( tv_day_name, "rotationX", 0.0f, 90f ).setDuration( 1500 ).start();
+                        // ObjectAnimator.ofFloat( tv_date, "rotationX", 270f, 360f ).setDuration( 1500 ).start();
+                    }
+                    isSSIDShowing = !isSSIDShowing;
+                    ssid_password_flipper.start(ssid_password_runnable);
+
+                }
+
+            };
+            ssid_password_flipper.start( ssid_password_runnable );
+        }
+        else{
+            rl_tethering_info.setVisibility( View.INVISIBLE );
+        }
 
 
+    }
+
+    public void pauseTetheringInfoFlipper(){
+        ssid_password_flipper.stop( ssid_password_runnable );
+        Log.d( TAG, "pauseTetheringInfoFlipper()" );
+    }
     
     /* Weather Related Functions */
 
@@ -878,7 +950,7 @@ public class MainActivity extends ActionBarActivity{
 
                         }
                     }).start();
-                    isDateShowingOnClock = false;
+                    // isDateShowingOnClock = false;
 		    		/*ObjectAnimator.ofFloat( rl_weather, "alpha", 1.0f, 0.0f ).setDuration( 1500 ).start();
 		    		ObjectAnimator.ofFloat( ll_clock_time, "alpha", 0.0f, 1.0f ).setDuration( 1500 ).start();*/
 		    	}
