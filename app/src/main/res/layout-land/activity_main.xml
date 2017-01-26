@@ -212,7 +212,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:rotationX="270">
+                    android:rotationX="90">
 
                     <ImageView
                         android:id="@+id/iv_weather"
@@ -253,6 +253,23 @@
                 <!--/ Weather -->
 
 
+                <!-- Hotel Logo -->
+                <LinearLayout
+                    android:id="@+id/rl_hotel_logo"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:rotationX="90">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center" />
+
+                </LinearLayout>
+                <!--/ Hotel Logo -->
+
 
             </RelativeLayout>
             <!--/ Clock -->
@@ -284,7 +301,7 @@
 
         <RelativeLayout
             android:id="@+id/rl_tethering_info"
-            android:layout_width="250dp"
+            android:layout_width="300dp"
             android:layout_height="50dp"
             android:layout_weight="2"
             android:background="@drawable/bottom_left_bg"

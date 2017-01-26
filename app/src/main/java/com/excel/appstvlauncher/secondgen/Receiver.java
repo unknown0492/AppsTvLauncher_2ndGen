@@ -20,8 +20,10 @@ public class Receiver extends BroadcastReceiver {
         Log.d( TAG, "action : "+action );
 
         if( action.equals( "receive_update_launcher_config" ) ){
-            //context.sendBroadcast( new Intent( "update_launcher_config" ) );
             LocalBroadcastManager.getInstance( context ).sendBroadcast( new Intent( "update_launcher_config" ) );
+        }
+        else if( action.equals( "receive_get_hotel_logo" ) ){ // Broadcasted from DataDownloader when the Logo is downloaded
+            LocalBroadcastManager.getInstance( context ).sendBroadcast( new Intent( "update_hotel_logo_availability" ) ); // Catch this Local Broadcast inside the AppsTvLauncher
 
         }
     }
