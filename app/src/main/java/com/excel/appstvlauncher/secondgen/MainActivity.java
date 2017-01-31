@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -30,11 +29,11 @@ import com.excel.configuration.LauncherJSONReader;
 import com.excel.excelclasslibrary.UtilFile;
 import com.excel.excelclasslibrary.UtilMisc;
 import com.excel.excelclasslibrary.UtilShell;
+import com.excel.flipper.Flipper;
 import com.excel.imagemanipulator.DigitalSignage;
 import com.excel.imagemanipulator.DigitalSignageHolder;
-import com.excel.imagemanipulator.ImageManipulator;
 import com.excel.perfecttime.PerfectTimeService;
-import com.excel.yahooweather.YahooWeatherService;
+import com.excel.yahooweather.Weather;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -83,13 +82,11 @@ public class MainActivity extends Activity {
 
     boolean isDateShowingOnClock = true;
 
-    BroadcastReceiver yahooWeatherReceiver, hotelLogoAvailabilityReceiver;
+
 
     ImageView iv_weather;
     TextView tv_temperature, tv_text;
-    boolean isWeatherShowing = false;
-    static boolean isYahooWeatherServicePaused = false;
-    boolean isClockAndWeatherFlippingStarted = false;
+    Weather weather;
     RelativeLayout rl_clock;
     LinearLayout rl_weather, rl_hotel_logo;
 
@@ -110,6 +107,7 @@ public class MainActivity extends Activity {
 
     LauncherJSONReader ljr;
 	BroadcastReceiver launcherConfigUpdateReceiver;
+    Flipper clock_weather_hotel_logo_flipper;
 
     Stack<String> key_combination = new Stack<String>();
     static String Z = "KEYCODE_Z";
@@ -146,10 +144,12 @@ public class MainActivity extends Activity {
 
 		startDateAndDayNameSwitcher();
 
-		startYahooWeatherService();
-		createYahooWeatherReceiver();
+		initializeWeatherFeatures();
 
-        createHotelLogoAvailabilityReceiver();
+        initializeClockWeatherHotelLogoFlipper();
+        checkIfHotelLogoToBeDisplayed();
+
+        restoreTvChannels();
 
 		/*Log.d( TAG, "getCountry() : "+","+configurationReader.getCountry()+"," );
         Log.d( TAG, "getTimezone() : "+","+configurationReader.getTimezone()+"," );
@@ -523,10 +523,10 @@ public class MainActivity extends Activity {
 		Log.d( TAG,  "insde onPause()" );
 
 		ds.pauseDigitalSignageSwitcher();
-		pauseYahooWeatherService();
+        weather.pauseYahooWeatherService();
 
         pauseTetheringInfoFlipper();
-        pauseClockWeatherLogoFlipper();
+        clock_weather_hotel_logo_flipper.pauseClockWeatherLogoFlipper();
 	}
 
 
@@ -541,9 +541,9 @@ public class MainActivity extends Activity {
 		current_timestamp = System.currentTimeMillis();
 
 		ds.resumeDigitalSignageSwitcher();
-		resumeYahooWeatherService();
+        weather.resumeYahooWeatherService();
 
-        startClockWeatherLogoFlipper();
+        clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
         startTetheringInfoSwitcher();
 	}
 
@@ -552,9 +552,9 @@ public class MainActivity extends Activity {
 		super.onDestroy();
 
 		deletePerfectTimeReceiver();
-		deleteYahooWeatherReceiver();
+        weather.deleteYahooWeatherReceiver();
 		deleteLauncheritemsUpdateBroadcast();
-        deleteHotelLogoAvailabilityReceiver();
+        clock_weather_hotel_logo_flipper.deleteHotelLogoAvailabilityReceiver();
 	}
 
 	/**********************************************************
@@ -881,121 +881,16 @@ public class MainActivity extends Activity {
         Log.d( TAG, "pauseTetheringInfoFlipper()" );
     }
 
-    VirussTimer clock_weather_logo_flipper = null;
-    Runnable clock_weather_logo_runnable = null;
-    int INDEX_CLOCK_SHOWING = 0, INDEX_WEATHER_SHOWING = 1, INDEX_HOTEL_LOGO_SHOWING = 2;
-    boolean clock_weather_logo_bool[] = { true, false, false };
-    boolean isHotelLogoAvailable = false;
-    long t_interval = -1;
+    public void initializeWeatherFeatures(){
+        weather = new Weather( context, configurationReader, iv_weather, tv_temperature, tv_text );
 
-    public void startClockWeatherLogoFlipper(){
-        Log.d( TAG, "startClockWeatherLogoFlipper()" );
-        t_interval = Long.parseLong( configurationReader.getClockWeatherFlipInterval() );
-
-        clock_weather_logo_flipper = new VirussTimer( t_interval );
-        clock_weather_logo_runnable = new Runnable() {
-
-            @Override
-            public void run() {
-
-                if( clock_weather_logo_bool[ INDEX_CLOCK_SHOWING ] ){
-
-                    if( isWeatherAvailable ){
-                        //Log.d( TAG, "weather is available" );
-                        ll_clock_time.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
-                            @Override
-                            public void run() {
-                                rl_weather.animate().rotationXBy( -90f ).setDuration( 300 ).start();
-                            }
-                        }).start();
-                        flipToIndex( INDEX_WEATHER_SHOWING );
-                        t_interval = Long.parseLong( configurationReader.getClockWeatherFlipInterval() );
-                    }
-                    else if( isHotelLogoAvailable ){
-                        // Log.d( TAG, "hotel logo is available" );
-                        ll_clock_time.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
-                            @Override
-                            public void run() {
-                                rl_hotel_logo.animate().rotationXBy( -90f ).setDuration( 300 ).start();
-                            }
-                        }).start();
-                        flipToIndex( INDEX_HOTEL_LOGO_SHOWING );
-                        t_interval = Long.parseLong( configurationReader.getHotelLogoFlipInterval() );
-                    }
-
-
-                }
-                else if( clock_weather_logo_bool[ INDEX_WEATHER_SHOWING ] ){
-
-                    if( isHotelLogoAvailable ){
-                        //Log.d( TAG, "hotel logo is available" );
-                        rl_weather.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
-                            @Override
-                            public void run() {
-                                rl_hotel_logo.animate().rotationXBy( -90f ).setDuration( 300 ).start();
-                            }
-                        }).start();
-                        flipToIndex( INDEX_HOTEL_LOGO_SHOWING );
-                        t_interval = Long.parseLong( configurationReader.getHotelLogoFlipInterval() );
-                    }
-                    else{
-                        rl_weather.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
-                            @Override
-                            public void run() {
-                                ll_clock_time.animate().rotationXBy( -90f ).setDuration( 300 ).start();
-                            }
-                        }).start();
-                        flipToIndex( INDEX_CLOCK_SHOWING );
-                        t_interval = Long.parseLong( configurationReader.getClockWeatherFlipInterval() );
-                    }
-
-                }
-                else{
-                    rl_hotel_logo.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            ll_clock_time.animate().rotationXBy( -90f ).setDuration( 300 ).start();
-                        }
-                    }).start();
-                    flipToIndex( INDEX_CLOCK_SHOWING );
-                    t_interval = Long.parseLong( configurationReader.getClockWeatherFlipInterval() );
-                }
-
-                clock_weather_logo_flipper.start( clock_weather_logo_runnable, t_interval );
-            }
-        };
-        clock_weather_logo_flipper.start( clock_weather_logo_runnable );
+        weather.startYahooWeatherService();
+        weather.createYahooWeatherReceiver();
     }
 
-    public void pauseClockWeatherLogoFlipper(){
-       Log.d( TAG, "pauseClockWeatherLogoFlipper()" );
-       clock_weather_logo_flipper.stop( clock_weather_logo_runnable );
-    }
-
-    public void flipToIndex( int index ){
-        clock_weather_logo_bool = new boolean[ 3 ];
-        clock_weather_logo_bool[ index ] = true;
-        //Log.d( TAG, String.format( "0->%s, 1->%s, 2->%s", String.valueOf( clock_weather_logo_bool[ 0 ] ), String.valueOf( clock_weather_logo_bool[ 1 ] ), String.valueOf( clock_weather_logo_bool[ 2 ] ) ) );
-    }
-
-    public void createHotelLogoAvailabilityReceiver(){
-        hotelLogoAvailabilityReceiver = new BroadcastReceiver() {
-
-            @Override
-            public void onReceive( Context context, Intent intent ) {
-                Log.i( TAG, "Hotel Logo Availability received on Launcher" );
-                isHotelLogoAvailable = true;
-
-                File hotel_logo_file = new File( configurationReader.getHotelLogoDirectoryPath() + File.separator + "hotel_logo.png" );
-                setImageFromPathOnView( hotel_logo_file.getAbsolutePath(), rl_hotel_logo );
-
-            }
-        };
-        LocalBroadcastManager.getInstance( context ).registerReceiver( hotelLogoAvailabilityReceiver, new IntentFilter( "update_hotel_logo_availability" ) );
-    }
-
-    public void deleteHotelLogoAvailabilityReceiver(){
-        LocalBroadcastManager.getInstance( this).unregisterReceiver( hotelLogoAvailabilityReceiver );
+    public void initializeClockWeatherHotelLogoFlipper(){
+        clock_weather_hotel_logo_flipper = new Flipper( context, configurationReader, ll_clock_time, rl_weather, rl_hotel_logo );
+        clock_weather_hotel_logo_flipper.createHotelLogoAvailabilityReceiver();
     }
 
 
@@ -1003,56 +898,7 @@ public class MainActivity extends Activity {
 
     /* Weather Related Functions Begins */
 
-    boolean isWeatherAvailable = false;
 
-    public void startYahooWeatherService(){
-    	Intent in = new Intent( this, YahooWeatherService.class );
-        startService( in );
-    }
-
-    public void createYahooWeatherReceiver(){
-    	yahooWeatherReceiver = new BroadcastReceiver() {
-
-			@Override
-			public void onReceive( Context context, Intent intent ) {
-				Log.i( TAG, "Weather Received on Launcher" );
-                isWeatherAvailable = true;
-
-				String code = intent.getStringExtra( "code" );
-				String temp = intent.getStringExtra( "temp" );
-				String text = intent.getStringExtra( "text" );
-
-				iv_weather.setBackgroundResource( getResources().getIdentifier( "drawable/weather_icon_"+code, null, getPackageName() ) );
-			    tv_temperature.setText( temp + "°C" );
-			    tv_text.setText( text );
-
-			    // Step-6 from YahooWeatherService.class
-			    /*if( !isClockAndWeatherFlippingStarted )
-			    	startFlippingClockAndWeather();*/
-
-			}
-		};
-    	LocalBroadcastManager.getInstance( context ).registerReceiver( yahooWeatherReceiver, new IntentFilter( "update_weather" ) );
-    }
-
-    public void deleteYahooWeatherReceiver(){
-    	LocalBroadcastManager.getInstance( this).unregisterReceiver( yahooWeatherReceiver );
-    }
-
-    public void pauseYahooWeatherService(){
-    	isYahooWeatherServicePaused = true;
-    }
-
-    public void resumeYahooWeatherService(){
-		isYahooWeatherServicePaused = false;
-    	/*if( ! isYahooWeatherServicePaused ){
-    		isYahooWeatherServicePaused = false;
-    	}*/
-    }
-
-    public static boolean isYahooWeatherServicePaused(){
-    	return isYahooWeatherServicePaused;
-    }
     
     /* Weather Related Functions Ends */
 
@@ -1091,19 +937,65 @@ public class MainActivity extends Activity {
      *********************************************************/
 
 	private void startScreenCastService(){
-		UtilShell.executeShellCommandWithOp( "am startservice --user 0 com.waxrain.airplaydmr/com.waxrain.airplaydmr.WaxPlayService" );
+		UtilShell.executeShellCommandWithOp( "am startservice -n com.waxrain.airplaydmr/com.waxrain.airplaydmr.WaxPlayService" );
 	}
 
-    public void setImageFromPathOnView( String path, View view ){
-        Drawable dr = ImageManipulator.getDecodedDrawable( path, view.getWidth(), view.getHeight() );
-        Log.d( TAG, "" + view.getWidth() + "," + view.getHeight() );
-        if( dr == null ){
-            Log.e( TAG, "Drawable returned an error !" );
-            return;
+    private void checkIfHotelLogoToBeDisplayed(){
+        String hasHotelLogoDisplay = configurationReader.getHasHotelLogoDisplay();
+        File hotel_logo_file = new File( configurationReader.getHotelLogoDirectoryPath() + File.separator + "hotel_logo.png" );
+        if( hasHotelLogoDisplay.equals( "1" ) ){
+
+            if( hotel_logo_file.exists() ){
+                Flipper.isHotelLogoAvailable = true;
+                DigitalSignage.setImageFromPathOnView( hotel_logo_file.getAbsolutePath(), rl_hotel_logo );
+            }
+
         }
-        view.setBackgroundDrawable( dr );
-        dr = null;
     }
+
+
+    /* TV Channels restore related functions BEGINS */
+
+    public boolean isTvChannelRestored(){
+        String is_it = UtilShell.executeShellCommandWithOp( "getprop is_tv_ch_restored" ).trim();
+        return ( is_it.equals( "0" ) || is_it.equals( "" ) )?false:true;
+    }
+
+    public void setTvChannelRestored( boolean is_it ){
+        String s = ( is_it )?"1":"0";
+        UtilShell.executeShellCommandWithOp( "setprop is_tv_ch_restored " + s );
+    }
+
+    public void unzipTvChannelsZip(){
+        Log.i( TAG, "unzipTvChannelsZip() executed" );
+
+        // 1. kill com.android.dtv
+        String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
+        UtilShell.executeShellCommandWithOp( "kill "+pid );
+
+        UtilShell.executeShellCommandWithOp( "rm -r /mnt/sdcard/appstv_data/tv_channels/backup",
+                "unzip -o /mnt/sdcard/appstv_data/tv_channels/tv_channels.zip -d /mnt/sdcard/appstv_data/tv_channels" );
+
+        UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/hdtv",
+                "rm -r /data/hdtv/*",
+                "cp -r /mnt/sdcard/appstv_data/tv_channels/backup/hdtv/* /data/hdtv",
+                "chmod -R 777 /data/hdtv" );
+
+        // last. kill com.android.dtv
+        pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
+        UtilShell.executeShellCommandWithOp( "kill "+pid );
+
+        setTvChannelRestored( true );
+        Log.d( TAG, "tv_channels.zip extracted successfully" );
+    }
+
+    public void restoreTvChannels(){
+        if( ! isTvChannelRestored() ){
+            unzipTvChannelsZip();
+        }
+    }
+
+    /* TV Channels restore related functions ENDS */
 }
 
 

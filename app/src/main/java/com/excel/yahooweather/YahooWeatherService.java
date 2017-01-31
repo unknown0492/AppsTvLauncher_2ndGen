@@ -10,7 +10,6 @@ import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.excel.appstvlauncher.secondgen.MainActivity;
 import com.excel.configuration.ConfigurationReader;
 import com.excel.excelclasslibrary.UtilNetwork;
 import com.excel.excelclasslibrary.UtilURL;
@@ -154,9 +153,9 @@ public class YahooWeatherService extends Service {
 	
 	public void setWeatherRefreshTimer(){
 		
-		if( MainActivity.isYahooWeatherServicePaused() ){
+		if( Weather.isYahooWeatherServicePaused() ){
 			
-			Log.d( TAG, "setWeatherRefreshTimer() : "+String.valueOf( MainActivity.isYahooWeatherServicePaused() ) );
+			Log.d( TAG, "setWeatherRefreshTimer() : "+String.valueOf( Weather.isYahooWeatherServicePaused() ) );
 			
 			new Handler().postDelayed( new Runnable() {
 				

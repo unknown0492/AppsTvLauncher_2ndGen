@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
 import android.widget.RelativeLayout;
 
 import com.excel.appstvlauncher.secondgen.R;
@@ -132,4 +133,14 @@ public class DigitalSignage{
         return isDigitalSignageSwitcherStarted;
     }
 
+    public static void setImageFromPathOnView( String path, View view ){
+        Drawable dr = ImageManipulator.getDecodedDrawable( path, view.getWidth(), view.getHeight() );
+        Log.d( TAG, "" + view.getWidth() + "," + view.getHeight() );
+        if( dr == null ){
+            Log.e( TAG, "Drawable returned an error !" );
+            return;
+        }
+        view.setBackgroundDrawable( dr );
+        dr = null;
+    }
 }
