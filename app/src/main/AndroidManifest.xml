@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.excel.appstvlauncher.secondgen" >
+    package="com.excel.appstvlauncher.secondgen">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -12,13 +12,13 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme">
         <activity
-            android:name="com.excel.appstvlauncher.secondgen.MainActivity"
+            android:name=".MainActivity"
             android:label="@string/app_name"
             android:launchMode="singleTask"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"
-            android:stateNotNeeded="true" >
+            android:stateNotNeeded="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -27,31 +27,40 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
         <activity
-            android:name="com.excel.appstvlauncher.secondgen.WebViewActivity"
-            android:theme="@android:style/Theme.Wallpaper.NoTitleBar.Fullscreen" >
-        </activity>
-        
+            android:name=".WebViewActivity"
+            android:theme="@android:style/Theme.Wallpaper.NoTitleBar.Fullscreen"></activity>
         <activity
-            android:name="com.excel.appstvlauncher.secondgen.ShortcutsActivity"
-            android:theme="@android:style/Theme.Wallpaper.NoTitleBar.Fullscreen" >
-        </activity>
+            android:name=".ShortcutsActivity"
+            android:theme="@android:style/Theme.Wallpaper.NoTitleBar.Fullscreen"></activity>
 
-        <service android:name="com.excel.perfecttime.PerfectTimeService" >
-        </service>
-        <service android:name="com.excel.yahooweather.YahooWeatherService" >
-        </service>
+        <service android:name="com.excel.perfecttime.PerfectTimeService"></service>
+        <service android:name="com.excel.yahooweather.YahooWeatherService"></service>
 
-        <receiver android:name="com.excel.appstvlauncher.secondgen.Receiver">
+        <receiver android:name=".Receiver">
             <intent-filter>
                 <action android:name="receive_update_launcher_config" />
                 <action android:name="receive_get_hotel_logo" />
             </intent-filter>
         </receiver>
 
+        <activity android:name=".LoadingActivity"
+            android:launchMode="singleInstance"
+            android:theme="@android:style/Theme.Black.NoTitleBar">
 
-        
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity>
+
+        <activity
+            android:name=".ClockActivity"
+            android:label="Clock Activity"
+            android:theme="@style/AppTheme">
+        </activity>
     </application>
 
 </manifest>

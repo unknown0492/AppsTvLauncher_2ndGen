@@ -1,0 +1,35 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/earth4"
+    android:gravity="center"
+    android:layout_gravity="center_vertical"
+    android:orientation="vertical"
+    tools:context="com.excel.appstvlauncher.secondgen.ClockActivity" >
+
+    
+    
+    <GridView
+        android:id="@+id/clock_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:horizontalSpacing="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:numColumns="4"
+        android:verticalSpacing="20dp"> 
+
+    </GridView>
+    
+    <TextView 
+        android:id="@+id/clock_extra_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp" 
+        android:textSize="25dp"
+        android:textColor="#000000"
+        android:gravity="center"
+        android:text="Please contact operator for other time zones" />
+
+</LinearLayout>

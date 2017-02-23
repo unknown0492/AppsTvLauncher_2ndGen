@@ -23,7 +23,9 @@ public class Receiver extends BroadcastReceiver {
             LocalBroadcastManager.getInstance( context ).sendBroadcast( new Intent( "update_launcher_config" ) );
         }
         else if( action.equals( "receive_get_hotel_logo" ) ){ // Broadcasted from DataDownloader when the Logo is downloaded
-            LocalBroadcastManager.getInstance( context ).sendBroadcast( new Intent( "update_hotel_logo_availability" ) ); // Catch this Local Broadcast inside the AppsTvLauncher
+            Intent in = new Intent( "update_hotel_logo_availability" );
+            in.putExtra( "hasHotelLogoDisplay", intent.getBooleanExtra( "hasHotelLogoDisplay", false ) );
+            LocalBroadcastManager.getInstance( context ).sendBroadcast( in ); // Catch this Local Broadcast inside the AppsTvLauncher
 
         }
     }

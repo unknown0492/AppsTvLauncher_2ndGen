@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -26,6 +27,7 @@ import android.widget.Toast;
 
 import com.excel.configuration.ConfigurationReader;
 import com.excel.configuration.LauncherJSONReader;
+import com.excel.customitems.CustomItems;
 import com.excel.excelclasslibrary.UtilFile;
 import com.excel.excelclasslibrary.UtilMisc;
 import com.excel.excelclasslibrary.UtilShell;
@@ -35,8 +37,11 @@ import com.excel.imagemanipulator.DigitalSignageHolder;
 import com.excel.perfecttime.PerfectTimeService;
 import com.excel.yahooweather.Weather;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Stack;
 
@@ -118,10 +123,11 @@ public class MainActivity extends Activity {
     protected void onCreate( Bundle savedInstanceState )  {
         super.onCreate( savedInstanceState );
         hideActionBar();
+
         setContentView( R.layout.activity_main );
 
         init();
-// yoaaaaa
+
     }
 
     /* Launcher Menu Items Related Functions */
@@ -131,9 +137,6 @@ public class MainActivity extends Activity {
         configurationReader = ConfigurationReader.getInstance();
 
         initViews();
-
-		tv_collar_text.setText( "Tier Bar and Rooms at Sanctuary Block are undergoing renovation and should be progressively completed by August 2016." );
-		tv_collar_text.startScroll();
 
 		setLauncherMenuItems();
 		createLauncheritemsUpdateBroadcast();
@@ -151,6 +154,8 @@ public class MainActivity extends Activity {
 
         restoreTvChannels();
 
+        //PreinstallAppsManager pamm = new PreinstallAppsManager( context );
+        //test();
 		/*Log.d( TAG, "getCountry() : "+","+configurationReader.getCountry()+"," );
         Log.d( TAG, "getTimezone() : "+","+configurationReader.getTimezone()+"," );
         Log.d( TAG, "getCmsIp() : "+","+configurationReader.getCmsIp()+"," );
@@ -162,6 +167,48 @@ public class MainActivity extends Activity {
 		startScreenCastService();
 
 	}
+
+    /*int TOTAL_OPTIONS = 6;
+    int OPTION_PACKAGE_NAME =   0;
+    int OPTION_MD5          =   1;
+    int OPTION_BUTTON_ID    =   2;
+    int OPTION_SHOW         =   3;
+    int OPTION_WIPE_CACHE   =   4;
+    int OPTION_FORCE_KILL   =   5;
+    String papps_arr[][];
+    public void test(){
+        configurationReader = ConfigurationReader.getInstance();
+        String preinstall_apps = UtilFile.readData( "appstv_data", "preinstall_apps" );
+        Log.d( TAG, "preinstall_apps : "+preinstall_apps );
+        String temp[] = preinstall_apps.split( "," );
+        Log.d( TAG, "temp.length: " + temp.length );
+        String t[] = new String[ TOTAL_OPTIONS ];
+        int j = 0, k = 0;
+        papps_arr = new String[ temp.length/TOTAL_OPTIONS ][ TOTAL_OPTIONS ];
+        for( int i = 0 ; i < temp.length ; i++ ){
+
+            //for( int j = 0 ; j < TOTAL_OPTIONS ; j++ ){
+            Log.d( TAG, String.format( "Putting %s in t[ %d ]", temp[ i ], j ) );
+            t[ j++ ] = temp[ i ];
+
+            //}
+            if( (i + 1)%TOTAL_OPTIONS == 0 ){
+                Log.d( TAG, "" + (i+1) + " reached " );
+                j = 0;
+                Log.d( TAG, String.format( "putting papps_arr[ %d ] = t", k ) );
+                papps_arr[ k++ ] = t;
+                t = new String[ TOTAL_OPTIONS ];
+            }
+
+        }
+
+        for( int l = 0 ; l < papps_arr.length ; l++ ){
+            Log.d( TAG, "" + l + "->" );
+            for( int m = 0 ; m < papps_arr[ l ].length ; m++ ){
+                Log.d( TAG, "   " + m + "->" + papps_arr[ l ][ m ]);
+            }
+        }
+    }*/
 
     public void setMainMenuAdapter( final MenuAdapter adapter ){
     	for( int i = 0 ; i < ma.getCount(); i++ ){
@@ -195,26 +242,99 @@ public class MainActivity extends Activity {
     					oa1.setDuration( 250 );
     					oa1.start();
 
-    					new Handler().postDelayed( new Runnable() {
+                        /*new Handler().postDelayed( new Runnable() {
 
-							@Override
-							public void run() {
-								sub_menu_values = ljr.getSubMenuItemNames( last_index_of_main_menu );
-		    					sma = new SubMenuAdapter( R.layout.sub_menu_items, context, sub_menu_values );
-		    					setSubMenuAdapter( sma );
-							}
-						}, 250 );
+                            @Override
+                            public void run() {
 
-    					// Show its Sub-Menu
-    					ObjectAnimator oaa = ObjectAnimator.ofFloat( hsv_sub_menu, "translationY", 40 );
-    					oaa.setStartDelay( 250 );
-    					oaa.setDuration( 250 );
-    					oaa.start();
+                                //sub_menu_values = ljr.getSubMenuItemNames( last_index_of_main_menu );
+                                sub_menu_values = new String[ ljr.getSubItemsCount( last_index_of_main_menu ) ];
+                                for( int i = 0 ; i < sub_menu_values.length ; i++ ){
+                                    //String item_name = ljr.getSubItemValue( last_index_of_main_menu, i , "item_name_translated" );
+                                    String item_name_json = ljr.getSubItemValue( last_index_of_main_menu, i, "item_name_translated" );
+                                    try {
+                                        JSONObject jso = new JSONObject( item_name_json );
+                                        //Log.d( TAG, "display name : "+UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
+                                        sub_menu_values[ i ] = jso.getString( UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
+                                    }
+                                    catch ( Exception e ){
+                                        sub_menu_values[ i ] = ljr.getSubItemValue( last_index_of_main_menu, i, "item_name" );
+                                        e.printStackTrace();
+                                    }
+                                }
 
-    					ObjectAnimator oaa1 = ObjectAnimator.ofFloat( hsv_sub_menu, "alpha", 0.0f, 1.0f );
-    					oaa1.setStartDelay( 250 );
-    					oaa1.setDuration( 250 );
-    					oaa1.start();
+                                sma = new SubMenuAdapter( R.layout.sub_menu_items, context, sub_menu_values );
+                                setSubMenuAdapter( sma );
+
+                                // Show its Sub-Menu
+                                ObjectAnimator oaa = ObjectAnimator.ofFloat( hsv_sub_menu, "translationY", 40 );
+                                oaa.setStartDelay( 250 );
+                                oaa.setDuration( 250 );
+                                oaa.start();
+
+                                ObjectAnimator oaa1 = ObjectAnimator.ofFloat( hsv_sub_menu, "alpha", 0.0f, 1.0f );
+                                oaa1.setStartDelay( 250 );
+                                oaa1.setDuration( 250 );
+                                oaa1.start();
+
+                            }
+                        }, 500 );*/
+
+                        new AsyncTask<Void, Void, Void>(){
+
+                            @Override
+                            protected Void doInBackground(Void... voids) {
+                                sub_menu_values = ljr.getSubMenuItemNames( last_index_of_main_menu );
+                                for( int i = 0 ; i < sub_menu_values.length ; i++ ){
+                                    //String item_name = ljr.getSubItemValue( last_index_of_main_menu, i , "item_name_translated" );
+                                    String item_name_json = ljr.getSubItemValue( last_index_of_main_menu, i, "item_name_translated" );
+                                    try {
+                                        JSONObject jso = new JSONObject( item_name_json );
+                                        //Log.d( TAG, "display name : "+UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
+                                        sub_menu_values[ i ] = jso.getString( UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
+                                    }
+                                    catch ( Exception e ){
+                                        //e.printStackTrace();
+                                    }
+                                }
+
+
+
+
+                                return null;
+                            }
+
+                            @Override
+                            protected void onPostExecute(Void aVoid) {
+                                new Handler().postDelayed( new Runnable() {
+
+                                    @Override
+                                    public void run() {
+
+                                        sma = new SubMenuAdapter( R.layout.sub_menu_items, context, sub_menu_values );
+                                        setSubMenuAdapter( sma );
+
+                                        // Show its Sub-Menu
+                                        ObjectAnimator oaa = ObjectAnimator.ofFloat( hsv_sub_menu, "translationY", 40 );
+                                        oaa.setStartDelay( 250 );
+                                        oaa.setDuration( 250 );
+                                        oaa.start();
+
+                                        ObjectAnimator oaa1 = ObjectAnimator.ofFloat( hsv_sub_menu, "alpha", 0.0f, 1.0f );
+                                        oaa1.setStartDelay( 250 );
+                                        oaa1.setDuration( 250 );
+                                        oaa1.start();
+
+                                    }
+                                }, 250 );
+
+                                super.onPostExecute(aVoid);
+                            }
+                        }.execute();
+
+
+
+
 
     					last_index_of_main_menu = Integer.parseInt( v.getTag().toString() );
 
@@ -337,7 +457,9 @@ public class MainActivity extends Activity {
 		// Step-4
 		int main_items_count = ljr.getMainItemsCount();
 
-		// Step-5
+        setCollarText( ljr );
+
+        // Step-5
 		int sub_items_count;
 		/*configurationReader = ConfigurationReader.reInstantiate();
 		String hotspot_enabled = configurationReader.getHotspotEnabled();
@@ -347,11 +469,12 @@ public class MainActivity extends Activity {
 			main_menu_values = new String[ main_items_count ];
 
 		for( int i = 0, j=0 ; i < main_items_count ; i++ ){
-			sub_items_count = ljr.getSubItemsCount( i );
+			//sub_items_count = ljr.getSubItemsCount( i );
 			// Log.d( TAG, "sub_items_count : "+sub_items_count );
 			//j = i;
 			// Step-6
 			sub_items_count = ljr.getSubItemsCount( i );
+			//Log.d( TAG, "sub items count : "+sub_items_count );
 
 			// Step-7
 			if( sub_items_count == 0 ){
@@ -368,8 +491,18 @@ public class MainActivity extends Activity {
 					continue;
 				}
 			}*/
-
-			main_menu_values[ i ] = ljr.getMainItemValue( i, "item_name" );
+            String item_name = ljr.getMainItemValue( i, "item_name" );
+            String item_name_json = ljr.getMainItemValue( i, "item_name_translated" );
+            try {
+                JSONObject jso = new JSONObject( item_name_json );
+                //Log.d( TAG, "display name : "+UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
+                item_name = jso.getString( UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
+            }
+            catch ( Exception e ){
+                item_name = ljr.getMainItemValue( i, "item_name" );
+                e.printStackTrace();
+            }
+            main_menu_values[ i ] = item_name;
 
 		}
 		ma = new MenuAdapter( R.layout.main_menu_items, this, main_menu_values );
@@ -401,6 +534,7 @@ public class MainActivity extends Activity {
 				startActivity( in );*/
 			}
 		};
+
 		LocalBroadcastManager.getInstance( context ).registerReceiver( launcherConfigUpdateReceiver, new IntentFilter( "update_launcher_config" ) );
 	}
 
@@ -422,6 +556,20 @@ public class MainActivity extends Activity {
     			return;
     		}
     	}
+        else if( item_type.equals( "part" ) ){
+            String metadata = ljr.getMainItemValue( index, "metadata" );
+            try {
+                JSONArray jsa = new JSONArray( metadata );
+                JSONObject jso = jsa.getJSONObject( 0 );
+                String activity = jso.getString( "activity_name" ).trim();
+                Intent in = new Intent( context, Class.forName( getPackageName() + "." + activity )  );
+                startActivity( in );
+            }
+            catch ( Exception e ){
+                CustomItems.showCustomToast( context, "error", "Cant open World Clock !", 3000 );
+                //e.printStackTrace();
+            }
+        }
     	/*else if( item_type.equals( "expandable-hotspot" ) ){
     		configurationReader = ConfigurationReader.reInstantiate();
     		String is_hotspot_enabled = configurationReader.getHotspotEnabled();
@@ -448,11 +596,27 @@ public class MainActivity extends Activity {
     		}
     	}
     	else if( clickable.equals( "true" ) ){
+            // Log.d( TAG, "Item is clickable" );
     		if( item_type.equals( "web_view" ) ){
         		startWebViewActivity( ljr.getSubItemValue( main_menu_item_index, sub_item_index, "web_view_url" ),
         				ljr.getSubItemValue( main_menu_item_index, sub_item_index, "params" ) );
         		return;
         	}
+            else if( item_type.equals( "language" ) ){
+                String metadata = ljr.getSubItemValue( main_menu_item_index, sub_item_index, "metadata" );
+                try {
+                    JSONArray jsa = new JSONArray( metadata );
+                    JSONObject jso = jsa.getJSONObject( 0 );
+                    String language_code = jso.getString( "language_code" ).trim();
+                    UtilShell.executeShellCommandWithOp( "setprop language_code "+language_code );
+                    recreate();
+                } catch ( JSONException e ) {
+                    e.printStackTrace();
+                }
+
+                //Log.d( TAG, "metadata : "+metadata );
+                return;
+            }
     	}
     }
 
@@ -487,7 +651,25 @@ public class MainActivity extends Activity {
     	in.putExtra( "params", params );
     	startActivity( in );
     }
-    
+
+    public void setCollarText( LauncherJSONReader ljr ){
+        // Set Collar Text
+        String collar_text = ljr.getCollarText();
+        String collar_text_translated = ljr.getCollarTextTranslated();
+
+        try{
+            JSONObject jso = new JSONObject( collar_text_translated );
+            collar_text = jso.getString( UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
+        }
+        catch ( Exception e ){
+            e.printStackTrace();
+            collar_text = ljr.getCollarText();
+        }
+
+        tv_collar_text.setText( collar_text );
+        tv_collar_text.startScroll();
+    }
+
     /* Launcher Menu Items Related Functions */
 
 
@@ -533,6 +715,10 @@ public class MainActivity extends Activity {
     @Override
 	protected void onResume() {
 		super.onResume();
+
+        if( ! isLoadingCompleted() ) {
+            showLoadingActivity();
+        }
 		Log.d( TAG,  "insde onResume()" );
         configurationReader = ConfigurationReader.reInstantiate();
 
@@ -677,7 +863,6 @@ public class MainActivity extends Activity {
     }
 
 
-
     @Override
 	public void onUserInteraction() {
 		super.onUserInteraction();
@@ -740,9 +925,12 @@ public class MainActivity extends Activity {
     			tv_clock_hours.setText( clock_hours );
     			tv_clock_minutes.setText( clock_minutes );
     			String date_string = "";
-				date_string = clock_date + " " + (new SimpleDateFormat( "MMM" )).format( Calendar.getInstance().getTime() ) + ", " + clock_year;
+				//date_string = clock_date + " " + (new SimpleDateFormat( "MMM" )).format( Calendar.getInstance().getTime() ) + ", " + clock_year;
+				date_string = clock_date + " " + Calendar.getInstance().getDisplayName( Calendar.MONTH, Calendar.SHORT, UtilMisc.getCustomLocaleLanguageConstant() ) + ", " + clock_year;
+                //Toast.makeText( context, "" + Calendar.getInstance().getDisplayName( Calendar.MONTH, Calendar.SHORT, Locale.CHINESE ) + "" , Toast.LENGTH_SHORT ).show();
 				tv_date.setText( date_string );
-				tv_day_name.setText( ( new SimpleDateFormat( "EEEE" )).format( Calendar.getInstance().getTime() ) );
+				//tv_day_name.setText( ( new SimpleDateFormat( "EEEE" )).format( Calendar.getInstance().getTime() ) );
+				tv_day_name.setText( Calendar.getInstance().getDisplayName( Calendar.DAY_OF_WEEK, Calendar.LONG, UtilMisc.getCustomLocaleLanguageConstant() ) );
     		}
 
     	};
@@ -776,9 +964,11 @@ public class MainActivity extends Activity {
 					tv_clock_hours.setText( (hours<10)?"0"+hours:hours+"" );
 				date = (cal.get( Calendar.DATE )<10)?"0"+cal.get( Calendar.DATE ):cal.get( Calendar.DATE )+"";
 				year = cal.get( Calendar.YEAR );
-				date_string = date + " " + (new SimpleDateFormat( "MMM" )).format( cal.getTime() ) + ", " + year;
+				//date_string = date + " " + (new SimpleDateFormat( "MMM" )).format( cal.getTime() ) + ", " + year;
+				date_string = date + " " + Calendar.getInstance().getDisplayName( Calendar.MONTH, Calendar.SHORT, UtilMisc.getCustomLocaleLanguageConstant() ) + ", " + year;
 				tv_date.setText( date_string );
-				tv_day_name.setText( ( new SimpleDateFormat( "EEEE" )).format( cal.getTime() ) );
+				//tv_day_name.setText( ( new SimpleDateFormat( "EEEE" )).format( cal.getTime() ) );
+				tv_day_name.setText( Calendar.getInstance().getDisplayName( Calendar.DAY_OF_WEEK, Calendar.LONG, UtilMisc.getCustomLocaleLanguageConstant() ) );
 
 				startClockTicker();
 
@@ -894,18 +1084,6 @@ public class MainActivity extends Activity {
     }
 
 
-
-
-    /* Weather Related Functions Begins */
-
-
-    
-    /* Weather Related Functions Ends */
-
-
-
-
-
     public void shortCutKeyMonitor( String key_name ){
     	key_combination.push( key_name );
 
@@ -941,16 +1119,34 @@ public class MainActivity extends Activity {
 	}
 
     private void checkIfHotelLogoToBeDisplayed(){
+        Log.d( TAG, "checkIfHotelLogoToBeDisplayed()" );
         String hasHotelLogoDisplay = configurationReader.getHasHotelLogoDisplay();
         File hotel_logo_file = new File( configurationReader.getHotelLogoDirectoryPath() + File.separator + "hotel_logo.png" );
         if( hasHotelLogoDisplay.equals( "1" ) ){
 
             if( hotel_logo_file.exists() ){
+                Log.d( TAG, "Hotel logo exist and is displayable" );
                 Flipper.isHotelLogoAvailable = true;
                 DigitalSignage.setImageFromPathOnView( hotel_logo_file.getAbsolutePath(), rl_hotel_logo );
             }
 
         }
+    }
+
+    public static void setIsLoadingCompleted( boolean is_it ){
+        String s = (is_it)?"1":"0";
+        UtilShell.executeShellCommandWithOp( "setprop is_loading_complete " + s );
+    }
+
+    public boolean isLoadingCompleted(){
+        String s = UtilShell.executeShellCommandWithOp( "getprop is_loading_complete" ).trim();
+        return s.equals( "1" )?true:false;
+    }
+
+    private void showLoadingActivity(){
+        Intent intent = new Intent( context, LoadingActivity.class );
+        startActivity( intent );
+        overridePendingTransition( 0, 0 );
     }
 
 
@@ -996,6 +1192,9 @@ public class MainActivity extends Activity {
     }
 
     /* TV Channels restore related functions ENDS */
+
+
+
 }
 
 

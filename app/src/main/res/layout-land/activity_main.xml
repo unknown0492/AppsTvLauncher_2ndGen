@@ -263,8 +263,9 @@
                     android:rotationX="90">
 
                     <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="369dp"
+                        android:layout_height="75dp"
+                        android:src="@drawable/transparent_logo"
                         android:layout_gravity="center" />
 
                 </LinearLayout>

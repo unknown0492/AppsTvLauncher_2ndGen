@@ -1,6 +1,7 @@
 package com.excel.appstvlauncher.secondgen;
 
 import android.content.Context;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -80,7 +81,7 @@ public class SubMenuAdapter extends BaseAdapter {
 			iv_sub_menu_item_separator.setVisibility( View.GONE );
 		}
 		
-		tv_sub_menu_item_name.setText( values[ position ] );
+		tv_sub_menu_item_name.setText( Html.fromHtml( values[ position ] ) );
 		
 		ll.setOnClickListener( new OnClickListener() {
 			

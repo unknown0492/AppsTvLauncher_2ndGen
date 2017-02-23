@@ -69,7 +69,7 @@ public class Flipper {
                         flipToIndex( INDEX_WEATHER_SHOWING );
                         t_interval = Long.parseLong( configurationReader.getClockWeatherFlipInterval() );
                     }
-                    else if( isHotelLogoAvailable ){
+                    else if( Flipper.isHotelLogoAvailable ){
                         // Log.d( TAG, "hotel logo is available" );
                         ll_clock_time.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
                             @Override
@@ -85,7 +85,7 @@ public class Flipper {
                 }
                 else if( clock_weather_logo_bool[ INDEX_WEATHER_SHOWING ] ){
 
-                    if( isHotelLogoAvailable ){
+                    if( Flipper.isHotelLogoAvailable ){
                         //Log.d( TAG, "hotel logo is available" );
                         rl_weather.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
                             @Override
@@ -142,7 +142,7 @@ public class Flipper {
             @Override
             public void onReceive(Context context, Intent intent ) {
                 Log.i( TAG, "Hotel Logo Availability received on Launcher" );
-                isHotelLogoAvailable = intent.getBooleanExtra( "hasHotelLogoDisplay", false );
+                Flipper.isHotelLogoAvailable = intent.getBooleanExtra( "hasHotelLogoDisplay", false );
 
                 File hotel_logo_file = new File( configurationReader.getHotelLogoDirectoryPath() + File.separator + "hotel_logo.png" );
                 setImageFromPathOnView( hotel_logo_file.getAbsolutePath(), rl_hotel_logo );
