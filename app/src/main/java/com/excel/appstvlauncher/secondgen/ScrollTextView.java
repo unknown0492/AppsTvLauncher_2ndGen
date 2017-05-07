@@ -4,17 +4,17 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.text.TextPaint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.animation.LinearInterpolator;
 import android.widget.Scroller;
-import android.widget.TextView;
 
-public class ScrollTextView extends TextView {
+public class ScrollTextView extends android.support.v7.widget.AppCompatTextView {
 
 	// scrolling feature
 	private Scroller mSlr;
 
 	// milliseconds for a round of scrolling
-	private int mRndDuration = 50000;
+	private int mRndDuration = 30000;
 
 	// the X offset when paused
 	private int mXPaused = 0;
@@ -87,8 +87,10 @@ public class ScrollTextView extends TextView {
 		int duration = (new Double(mRndDuration * distance * 1.00000
 				/ scrollingLen)).intValue();
 
+		Log.e( null, String.format( "scrollingLen %d, distance %d, duration %d", scrollingLen, distance, duration ));
+
 		setVisibility(VISIBLE);
-		mSlr.startScroll(mXPaused, 0, distance, 0, duration);
+		mSlr.startScroll(mXPaused, 0, distance, 0, 10000 );
 		invalidate();
 		mPaused = false;
 	}

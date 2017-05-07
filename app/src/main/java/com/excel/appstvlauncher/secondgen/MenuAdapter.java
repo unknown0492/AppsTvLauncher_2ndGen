@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
@@ -61,7 +60,9 @@ public class MenuAdapter extends BaseAdapter {
 			// Set Left margin to 200dp
 			LayoutParams llp = new LayoutParams( LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT );
 		    llp.setMargins( 200, 0, 0, 0 ); // llp.setMargins(left, top, right, bottom);
-		    tv_menu_item_name.setLayoutParams( llp );
+			tv_menu_item_name.setLayoutParams( llp );
+
+			//ll.requestFocus();
 		}
 		else if( ( position == values.length - 1 ) ){
 			// Set Right margin to 200dp

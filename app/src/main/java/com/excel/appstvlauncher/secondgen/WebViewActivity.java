@@ -1,7 +1,5 @@
 package com.excel.appstvlauncher.secondgen;
 
-import java.io.File;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -15,6 +13,8 @@ import android.webkit.WebViewClient;
 
 import com.excel.configuration.ConfigurationReader;
 import com.excel.excelclasslibrary.UtilNetwork;
+
+import java.io.File;
 
 public class WebViewActivity extends Activity {
 
@@ -37,8 +37,9 @@ public class WebViewActivity extends Activity {
 		String params = in.getStringExtra( "params" );
 		
 		String URL = cr.getProtocol() + "://" + cr.getCmsIp() + File.separator + cr.getCmsSubDirectory() + File.separator + "webservice.php?";
-		String url_params = String.format( "what_do_you_want=%s&web_view_url=%s&", "cms_template", web_view_url );
-		
+		// String url_params = String.format( "what_do_you_want=%s&web_view_url=%s&", "cms_template", web_view_url );
+		String url_params = String.format( "what_do_you_want=%s&url_type=%s&", "url_forward", web_view_url );
+
 		String params_arr[] = params.split( "," );
 		for( int i = 0 ; i < params_arr.length ; i++ ){
 			

@@ -255,13 +255,14 @@ public class ShortcutsActivity extends Activity {
 			}
 		});
 	}
-	
+
 	public void mboxSettingsClick(){
 		bt_mbox.setOnClickListener( new OnClickListener() {
 			
 			@Override
 			public void onClick( View v ) {
 				if( !UtilMisc.startApplicationUsingPackageName( context, "com.sdmc.settings" ) ){
+				//if( !UtilMisc.startApplicationUsingPackageName( context, "com.mbx.settingsmbox" ) ){
 					CustomItems.showCustomToast( context, "error", "SDMC Settings not found", 5000 );
 				}
 			}

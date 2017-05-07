@@ -118,6 +118,7 @@ public class MainActivity extends Activity {
     static String Z = "KEYCODE_Z";
 	static String K = "KEYCODE_K";
 	static String X = "KEYCODE_X";
+	String ALPHABET = "KEYCODE_";
 
     @Override
     protected void onCreate( Bundle savedInstanceState )  {
@@ -127,6 +128,8 @@ public class MainActivity extends Activity {
         setContentView( R.layout.activity_main );
 
         init();
+
+
 
     }
 
@@ -210,10 +213,15 @@ public class MainActivity extends Activity {
         }
     }*/
 
+    LinearLayout first_main_item = null;
+    LinearLayout current_main_item = null;
+    LinearLayout prev_main_item = null;
     public void setMainMenuAdapter( final MenuAdapter adapter ){
     	for( int i = 0 ; i < ma.getCount(); i++ ){
     		LinearLayout v = (LinearLayout) ma.getView( i, null, null );
     		ll_main_menu_items.addView( v );
+
+            if( i == 0 ) first_main_item = v;
 
     		v.setOnFocusChangeListener( new OnFocusChangeListener() {
 
@@ -229,9 +237,24 @@ public class MainActivity extends Activity {
     	    		sub_menu_first_element_reached = false;
     	    		sub_menu_last_element_reached = false;
 
+					prev_main_item = current_main_item;
+
     				if( hasFocus ){
+						// This is to prevent animation when going back to main menu parent from its child sub menu
+						if( prev_main_item == ll )
+							return;
+
     					Log.d( null, "focus gained on "+tv.getText().toString() );
-    					tv.setTextColor( context.getResources().getColor( R.color.menu_text_active_color ) );
+    					// tv.setTextColor( context.getResources().getColor( R.color.menu_text_active_color ) );
+    					tv.setTextColor( context.getResources().getColor( R.color.light_blue ) );
+                        tv.setScaleX( 1.45f );
+                        tv.setScaleY( 1.45f );
+
+						current_main_item = ll;
+                        //tv.setBackground( context.getResources().getDrawable( R.drawable.menu_bg_cut1 ) );
+                        /*LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) ll.getLayoutParams();
+                        params.setMargins( 0, -50, 0, 0 );
+                        ll.setLayoutParams(params);*/
 
     					// Hide its sub-menu
     					ObjectAnimator oa = ObjectAnimator.ofFloat( hsv_sub_menu, "translationY", 0 );
@@ -242,43 +265,6 @@ public class MainActivity extends Activity {
     					oa1.setDuration( 250 );
     					oa1.start();
 
-                        /*new Handler().postDelayed( new Runnable() {
-
-                            @Override
-                            public void run() {
-
-                                //sub_menu_values = ljr.getSubMenuItemNames( last_index_of_main_menu );
-                                sub_menu_values = new String[ ljr.getSubItemsCount( last_index_of_main_menu ) ];
-                                for( int i = 0 ; i < sub_menu_values.length ; i++ ){
-                                    //String item_name = ljr.getSubItemValue( last_index_of_main_menu, i , "item_name_translated" );
-                                    String item_name_json = ljr.getSubItemValue( last_index_of_main_menu, i, "item_name_translated" );
-                                    try {
-                                        JSONObject jso = new JSONObject( item_name_json );
-                                        //Log.d( TAG, "display name : "+UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
-                                        sub_menu_values[ i ] = jso.getString( UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
-                                    }
-                                    catch ( Exception e ){
-                                        sub_menu_values[ i ] = ljr.getSubItemValue( last_index_of_main_menu, i, "item_name" );
-                                        e.printStackTrace();
-                                    }
-                                }
-
-                                sma = new SubMenuAdapter( R.layout.sub_menu_items, context, sub_menu_values );
-                                setSubMenuAdapter( sma );
-
-                                // Show its Sub-Menu
-                                ObjectAnimator oaa = ObjectAnimator.ofFloat( hsv_sub_menu, "translationY", 40 );
-                                oaa.setStartDelay( 250 );
-                                oaa.setDuration( 250 );
-                                oaa.start();
-
-                                ObjectAnimator oaa1 = ObjectAnimator.ofFloat( hsv_sub_menu, "alpha", 0.0f, 1.0f );
-                                oaa1.setStartDelay( 250 );
-                                oaa1.setDuration( 250 );
-                                oaa1.start();
-
-                            }
-                        }, 500 );*/
 
                         new AsyncTask<Void, Void, Void>(){
 
@@ -345,7 +331,10 @@ public class MainActivity extends Activity {
     				else{
     					// Log.d( null, "focus lost from "+tv.getText().toString() );
     					tv.setTextColor( context.getResources().getColor( R.color.white ) );
-
+                        tv.setScaleX( 1.0f );
+                        tv.setScaleY( 1.0f );
+                        //tv.setBackground( context.getResources().getDrawable( R.drawable.submenu_bg ) );
+                        tv.setBackground( null );
     					// Save the state of this View
 
     				}
@@ -362,7 +351,7 @@ public class MainActivity extends Activity {
 				}
 			});
     	}
-
+		first_main_item.requestFocus();
     }
 
     public void setSubMenuAdapter( final SubMenuAdapter adapter ){
@@ -408,6 +397,8 @@ public class MainActivity extends Activity {
 				}
 			});
     	}
+
+        //first_main_item.requestFocus();
 
     }
 
@@ -570,6 +561,12 @@ public class MainActivity extends Activity {
                 //e.printStackTrace();
             }
         }
+        if( item_type.equals( "web_view" ) ){
+            Log.d( TAG, ljr.getMainItemValue( index, "web_view_url" ) + "-" +ljr.getMainItemValue( index, "params" ) );
+            startWebViewActivity( ljr.getMainItemValue( index, "web_view_url" ),
+                    ljr.getMainItemValue( index, "params" ) );
+            return;
+        }
     	/*else if( item_type.equals( "expandable-hotspot" ) ){
     		configurationReader = ConfigurationReader.reInstantiate();
     		String is_hotspot_enabled = configurationReader.getHotspotEnabled();
@@ -717,6 +714,8 @@ public class MainActivity extends Activity {
 		super.onResume();
 
         if( ! isLoadingCompleted() ) {
+			first_main_item.requestFocus();
+
             showLoadingActivity();
         }
 		Log.d( TAG,  "insde onResume()" );
@@ -787,6 +786,9 @@ public class MainActivity extends Activity {
 		ds = new DigitalSignage( context, rl_launcher_bg );
         //digitalSignageSwitcher = new Timer();
 
+        hsv_menu.setBackground( context.getResources().getDrawable( R.drawable.menu_bg7 ) );
+        tv_collar_text.setBackground( context.getResources().getDrawable( R.drawable.submenu_bg1 ) );
+        //hsv_sub_menu.setBackground( context.getResources().getDrawable( R.drawable.submenu_bg1 ) );
     }
 
     public boolean handleMainMenuOverflow( int i, KeyEvent keyevent ){
@@ -853,9 +855,18 @@ public class MainActivity extends Activity {
     	if( i == 20 ){
 			try {
 				ll_sub_menu_items.getChildAt(0).requestFocus();
+
+				TextView tv = (TextView) current_main_item.findViewById( R.id.tv_menu_item_name );
+				tv.setTextColor( context.getResources().getColor( R.color.light_blue ) );
+				tv.setScaleX( 1.45f );
+				tv.setScaleY( 1.45f );
 			}
 			catch ( Exception e ){
-				Log.e( TAG, "This main menu has no Sub Menu :-(" );
+				Log.e( TAG, "This main menu has no Sub Menu :-((" );
+				//current_main_item.requestFocus();
+				//UtilShell.executeShellCommandWithOp( "input keyevent 19" );
+				dispatchKeyEvent(new KeyEvent( KeyEvent.ACTION_UP, KeyEvent.ACTION_UP));
+				return true;
 			}
 			return false;
 		}
@@ -1014,6 +1025,9 @@ public class MainActivity extends Activity {
 
     public void startTetheringInfoSwitcher(){
         Log.d( TAG, "startTetheringInfoSwitcher()" );
+        tv_tethering_password.setRotationX( 0f );
+        tv_tethering_password.setAlpha( 0.0f );
+        //tv_text.setTextSize( 18 );
 
         String hotspot_enabled = configurationReader.getHotspotEnabled();
         Log.d( TAG, "Hotspot Enabled : "+hotspot_enabled );
@@ -1030,12 +1044,13 @@ public class MainActivity extends Activity {
                 public void run() {
 
                     // Log.d(TAG, "Hotspot is enabled, inside run()");
-                    if (isSSIDShowing) {
+                    /*if (isSSIDShowing) {
                         tv_ssid.animate().rotationXBy(90f).setDuration(300).withEndAction(new Runnable() {
                             @Override
                             public void run() {
                                 //ObjectAnimator.ofFloat( tv_day_name, "rotationX", 270f, 360f ).setDuration( 300 ).start();
                                 tv_tethering_password.animate().rotationXBy(-90f).setDuration(300);
+                                //tv_tethering_password.animate().alpha( 1.0f ).setDuration( 300 );
                             }
                         }).start();
                         //ObjectAnimator.ofFloat( tv_date, "rotationX", 0.0f, 90f ).setDuration( 1500 ).start();
@@ -1050,7 +1065,34 @@ public class MainActivity extends Activity {
                         }).start();
                         // ObjectAnimator.ofFloat( tv_day_name, "rotationX", 0.0f, 90f ).setDuration( 1500 ).start();
                         // ObjectAnimator.ofFloat( tv_date, "rotationX", 270f, 360f ).setDuration( 1500 ).start();
+                    }*/
+
+                    if (isSSIDShowing) {
+                        tv_ssid.animate().alpha( 0.0f ).setDuration(300).withEndAction(new Runnable() {
+                        //tv_ssid.animate().rotationXBy(90f).setDuration(300).withEndAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                //ObjectAnimator.ofFloat( tv_day_name, "rotationX", 270f, 360f ).setDuration( 300 ).start();
+                                //tv_tethering_password.animate().rotationXBy(-90f).setDuration(300);
+                                tv_tethering_password.animate().alpha( 1.0f ).setDuration( 300 );
+                            }
+                        }).start();
+                        //ObjectAnimator.ofFloat( tv_date, "rotationX", 0.0f, 90f ).setDuration( 1500 ).start();
+
+                    } else {
+                        tv_tethering_password.animate().alpha( 0.0f ).setDuration( 300 ).withEndAction(new Runnable() {
+                        //tv_tethering_password.animate().rotationXBy(90f).setDuration(300).withEndAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                // ObjectAnimator.ofFloat( tv_date, "rotationX", 270f, 360f ).setDuration( 300 ).start();
+                                //tv_ssid.animate().rotationXBy(-90f).setDuration(300).start();
+                                tv_ssid.animate().alpha( 1.0f ).setDuration( 300 );
+                            }
+                        }).start();
+                        // ObjectAnimator.ofFloat( tv_day_name, "rotationX", 0.0f, 90f ).setDuration( 1500 ).start();
+                        // ObjectAnimator.ofFloat( tv_date, "rotationX", 270f, 360f ).setDuration( 1500 ).start();
                     }
+
                     isSSIDShowing = !isSSIDShowing;
                     ssid_password_flipper.start(ssid_password_runnable);
 
