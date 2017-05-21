@@ -66,6 +66,10 @@ public class ScrollTextView extends android.support.v7.widget.AppCompatTextView 
 		resumeScroll();
 	}
 
+	private double speed = 83.67;
+	//double speed = 300.67;
+
+
 	/**
 	 * resume the scroll from the pausing point
 	 */
@@ -84,13 +88,12 @@ public class ScrollTextView extends android.support.v7.widget.AppCompatTextView 
 
 		int scrollingLen = calculateScrollingLen();
 		int distance = scrollingLen - (getWidth() + mXPaused);
-		int duration = (new Double(mRndDuration * distance * 1.00000
-				/ scrollingLen)).intValue();
+		int duration = new Double(  (1.00000 * distance) / getSpeed()).intValue() * 1000;//(new Double(mRndDuration * distance * 1.00000/ scrollingLen)).intValue();
 
-		Log.e( null, String.format( "scrollingLen %d, distance %d, duration %d", scrollingLen, distance, duration ));
+		Log.e( "AAA", String.format( "scrollingLen %d, distance %d, duration %d, speed %.02f" , scrollingLen, distance, duration, getSpeed()));
 
 		setVisibility(VISIBLE);
-		mSlr.startScroll(mXPaused, 0, distance, 0, 10000 );
+		mSlr.startScroll(mXPaused, 0, distance, 0, duration );
 		invalidate();
 		mPaused = false;
 	}
@@ -153,7 +156,17 @@ public class ScrollTextView extends android.support.v7.widget.AppCompatTextView 
 		this.mRndDuration = duration;
 	}
 
+
 	public boolean isPaused() {
 		return mPaused;
+	}
+
+
+	public double getSpeed() {
+		return speed;
+	}
+
+	public void setSpeed( double speed ) {
+		this.speed = speed;
 	}
 }

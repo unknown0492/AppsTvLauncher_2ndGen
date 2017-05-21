@@ -45,8 +45,6 @@ import java.io.File;
 import java.util.Calendar;
 import java.util.Stack;
 
-import static com.excel.appstvlauncher.secondgen.Constants.LAUNCHER_IDLE_TIMEOUT_SECONDS;
-import static com.excel.appstvlauncher.secondgen.Constants.TEN_SECONDS_MILLIS;
 import static com.excel.configuration.Constants.PATH_LAUNCHER_CONFIG_FILE;
 import static com.excel.configuration.Constants.PATH_LAUNCHER_CONFIG_FILE_SYSTEM;
 
@@ -87,9 +85,12 @@ public class MainActivity extends Activity {
 
     boolean isDateShowingOnClock = true;
 
+	VirussTimer launcher_idle_timer;
+	Runnable launcher_idle_runnable;
 
 
-    ImageView iv_weather;
+    //ImageView iv_weather;
+    AnimatedGifImageView iv_weather;
     TextView tv_temperature, tv_text;
     Weather weather;
     RelativeLayout rl_clock;
@@ -221,7 +222,10 @@ public class MainActivity extends Activity {
     		LinearLayout v = (LinearLayout) ma.getView( i, null, null );
     		ll_main_menu_items.addView( v );
 
-            if( i == 0 ) first_main_item = v;
+            if( i == 0 ){
+				first_main_item = v;
+				//v.requestFocus();
+            }
 
     		v.setOnFocusChangeListener( new OnFocusChangeListener() {
 
@@ -351,7 +355,13 @@ public class MainActivity extends Activity {
 				}
 			});
     	}
+
+    	// This is to set the First Item on main menu as Active
 		first_main_item.requestFocus();
+		TextView tv = (TextView) first_main_item.findViewById( R.id.tv_menu_item_name );
+		tv.setTextColor( context.getResources().getColor( R.color.light_blue ) );
+		tv.setScaleX( 1.45f );
+		tv.setScaleY( 1.45f );
     }
 
     public void setSubMenuAdapter( final SubMenuAdapter adapter ){
@@ -539,11 +549,11 @@ public class MainActivity extends Activity {
 
     	if( item_type.equals( "app" ) ){
     		if( !UtilMisc.startApplicationUsingPackageName( context, ljr.getMainItemValue( index, "package_name" ) ) ){
-    			showCustomToast( "error", "Failed to Open Application !", 3000 );
+    			//showCustomToast( "error", "Failed to Open Application !", 3000 );
     			return;
     		}
     		else{
-    			showCustomToast( "success", "Launching information, please wait...", 3000 );
+    			//showCustomToast( "success", "Launching information, please wait...", 3000 );
     			return;
     		}
     	}
@@ -584,11 +594,11 @@ public class MainActivity extends Activity {
 
     	if( item_type.equals( "app" ) ){
     		if( !UtilMisc.startApplicationUsingPackageName( context, ljr.getSubItemValue( main_menu_item_index, sub_item_index, "package_name" ) ) ){
-    			showCustomToast( "error", "Failed to Open Application !", 3000 );
+    			//showCustomToast( "error", "Failed to Open Application !", 3000 );
     			return;
     		}
     		else{
-    			showCustomToast( "success", "Launching application, please wait...", 3000 );
+    			//showCustomToast( "success", "Launching application, please wait...", 3000 );
     			return;
     		}
     	}
@@ -664,6 +674,7 @@ public class MainActivity extends Activity {
         }
 
         tv_collar_text.setText( collar_text );
+		tv_collar_text.setSpeed( new Double( configurationReader.getCollarTextSpeed() ) );
         tv_collar_text.startScroll();
     }
 
@@ -693,6 +704,10 @@ public class MainActivity extends Activity {
 		// Short-Cut key toggling
 		shortCutKeyMonitor( key_name );
 
+		if( i == 4 ){
+			return true;
+		}
+
 		return super.onKeyDown( i, keyevent );
 	}
 
@@ -706,6 +721,8 @@ public class MainActivity extends Activity {
 
         pauseTetheringInfoFlipper();
         clock_weather_hotel_logo_flipper.pauseClockWeatherLogoFlipper();
+
+		pauseLauncherIdleTimer();
 	}
 
 
@@ -714,16 +731,19 @@ public class MainActivity extends Activity {
 		super.onResume();
 
         if( ! isLoadingCompleted() ) {
-			first_main_item.requestFocus();
+			//first_main_item.requestFocus();
 
             showLoadingActivity();
         }
+
 		Log.d( TAG,  "insde onResume()" );
         configurationReader = ConfigurationReader.reInstantiate();
 
-		startLauncherIdleTimer();
+		//current_timestamp = System.currentTimeMillis();
+		//startLauncherIdleTimer();
 
-		current_timestamp = System.currentTimeMillis();
+		onUserInteraction();
+
 
 		ds.resumeDigitalSignageSwitcher();
         weather.resumeYahooWeatherService();
@@ -771,7 +791,8 @@ public class MainActivity extends Activity {
         tv_clock_minutes = (TextView) findViewById( R.id.tv_clock_minutes );
         tv_date = (TextView) findViewById( R.id.tv_date );
         tv_day_name = (TextView) findViewById( R.id.tv_day_name );
-        iv_weather = (ImageView) findViewById( R.id.iv_weather );
+        // iv_weather = (ImageView) findViewById( R.id.iv_weather );
+        iv_weather = (AnimatedGifImageView) findViewById( R.id.iv_weather );
         tv_temperature = (TextView) findViewById( R.id.tv_temperature );
         tv_text = (TextView) findViewById( R.id.tv_text );
         rl_weather = (LinearLayout) findViewById( R.id.rl_weather );
@@ -786,8 +807,8 @@ public class MainActivity extends Activity {
 		ds = new DigitalSignage( context, rl_launcher_bg );
         //digitalSignageSwitcher = new Timer();
 
-        hsv_menu.setBackground( context.getResources().getDrawable( R.drawable.menu_bg7 ) );
-        tv_collar_text.setBackground( context.getResources().getDrawable( R.drawable.submenu_bg1 ) );
+        //hsv_menu.setBackground( context.getResources().getDrawable( R.drawable.menu_bg7 ) );
+        //tv_collar_text.setBackground( context.getResources().getDrawable( R.drawable.submenu_bg1 ) );
         //hsv_sub_menu.setBackground( context.getResources().getDrawable( R.drawable.submenu_bg1 ) );
     }
 
@@ -881,17 +902,25 @@ public class MainActivity extends Activity {
 
 		current_timestamp = System.currentTimeMillis();
 
+		pauseLauncherIdleTimer();
+
 		if( areLauncherElementsHidden ){
 			ObjectAnimator.ofFloat( rl_elements, "alpha", 0.0f, 1.0f ).setDuration( 500 ).start();
 			areLauncherElementsHidden = false;
 			startLauncherIdleTimer();
 		}
+		else{
+			startLauncherIdleTimer();
+		}
 	}
 
-    public void startLauncherIdleTimer(){
-    	// Log.d( null, "startLauncherIdleTimer()" );
 
-    	new Handler().postDelayed( new Runnable() {
+
+    public void startLauncherIdleTimer(){
+    	Log.d( null, "startLauncherIdleTimer()" );
+
+		launcher_idle_timer = new VirussTimer( 10000 );
+		launcher_idle_runnable = new Runnable() {
 
 			@Override
 			public void run() {
@@ -900,8 +929,10 @@ public class MainActivity extends Activity {
 				long now = System.currentTimeMillis();
 				long difference = ( now - current_timestamp )/1000;
 
-				if( difference > LAUNCHER_IDLE_TIMEOUT_SECONDS ){
-					Log.d( null, "difference > 10" );
+				Log.d( TAG, String.format( "now : %d, current : %d, difference : %d, n-c : %d", now, current_timestamp, difference, ( now - current_timestamp ) ) );
+
+				if( difference > Integer.parseInt( configurationReader.getIdleTimeoutInterval() )/1000 ){
+					Log.d( null, "difference > " );
 					ObjectAnimator.ofFloat( rl_elements, "alpha", 1.0f, 0.0f ).setDuration( 500 ).start();
 					areLauncherElementsHidden = true;
 				}
@@ -910,9 +941,18 @@ public class MainActivity extends Activity {
 				}
 
 			}
-		}, TEN_SECONDS_MILLIS );
+		};
 
+
+    	//new Handler().postDelayed( launcher_idle_runnable, TEN_SECONDS_MILLIS );
+		launcher_idle_timer.start( launcher_idle_runnable );
     }
+
+    public void pauseLauncherIdleTimer(){
+		if( launcher_idle_timer != null )
+			launcher_idle_timer.stop( launcher_idle_runnable );
+		Log.d( TAG, "pauseLauncherIdleTimer()" );
+	}
 
     public void startPerfectTimeService(){
     	Intent in = new Intent( context, PerfectTimeService.class );
@@ -1032,7 +1072,7 @@ public class MainActivity extends Activity {
         String hotspot_enabled = configurationReader.getHotspotEnabled();
         Log.d( TAG, "Hotspot Enabled : "+hotspot_enabled );
         if( hotspot_enabled.equals( "1" ) ) {
-            tv_ssid.setText("SSID : " + configurationReader.getSSID());
+            tv_ssid.setText("WiFi : " + configurationReader.getSSID());
             tv_tethering_password.setText("Password : " + configurationReader.getHotspotPassword());
 
             rl_tethering_info.setVisibility( View.VISIBLE );
@@ -1042,30 +1082,6 @@ public class MainActivity extends Activity {
 
                 @Override
                 public void run() {
-
-                    // Log.d(TAG, "Hotspot is enabled, inside run()");
-                    /*if (isSSIDShowing) {
-                        tv_ssid.animate().rotationXBy(90f).setDuration(300).withEndAction(new Runnable() {
-                            @Override
-                            public void run() {
-                                //ObjectAnimator.ofFloat( tv_day_name, "rotationX", 270f, 360f ).setDuration( 300 ).start();
-                                tv_tethering_password.animate().rotationXBy(-90f).setDuration(300);
-                                //tv_tethering_password.animate().alpha( 1.0f ).setDuration( 300 );
-                            }
-                        }).start();
-                        //ObjectAnimator.ofFloat( tv_date, "rotationX", 0.0f, 90f ).setDuration( 1500 ).start();
-
-                    } else {
-                        tv_tethering_password.animate().rotationXBy(90f).setDuration(300).withEndAction(new Runnable() {
-                            @Override
-                            public void run() {
-                                // ObjectAnimator.ofFloat( tv_date, "rotationX", 270f, 360f ).setDuration( 300 ).start();
-                                tv_ssid.animate().rotationXBy(-90f).setDuration(300).start();
-                            }
-                        }).start();
-                        // ObjectAnimator.ofFloat( tv_day_name, "rotationX", 0.0f, 90f ).setDuration( 1500 ).start();
-                        // ObjectAnimator.ofFloat( tv_date, "rotationX", 270f, 360f ).setDuration( 1500 ).start();
-                    }*/
 
                     if (isSSIDShowing) {
                         tv_ssid.animate().alpha( 0.0f ).setDuration(300).withEndAction(new Runnable() {
@@ -1109,7 +1125,8 @@ public class MainActivity extends Activity {
     }
 
     public void pauseTetheringInfoFlipper(){
-        ssid_password_flipper.stop( ssid_password_runnable );
+		if( ssid_password_flipper != null )
+        	ssid_password_flipper.stop( ssid_password_runnable );
         Log.d( TAG, "pauseTetheringInfoFlipper()" );
     }
 
@@ -1121,7 +1138,7 @@ public class MainActivity extends Activity {
     }
 
     public void initializeClockWeatherHotelLogoFlipper(){
-        clock_weather_hotel_logo_flipper = new Flipper( context, configurationReader, ll_clock_time, rl_weather, rl_hotel_logo );
+        clock_weather_hotel_logo_flipper = new Flipper( context, configurationReader, ll_clock_time, rl_weather, rl_hotel_logo, tv_temperature, tv_text );
         clock_weather_hotel_logo_flipper.createHotelLogoAvailabilityReceiver();
     }
 
@@ -1191,6 +1208,62 @@ public class MainActivity extends Activity {
         overridePendingTransition( 0, 0 );
     }
 
+	public void restoreYoutubeSettings(){
+		// Kill Youtube running in background
+		String pid = UtilShell.executeShellCommandWithOp( "pidof com.google.android.youtube.tv" ).trim();
+		UtilShell.executeShellCommandWithOp( "kill " + pid );
+
+		// 1. Check if youtube package exist com.google.android.youtube.tv
+		File file = new File( "/data/data/com.google.android.youtube.tv" );
+		String s_file = UtilShell.executeShellCommandWithOp( "[ -d \"/data/data/com.google.android.youtube.tv\" ] && echo \"yes\"" );
+		Log.d( TAG, s_file );
+		//if( ! file.exists() )
+		if( ! s_file.trim().equals( "yes" ) )
+			return;
+		Log.i( TAG, "/data/data/com.google.android.youtube.tv : exist" );
+
+		// 2. Check if the Directory shared_prefs exist inside com.google.android.youtube.tv
+		File file1 = new File( "/data/data/com.google.android.youtube.tv/shared_prefs" );
+		String s_file1 = UtilShell.executeShellCommandWithOp( "[ -d \"/data/data/com.google.android.youtube.tv/shared_prefs\" ] && echo \"yes\"" );
+		Log.d( TAG, s_file1 );
+		//if( ! file1.exists() ){
+		if( ! s_file1.trim().equals( "yes" ) ){
+			Log.e( TAG, "/data/data/com.google.android.youtube.tv/shared_prefs : Not exist, hence creating it" );
+			UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/data/com.google.android.youtube.tv" );
+			UtilShell.executeShellCommandWithOp( "mkdir /data/data/com.google.android.youtube.tv/shared_prefs" );
+		}
+
+		// 3. Check if the youtube.xml exist at /system/appstv_data/youtube.xml
+		File file2 = new File( "/system/appstv_data/youtube.xml" );
+		String s_file2 = UtilShell.executeShellCommandWithOp( "[ -f \"/system/appstv_data/youtube.xml\" ] && echo \"yes\"" );
+		if( ! s_file2.trim().equals( "yes" ) ){
+			// if( ! file2.exists() ){
+			Log.e( TAG, "/system/appstv_data/youtube.xml : not exist, hence exiting !" );
+			return;
+		}
+
+		// 4. Copy /system/appstv_data/youtube.xml TO /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml
+		UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/data/com.google.android.youtube.tv" );
+		UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/data/com.google.android.youtube.tv/shared_prefs" );
+		UtilShell.executeShellCommandWithOp( "chmod 777 /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml" );
+
+		UtilShell.executeShellCommandWithOp( "chmod -R 777 /system/appstv_data" );
+		UtilShell.executeShellCommandWithOp( "chmod -R 777 /system/appstv_data/youtube.xml" );
+
+		UtilShell.executeShellCommandWithOp( "rm /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml" );
+		UtilShell.executeShellCommandWithOp( "cp /system/appstv_data/youtube.xml /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml" );
+
+		Log.i( TAG, "restored youtube.xml" );
+
+		// 5. Delete Google Account Database
+		UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/system/users/0" );
+		UtilShell.executeShellCommandWithOp( "rm /data/system/users/0/accounts.db" );
+		UtilShell.executeShellCommandWithOp( "rm /data/system/users/0/accounts.db-journal" );
+
+		UtilShell.executeShellCommandWithOp( "am force-stop com.google.android.youtube.tv" );
+	}
+
+
 
     /* TV Channels restore related functions BEGINS */
 
@@ -1230,6 +1303,7 @@ public class MainActivity extends Activity {
     public void restoreTvChannels(){
         if( ! isTvChannelRestored() ){
             unzipTvChannelsZip();
+			restoreYoutubeSettings();
         }
     }
 

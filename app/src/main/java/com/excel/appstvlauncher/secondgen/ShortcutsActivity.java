@@ -23,7 +23,7 @@ import com.excel.excelclasslibrary.UtilShell;
 
 public class ShortcutsActivity extends Activity {
 	
-	TextView tv_mac_address, tv_firmware_version;
+	TextView tv_mac_address, tv_firmware_version, tv_cms_ip;
 	Button bt_room_no, bt_reboot, bt_root_browser, bt_mbox, bt_settings,
 			bt_terminal, bt_tv_channels_backup, bt_reboot_recovery, bt_ip_address,
 			bt_run_ots;
@@ -48,7 +48,7 @@ public class ShortcutsActivity extends Activity {
 		
 		Intent in = getIntent();
 		String who = in.getStringExtra( "who" );
-		if( who.equals( "zkz" ) ){ // staff -> hide all remaining views
+		if( who.equals( "xkx" ) ){ // staff -> hide all remaining views
 			ll_left_remaining.setVisibility( View.INVISIBLE );
 			ll_right_remaining.setVisibility( View.INVISIBLE );
 		}
@@ -74,6 +74,9 @@ public class ShortcutsActivity extends Activity {
 
 		// Run OTS
 		runOTSButtonClick();
+
+		// Set CMS IP
+		setCMSIP();
 
 		// Root Browser Click
 		rootBrowserClick();
@@ -104,6 +107,7 @@ public class ShortcutsActivity extends Activity {
 	public void initViews(){
 		tv_firmware_version = (TextView) findViewById( R.id.tv_firmware_version );
 		tv_mac_address = (TextView) findViewById( R.id.tv_mac_address );
+		tv_cms_ip = (TextView) findViewById( R.id.tv_cms_ip );
 		bt_room_no = (Button) findViewById( R.id.bt_room_no );
 		bt_reboot = (Button) findViewById( R.id.bt_reboot_box );
 		configurationReader = ConfigurationReader.reInstantiate();
@@ -311,5 +315,9 @@ public class ShortcutsActivity extends Activity {
 				UtilShell.executeShellCommandWithOp( "reboot recovery" );
 			}
 		});
+	}
+
+	public void setCMSIP(){
+		tv_cms_ip.setText( configurationReader.getCmsIp() );
 	}
 }

@@ -9,8 +9,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.excel.appstvlauncher.secondgen.AnimatedGifImageView;
 import com.excel.configuration.ConfigurationReader;
-
 /**
  * Created by Sohail on 26-01-2017.
  */
@@ -24,6 +24,8 @@ public class Weather {
     Context context;
     ConfigurationReader configurationReader;
     View iv_weather, tv_temperature, tv_text;
+    //Weather.isWeatherAvailable = true;
+
 
     public Weather(){}
 
@@ -55,7 +57,10 @@ public class Weather {
                 String temp = intent.getStringExtra( "temp" );
                 String text = intent.getStringExtra( "text" );
 
-                iv_weather.setBackgroundResource( context.getResources().getIdentifier( "drawable/weather_icon_"+code, null, context.getPackageName() ) );
+                //iv_weather.setBackgroundResource( context.getResources().getIdentifier( "drawable/weather_icon_"+code, null, context.getPackageName() ) );
+                //iv_weather.setBackgroundResource( context.getResources().getIdentifier( "drawable/anim_weather", null, context.getPackageName() ) );
+                ((AnimatedGifImageView)iv_weather).setAnimatedGif( context.getResources().getIdentifier( "drawable/weather_icon_"+code , null, context.getPackageName() ), AnimatedGifImageView.TYPE.AS_IS );
+                //((AnimatedGifImageView)iv_weather).setAnimatedGif( context.getResources().getIdentifier( "drawable/anim_weather", null, context.getPackageName() ), TYPE.AS_IS );
                 ((TextView)tv_temperature).setText( temp + "°C" );
                 ((TextView)tv_text).setText( text );
 

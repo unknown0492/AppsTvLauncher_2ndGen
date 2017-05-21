@@ -89,6 +89,17 @@
 					android:textSize="22sp"
 					android:background="#404040"
 					android:text="Run OTS" />
+
+				<TextView
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_margin="10dp"
+					android:padding="10dp"
+					android:gravity="center"
+					android:textColor="@color/white"
+					android:textSize="22sp"
+					android:background="#404040"
+					android:text="CMS IP/Domain" />
             
             </LinearLayout>
             
@@ -193,11 +204,11 @@
 	                android:textColor="@color/white"
 	                android:textSize="22sp"
 	                android:text="00:00:00:00:00:0f" />
-	            
-	            <TextView 
+
+	            <TextView
 	                android:id="@+id/tv_firmware_version"
 	                android:layout_width="match_parent"
-	                android:layout_height="50dp" 
+	                android:layout_height="50dp"
 	                android:layout_margin="10dp"
 	                android:padding="10dp"
 	                android:gravity="center"
@@ -252,6 +263,17 @@
 					android:textSize="22sp"
 					android:background="@drawable/button_click"
 					android:text="Run OTS" />
+
+				<TextView
+					android:id="@+id/tv_cms_ip"
+					android:layout_width="match_parent"
+					android:layout_height="50dp"
+					android:layout_margin="10dp"
+					android:padding="10dp"
+					android:gravity="center"
+					android:textColor="@color/white"
+					android:textSize="22sp"
+					android:text="00.00.00.00" />
 	            
 	        </LinearLayout>
 	        

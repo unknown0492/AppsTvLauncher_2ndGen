@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
@@ -30,7 +31,7 @@ public class Flipper {
     long t_interval = -1;
     final static String TAG = "Flipper";
     ConfigurationReader configurationReader;
-    View ll_clock_time, rl_weather, rl_hotel_logo;
+    View ll_clock_time, rl_weather, rl_hotel_logo, tv_temperature, tv_text;
     BroadcastReceiver hotelLogoAvailabilityReceiver;
     Context context;
     //boolean isWeatherAvailable;
@@ -38,11 +39,14 @@ public class Flipper {
     public Flipper(){}
 
     public Flipper( Context context, ConfigurationReader configurationReader,
-                    View ll_clock_time, View rl_weather, View rl_hotel_logo ){
+                    View ll_clock_time, View rl_weather, View rl_hotel_logo,
+                    View tv_temperature, View tv_text ){
         this.configurationReader = configurationReader;
         this.ll_clock_time = ll_clock_time;
         this.rl_weather = rl_weather;
         this.rl_hotel_logo = rl_hotel_logo;
+        this.tv_temperature = tv_temperature;
+        this.tv_text = tv_text;
         this.context = context;
     }
 
@@ -64,10 +68,26 @@ public class Flipper {
                             @Override
                             public void run() {
                                 rl_weather.animate().rotationXBy( -90f ).setDuration( 300 ).start();
+
+                                new Handler().postDelayed(new Runnable() {
+
+                                    @Override
+                                    public void run(){
+                                        tv_temperature.animate().alpha( 0.0f ).setDuration( 300 ).withEndAction(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                tv_text.animate().alpha( 1.0f ).setDuration( 300 ).start();
+                                            }
+                                        }).start();
+                                    }
+
+                                }, Long.parseLong( configurationReader.getClockWeatherFlipInterval() )/2 );
                             }
                         }).start();
                         flipToIndex( INDEX_WEATHER_SHOWING );
                         t_interval = Long.parseLong( configurationReader.getClockWeatherFlipInterval() );
+
+
                     }
                     else if( Flipper.isHotelLogoAvailable ){
                         // Log.d( TAG, "hotel logo is available" );
@@ -106,6 +126,8 @@ public class Flipper {
                         flipToIndex( INDEX_CLOCK_SHOWING );
                         t_interval = Long.parseLong( configurationReader.getClockWeatherFlipInterval() );
                     }
+                    tv_text.animate().alpha( 0.0f ).setDuration( 300 ).start();
+                    tv_temperature.animate().alpha( 1.0f ).setDuration( 300 ).start();
 
                 }
                 else{
