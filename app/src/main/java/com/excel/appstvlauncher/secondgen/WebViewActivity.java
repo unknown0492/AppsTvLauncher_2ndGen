@@ -13,6 +13,7 @@ import android.webkit.WebViewClient;
 
 import com.excel.configuration.ConfigurationReader;
 import com.excel.excelclasslibrary.UtilNetwork;
+import com.excel.excelclasslibrary.UtilShell;
 
 import java.io.File;
 
@@ -46,10 +47,15 @@ public class WebViewActivity extends Activity {
 			if( params_arr[ i ].equals( "mac_address" ) ){
 				url_params += "mac_address=" + UtilNetwork.getMacAddress( context ) + "&";
 			}
+			else if( params_arr[ i ].equals( "language_code" ) ){
+				String language_code = UtilShell.executeShellCommandWithOp( "getprop language_code" ).trim();
+				url_params += "language_code=" + language_code + "&";
+			}
 			
 		}
 		url_params = url_params.substring( 0, url_params.length() - 1 );
 		URL = URL + url_params;
+		Log.i( TAG, URL );
 		
 		wv_open_page.loadUrl( URL );
 				

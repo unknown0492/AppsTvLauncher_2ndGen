@@ -1,15 +1,20 @@
 package com.excel.appstvlauncher.secondgen;
 
+import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Gravity;
@@ -25,8 +30,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.excel.ResumeTaskService;
 import com.excel.configuration.ConfigurationReader;
 import com.excel.configuration.LauncherJSONReader;
+import com.excel.configuration.PreinstallApps;
 import com.excel.customitems.CustomItems;
 import com.excel.excelclasslibrary.UtilFile;
 import com.excel.excelclasslibrary.UtilMisc;
@@ -42,7 +49,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Stack;
 
 import static com.excel.configuration.Constants.PATH_LAUNCHER_CONFIG_FILE;
@@ -119,7 +128,15 @@ public class MainActivity extends Activity {
     static String Z = "KEYCODE_Z";
 	static String K = "KEYCODE_K";
 	static String X = "KEYCODE_X";
+	static String P = "KEYCODE_P";
+	static String O = "KEYCODE_O";
+	static String ONE = "KEYCODE_1";
+	static String THREE = "KEYCODE_3";
+	static String NINE = "KEYCODE_9";
+	static String DOT = "KEYCODE_PERIOD";
 	String ALPHABET = "KEYCODE_";
+
+	RelativeLayout activity_main;
 
     @Override
     protected void onCreate( Bundle savedInstanceState )  {
@@ -128,22 +145,53 @@ public class MainActivity extends Activity {
 
         setContentView( R.layout.activity_main );
 
-        init();
+		// Permissions for Android 6.0
+		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
+			if (checkPermissions()) {
+				//  permissions  granted.
+				init();
+			}
+		}
+		else
+            init();
 
-
-
+		// activity_main = (RelativeLayout) findViewById( R.id.rl_launcher_bg );
+		// activity_main.requestFocus();
     }
 
     /* Launcher Menu Items Related Functions */
 
+    Handler test_handler = new Handler();
+
 	@SuppressWarnings("deprecation")
 	public void init(){
-        configurationReader = ConfigurationReader.getInstance();
 
-        initViews();
+		initViews();
 
-		setLauncherMenuItems();
-		createLauncheritemsUpdateBroadcast();
+		configurationReader = ConfigurationReader.getInstance();
+
+		new AsyncTask<Void,Void,Void>(){
+
+            @Override
+            protected Void doInBackground(Void... voids) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        test_handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                setLauncherMenuItems();
+                            }
+                        });
+                    }
+                }).start();
+
+                return null;
+            }
+        }.execute();
+
+        createLauncheritemsUpdateBroadcast();
+
 
 		startPerfectTimeService();
 		createPerfectTimeReceiver();
@@ -158,17 +206,12 @@ public class MainActivity extends Activity {
 
         restoreTvChannels();
 
-        //PreinstallAppsManager pamm = new PreinstallAppsManager( context );
-        //test();
-		/*Log.d( TAG, "getCountry() : "+","+configurationReader.getCountry()+"," );
-        Log.d( TAG, "getTimezone() : "+","+configurationReader.getTimezone()+"," );
-        Log.d( TAG, "getCmsIp() : "+","+configurationReader.getCmsIp()+"," );
-        Log.d( TAG, "getLocation() : "+","+configurationReader.getLocation()+"," );
-        Log.d( TAG, "getFirmwareName() : "+","+configurationReader.getFirmwareName()+"," );
-        Log.d( TAG, "getIsRebootScheduled() : "+","+configurationReader.getIsRebootScheduled()+"," );
-        Log.d( TAG, "getRebootTime() : "+","+configurationReader.getRebootTime()+"," );
-        Log.d( TAG, "getDigitalSignageInterval() : "+","+configurationReader.getDigitalSignageInterval()+"," );*/
 		startScreenCastService();
+
+        ds.resumeDigitalSignageSwitcher();
+        weather.resumeYahooWeatherService();
+
+        clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
 
 	}
 
@@ -392,7 +435,7 @@ public class MainActivity extends Activity {
     				else{
     					// Log.d( null, "focus lost from "+tv.getText().toString() );
     					//tv.setTextColor( context.getResources().getColor( R.color.white ) );
-    					tv.setBackground( context.getResources().getDrawable( R.drawable.submenu_bg ) );
+    					tv.setBackground( context.getResources().getDrawable( R.drawable.submenu_bg1 ) );
 
     				}
     			}
@@ -495,6 +538,7 @@ public class MainActivity extends Activity {
             String item_name = ljr.getMainItemValue( i, "item_name" );
             String item_name_json = ljr.getMainItemValue( i, "item_name_translated" );
             try {
+            	Log.d( TAG, item_name_json );
                 JSONObject jso = new JSONObject( item_name_json );
                 //Log.d( TAG, "display name : "+UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
                 item_name = jso.getString( UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
@@ -655,7 +699,9 @@ public class MainActivity extends Activity {
     public void startWebViewActivity( String web_view_url, String params ){
     	Intent in = new Intent( context, WebViewActivity.class );
     	in.putExtra( "web_view_url", web_view_url );
-    	in.putExtra( "params", params );
+
+    	in.putExtra( "params", params + ",language_code" );
+		Log.d( TAG, params );
     	startActivity( in );
     }
 
@@ -716,51 +762,142 @@ public class MainActivity extends Activity {
 		super.onPause();
 		Log.d( TAG,  "insde onPause()" );
 
-		ds.pauseDigitalSignageSwitcher();
+		// Permissions for Android 6.0
+		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
+			if (checkPermissions()) {
+				//  permissions  granted.
+
+				onPauseContent();
+			}
+		}
+		else{
+            onPauseContent();
+        }
+	}
+
+	private void onPauseContent(){
+
+        /*ds.pauseDigitalSignageSwitcher();
         weather.pauseYahooWeatherService();
 
         pauseTetheringInfoFlipper();
-        clock_weather_hotel_logo_flipper.pauseClockWeatherLogoFlipper();
+        clock_weather_hotel_logo_flipper.pauseClockWeatherLogoFlipper();*/
 
-		pauseLauncherIdleTimer();
-	}
+        pauseLauncherIdleTimer();
 
+    }
+
+    long access_onresume_time = -1;
 
     @Override
 	protected void onResume() {
 		super.onResume();
 
+		// Permissions for Android 6.0
+		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
+			if ( checkPermissions() ) {
+				//  permissions  granted.
+				onResumeContent();
+			}
+		}
+		else{
+            onResumeContent();
+        }
+	}
+
+	private void onResumeContent(){
         if( ! isLoadingCompleted() ) {
-			//first_main_item.requestFocus();
+            //first_main_item.requestFocus();
 
             showLoadingActivity();
+            //return;
+        }
+        else {
+
+            if ( access_onresume_time == -1 ) {
+                access_onresume_time = System.currentTimeMillis();
+            } else {
+                long now = System.currentTimeMillis();
+                long diff = now - access_onresume_time;
+                int sec = (int) diff / 1000;
+                Log.d( TAG, "sec : " + sec );
+                if ( sec <= 10 ){
+                    access_onresume_time = now;
+                    //return;
+                }
+                else{
+                    access_onresume_time = now;
+                    Log.d( TAG, "inside onResume()" );
+
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            Intent in = new Intent(context, ResumeTaskService.class);
+                            // startService(in);
+
+                            PreinstallApps[] paps = PreinstallApps.getPreinstallApps();
+                            for( int i = 0 ; i < paps.length; i++ ){
+
+                                if( paps[ i ].getForceKill().trim().equals( "force_kill" ) ) {
+                                    String pid = UtilShell.executeShellCommandWithOp( "pidof " + paps[ i ].getPackageName() ).trim();
+                                    pid = pid.trim();
+                                    if( pid.equals( "" ) || (!pid.equals( "1" )) )
+                                        UtilShell.executeShellCommandWithOp( "kill "+pid );
+                                    Log.d( TAG, "Killed pid : "+pid+", of package " + paps[ i ].getPackageName() );
+                                    continue;
+                                }
+                                Log.d( TAG, "Skipped : " + paps[ i ].getPackageName() + ", " + paps[ i ].getForceKill() );
+                            }
+
+                            String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" ).trim();
+                            UtilShell.executeShellCommandWithOp( "kill "+pid );
+                            Log.d( TAG, "Killed pid : "+pid+", of package com.android.dtv" );
+                        }
+                    }, 500 );
+
+
+                    // restoreTvChannels();
+
+                    // configurationReader = ConfigurationReader.reInstantiate();
+
+                    onUserInteraction();
+
+                    // startScreenCastService();
+                }
+            }
+
         }
 
-		Log.d( TAG,  "insde onResume()" );
-        configurationReader = ConfigurationReader.reInstantiate();
-
-		//current_timestamp = System.currentTimeMillis();
-		//startLauncherIdleTimer();
-
-		onUserInteraction();
-
-
-		ds.resumeDigitalSignageSwitcher();
+        /*ds.resumeDigitalSignageSwitcher();
         weather.resumeYahooWeatherService();
 
         clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
+        */
         startTetheringInfoSwitcher();
-	}
+    }
 
     @Override
 	protected void onDestroy() {
 		super.onDestroy();
 
-		deletePerfectTimeReceiver();
-        weather.deleteYahooWeatherReceiver();
-		deleteLauncheritemsUpdateBroadcast();
-        clock_weather_hotel_logo_flipper.deleteHotelLogoAvailabilityReceiver();
+		// Permissions for Android 6.0
+		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
+			if (checkPermissions()) {
+				//  permissions  granted.
+				onDestroyContent();
+			}
+		}
+		else{
+            onDestroyContent();
+        }
 	}
+
+	private void onDestroyContent(){
+        deletePerfectTimeReceiver();
+        weather.deleteYahooWeatherReceiver();
+        deleteLauncheritemsUpdateBroadcast();
+        clock_weather_hotel_logo_flipper.deleteHotelLogoAvailabilityReceiver();
+    }
 
 	/**********************************************************
      * Not so important functions, or used only for one time
@@ -902,17 +1039,28 @@ public class MainActivity extends Activity {
 
 		current_timestamp = System.currentTimeMillis();
 
-		pauseLauncherIdleTimer();
-
-		if( areLauncherElementsHidden ){
-			ObjectAnimator.ofFloat( rl_elements, "alpha", 0.0f, 1.0f ).setDuration( 500 ).start();
-			areLauncherElementsHidden = false;
-			startLauncherIdleTimer();
+		// Permissions for Android 6.0
+		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
+			if (checkPermissions()) {
+				onUserInteractionContent();
+			}
 		}
-		else{
-			startLauncherIdleTimer();
-		}
+		else
+            onUserInteractionContent();
 	}
+
+    private void onUserInteractionContent(){
+        //  permissions  granted.
+        pauseLauncherIdleTimer();
+
+        if (areLauncherElementsHidden) {
+            ObjectAnimator.ofFloat(rl_elements, "alpha", 0.0f, 1.0f).setDuration(500).start();
+            areLauncherElementsHidden = false;
+            // startLauncherIdleTimer();
+        } else {
+            startLauncherIdleTimer();
+        }
+    }
 
 
 
@@ -1034,26 +1182,21 @@ public class MainActivity extends Activity {
 			@Override
 			public void run() {
 				if( isDateShowingOnClock ){
-                    tv_date.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            //ObjectAnimator.ofFloat( tv_day_name, "rotationX", 270f, 360f ).setDuration( 300 ).start();
-                            tv_day_name.animate().rotationXBy( -90f ).setDuration( 300 );
-                        }
-                    }).start();
+                    //tv_date.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
+
+                    tv_date.animate().alpha( 0.0f ).setDuration( 300 ).start();
+					tv_day_name.animate().alpha(1.0f).setDuration(300).start();
+
 		    		//ObjectAnimator.ofFloat( tv_date, "rotationX", 0.0f, 90f ).setDuration( 1500 ).start();
 
 		    	}
 		    	else{
-                    tv_day_name.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            // ObjectAnimator.ofFloat( tv_date, "rotationX", 270f, 360f ).setDuration( 300 ).start();
-                            tv_date.animate().rotationXBy( -90f ).setDuration( 300 ).start();
-                        }
-                    }).start();
 		    		// ObjectAnimator.ofFloat( tv_day_name, "rotationX", 0.0f, 90f ).setDuration( 1500 ).start();
-		    		// ObjectAnimator.ofFloat( tv_date, "rotationX", 270f, 360f ).setDuration( 1500 ).start();
+						//tv_day_name.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
+					tv_day_name.animate().alpha( 0.0f ).setDuration( 300 ).start();
+					tv_date.animate().alpha( 1.0f ).setDuration( 300 ).start();
+
+						// ObjectAnimator.ofFloat( tv_date, "rotationX", 270f, 360f ).setDuration( 1500 ).start();
 		    	}
 				isDateShowingOnClock = !isDateShowingOnClock;
 				startDateAndDayNameSwitcher();
@@ -1163,6 +1306,31 @@ public class MainActivity extends Activity {
 				in.putExtra( "who", "xkx" );
 				startActivity( in );
 			}
+
+            // 1-.-1  -> ZKZ
+            if( key_1.equals( ONE ) && key_2.equals( DOT ) && key_3.equals( ONE ) ){
+                Intent in = new Intent( context, ShortcutsActivity.class );
+                in.putExtra( "who", "zkz" );
+                startActivity( in );
+            }
+            // 3-1-3  -> XKX
+            else if( key_1.equals( THREE ) && key_2.equals( ONE ) && key_3.equals( THREE ) ){
+                Intent in = new Intent( context, ShortcutsActivity.class );
+                in.putExtra( "who", "xkx" );
+                startActivity( in );
+            }
+            // 9-1-9
+            else if( key_1.equals( NINE ) && key_2.equals( ONE ) && key_3.equals( NINE ) ){
+                UtilShell.executeShellCommandWithOp( "reboot" );
+            }
+            // P-O-P  -> Refresh Launcher
+            else if( key_1.equals( P ) && key_2.equals( O ) && key_3.equals( P ) ){
+                recreate();
+            }
+            // 9.9  -> Refresh Launcher
+            else if( key_1.equals( NINE ) && key_2.equals( DOT ) && key_3.equals( NINE ) ){
+                recreate();
+            }
 			key_combination.removeAllElements();
     	}
     }
@@ -1173,23 +1341,31 @@ public class MainActivity extends Activity {
      * 
      *********************************************************/
 
-	private void startScreenCastService(){
-		UtilShell.executeShellCommandWithOp( "am startservice -n com.waxrain.airplaydmr/com.waxrain.airplaydmr.WaxPlayService" );
+	public void startScreenCastService(){
+		if( configurationReader.getAirplayEnabled().equals( "1" ) )
+			UtilShell.executeShellCommandWithOp( "am startservice -n com.waxrain.airplaydmr/com.waxrain.airplaydmr.WaxPlayService" );
 	}
 
     private void checkIfHotelLogoToBeDisplayed(){
-        Log.d( TAG, "checkIfHotelLogoToBeDisplayed()" );
-        String hasHotelLogoDisplay = configurationReader.getHasHotelLogoDisplay();
-        File hotel_logo_file = new File( configurationReader.getHotelLogoDirectoryPath() + File.separator + "hotel_logo.png" );
-        if( hasHotelLogoDisplay.equals( "1" ) ){
 
-            if( hotel_logo_file.exists() ){
-                Log.d( TAG, "Hotel logo exist and is displayable" );
-                Flipper.isHotelLogoAvailable = true;
-                DigitalSignage.setImageFromPathOnView( hotel_logo_file.getAbsolutePath(), rl_hotel_logo );
+	    new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d( TAG, "checkIfHotelLogoToBeDisplayed()" );
+                String hasHotelLogoDisplay = configurationReader.getHasHotelLogoDisplay();
+                File hotel_logo_file = new File( configurationReader.getHotelLogoDirectoryPath() + File.separator + "hotel_logo.png" );
+                if( hasHotelLogoDisplay.equals( "1" ) ){
+
+                    if( hotel_logo_file.exists() ){
+                        Log.d( TAG, "Hotel logo exist and is displayable" );
+                        Flipper.isHotelLogoAvailable = true;
+                        DigitalSignage.setImageFromPathOnView( hotel_logo_file.getAbsolutePath(), rl_hotel_logo );
+                    }
+
+                }
             }
+        });
 
-        }
     }
 
     public static void setIsLoadingCompleted( boolean is_it ){
@@ -1209,58 +1385,93 @@ public class MainActivity extends Activity {
     }
 
 	public void restoreYoutubeSettings(){
-		// Kill Youtube running in background
-		String pid = UtilShell.executeShellCommandWithOp( "pidof com.google.android.youtube.tv" ).trim();
-		UtilShell.executeShellCommandWithOp( "kill " + pid );
+    	// This works differently  for 5.1 and 6.0, so we differentiate it
+		// Permissions for Android 6.0
+		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
+		    Log.d( TAG, "Android is 6+" );
 
-		// 1. Check if youtube package exist com.google.android.youtube.tv
-		File file = new File( "/data/data/com.google.android.youtube.tv" );
-		String s_file = UtilShell.executeShellCommandWithOp( "[ -d \"/data/data/com.google.android.youtube.tv\" ] && echo \"yes\"" );
-		Log.d( TAG, s_file );
-		//if( ! file.exists() )
-		if( ! s_file.trim().equals( "yes" ) )
-			return;
-		Log.i( TAG, "/data/data/com.google.android.youtube.tv : exist" );
+			// Kill Youtube running in background
+			String pid = UtilShell.executeShellCommandWithOp("pidof com.google.android.youtube.tv").trim();
+			UtilShell.executeShellCommandWithOp("kill " + pid);
 
-		// 2. Check if the Directory shared_prefs exist inside com.google.android.youtube.tv
-		File file1 = new File( "/data/data/com.google.android.youtube.tv/shared_prefs" );
-		String s_file1 = UtilShell.executeShellCommandWithOp( "[ -d \"/data/data/com.google.android.youtube.tv/shared_prefs\" ] && echo \"yes\"" );
-		Log.d( TAG, s_file1 );
-		//if( ! file1.exists() ){
-		if( ! s_file1.trim().equals( "yes" ) ){
-			Log.e( TAG, "/data/data/com.google.android.youtube.tv/shared_prefs : Not exist, hence creating it" );
+			// Kill again, as it starts automatically after first killing
+			pid = UtilShell.executeShellCommandWithOp("pidof com.google.android.youtube.tv").trim();
+			UtilShell.executeShellCommandWithOp("kill " + pid);
+
+			// 1. Check if youtube package exist com.google.android.youtube.tv
+			File file = new File("/data/data/com.google.android.youtube.tv");
+			String s_file = UtilShell.executeShellCommandWithOp("[ -d \"/data/data/com.google.android.youtube.tv\" ] && echo \"yes\"");
+			Log.d(TAG, s_file);
+			//if( ! file.exists() )
+			if (!s_file.trim().equals("yes"))
+				return;
+			Log.i(TAG, "/data/data/com.google.android.youtube.tv : exist");
+
+			// 2. Remove all data from /data/data/com.google.android.youtube.tv
+			UtilShell.executeShellCommandWithOp( "rm -r /data/data/com.google.android.youtube.tv/*" );
+
+			// 3. Copy the default data for youtube from /system/appstv_data/com.google.android.youtube.tv
+			UtilShell.executeShellCommandWithOp( "cp -r /system/appstv_data/com.google.android.youtube.tv/* /data/data/com.google.android.youtube.tv" );
+
+			// 4. CHMOD -R 777 to make it executable, just in case
 			UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/data/com.google.android.youtube.tv" );
-			UtilShell.executeShellCommandWithOp( "mkdir /data/data/com.google.android.youtube.tv/shared_prefs" );
 		}
+		else {
+            Log.d( TAG, "Android is below 6" );
 
-		// 3. Check if the youtube.xml exist at /system/appstv_data/youtube.xml
-		File file2 = new File( "/system/appstv_data/youtube.xml" );
-		String s_file2 = UtilShell.executeShellCommandWithOp( "[ -f \"/system/appstv_data/youtube.xml\" ] && echo \"yes\"" );
-		if( ! s_file2.trim().equals( "yes" ) ){
-			// if( ! file2.exists() ){
-			Log.e( TAG, "/system/appstv_data/youtube.xml : not exist, hence exiting !" );
-			return;
+			// Kill Youtube running in background
+			String pid = UtilShell.executeShellCommandWithOp("pidof com.google.android.youtube.tv").trim();
+			UtilShell.executeShellCommandWithOp("kill " + pid);
+
+			// 1. Check if youtube package exist com.google.android.youtube.tv
+			File file = new File("/data/data/com.google.android.youtube.tv");
+			String s_file = UtilShell.executeShellCommandWithOp("[ -d \"/data/data/com.google.android.youtube.tv\" ] && echo \"yes\"");
+			Log.d(TAG, s_file);
+			//if( ! file.exists() )
+			if (!s_file.trim().equals("yes"))
+				return;
+			Log.i(TAG, "/data/data/com.google.android.youtube.tv : exist");
+
+			// 2. Check if the Directory shared_prefs exist inside com.google.android.youtube.tv
+			File file1 = new File("/data/data/com.google.android.youtube.tv/shared_prefs");
+			String s_file1 = UtilShell.executeShellCommandWithOp("[ -d \"/data/data/com.google.android.youtube.tv/shared_prefs\" ] && echo \"yes\"");
+			Log.d(TAG, s_file1);
+			//if( ! file1.exists() ){
+			if (!s_file1.trim().equals("yes")) {
+				Log.e(TAG, "/data/data/com.google.android.youtube.tv/shared_prefs : Not exist, hence creating it");
+				UtilShell.executeShellCommandWithOp("chmod -R 777 /data/data/com.google.android.youtube.tv");
+				UtilShell.executeShellCommandWithOp("mkdir /data/data/com.google.android.youtube.tv/shared_prefs");
+			}
+
+			// 3. Check if the youtube.xml exist at /system/appstv_data/youtube.xml
+			File file2 = new File("/system/appstv_data/youtube.xml");
+			String s_file2 = UtilShell.executeShellCommandWithOp("[ -f \"/system/appstv_data/youtube.xml\" ] && echo \"yes\"");
+			if (!s_file2.trim().equals("yes")) {
+				// if( ! file2.exists() ){
+				Log.e(TAG, "/system/appstv_data/youtube.xml : not exist, hence exiting !");
+				return;
+			}
+
+			// 4. Copy /system/appstv_data/youtube.xml TO /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml
+			UtilShell.executeShellCommandWithOp("chmod -R 777 /data/data/com.google.android.youtube.tv");
+			UtilShell.executeShellCommandWithOp("chmod -R 777 /data/data/com.google.android.youtube.tv/shared_prefs");
+			UtilShell.executeShellCommandWithOp("chmod 777 /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml");
+
+			UtilShell.executeShellCommandWithOp("chmod -R 777 /system/appstv_data");
+			UtilShell.executeShellCommandWithOp("chmod -R 777 /system/appstv_data/youtube.xml");
+
+			UtilShell.executeShellCommandWithOp("rm /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml");
+			UtilShell.executeShellCommandWithOp("cp /system/appstv_data/youtube.xml /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml");
+
+			Log.i(TAG, "restored youtube.xml");
+
+			// 5. Delete Google Account Database
+			UtilShell.executeShellCommandWithOp("chmod -R 777 /data/system/users/0");
+			UtilShell.executeShellCommandWithOp("rm /data/system/users/0/accounts.db");
+			UtilShell.executeShellCommandWithOp("rm /data/system/users/0/accounts.db-journal");
+
+			UtilShell.executeShellCommandWithOp("am force-stop com.google.android.youtube.tv");
 		}
-
-		// 4. Copy /system/appstv_data/youtube.xml TO /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml
-		UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/data/com.google.android.youtube.tv" );
-		UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/data/com.google.android.youtube.tv/shared_prefs" );
-		UtilShell.executeShellCommandWithOp( "chmod 777 /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml" );
-
-		UtilShell.executeShellCommandWithOp( "chmod -R 777 /system/appstv_data" );
-		UtilShell.executeShellCommandWithOp( "chmod -R 777 /system/appstv_data/youtube.xml" );
-
-		UtilShell.executeShellCommandWithOp( "rm /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml" );
-		UtilShell.executeShellCommandWithOp( "cp /system/appstv_data/youtube.xml /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml" );
-
-		Log.i( TAG, "restored youtube.xml" );
-
-		// 5. Delete Google Account Database
-		UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/system/users/0" );
-		UtilShell.executeShellCommandWithOp( "rm /data/system/users/0/accounts.db" );
-		UtilShell.executeShellCommandWithOp( "rm /data/system/users/0/accounts.db-journal" );
-
-		UtilShell.executeShellCommandWithOp( "am force-stop com.google.android.youtube.tv" );
 	}
 
 
@@ -1280,12 +1491,12 @@ public class MainActivity extends Activity {
     public void unzipTvChannelsZip(){
         Log.i( TAG, "unzipTvChannelsZip() executed" );
 
-        // 1. kill com.android.dtv
-        String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
-        UtilShell.executeShellCommandWithOp( "kill "+pid );
-
         UtilShell.executeShellCommandWithOp( "rm -r /mnt/sdcard/appstv_data/tv_channels/backup",
                 "unzip -o /mnt/sdcard/appstv_data/tv_channels/tv_channels.zip -d /mnt/sdcard/appstv_data/tv_channels" );
+
+        // 1. kill com.android.dtv
+        String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
+        //UtilShell.executeShellCommandWithOp( "kill "+pid );
 
         UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/hdtv",
                 "rm -r /data/hdtv/*",
@@ -1294,7 +1505,7 @@ public class MainActivity extends Activity {
 
         // last. kill com.android.dtv
         pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
-        UtilShell.executeShellCommandWithOp( "kill "+pid );
+        //UtilShell.executeShellCommandWithOp( "kill "+pid );
 
         setTvChannelRestored( true );
         Log.d( TAG, "tv_channels.zip extracted successfully" );
@@ -1310,6 +1521,54 @@ public class MainActivity extends Activity {
     /* TV Channels restore related functions ENDS */
 
 
+    /* Permission related content */
+
+	String[] permissions = {
+			Manifest.permission.WRITE_EXTERNAL_STORAGE,
+			Manifest.permission.ACCESS_WIFI_STATE,
+			Manifest.permission.ACCESS_NETWORK_STATE,
+			Manifest.permission.READ_EXTERNAL_STORAGE,
+			Manifest.permission.INTERNET,
+	};
+
+	@Override
+	public void onRequestPermissionsResult( int requestCode, String permissions[], int[] grantResults ) {
+		switch ( requestCode ) {
+			case 10:
+			{
+				if( grantResults.length > 0 && grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED ){
+					// permissions granted.
+					Log.d( TAG, grantResults.length + " Permissions granted : " );
+				} else {
+					String permission = "";
+					for ( String per : permissions ) {
+						permission += "\n" + per;
+					}
+					// permissions list of don't granted permission
+					Log.d( TAG, "Permissions not granted : "+permission );
+				}
+				return;
+			}
+		}
+	}
+
+	private  boolean checkPermissions() {
+		int result;
+		List<String> listPermissionsNeeded = new ArrayList<>();
+		for ( String p:permissions ) {
+			result = ContextCompat.checkSelfPermission( this, p );
+			if ( result != PackageManager.PERMISSION_GRANTED ) {
+				listPermissionsNeeded.add( p );
+			}
+		}
+		if ( !listPermissionsNeeded.isEmpty() ) {
+			ActivityCompat.requestPermissions( this, listPermissionsNeeded.toArray( new String[ listPermissionsNeeded.size() ] ), 10 );
+			return false;
+		}
+		return true;
+	}
+
+    /* Permission related content */
 
 }
 

@@ -1,6 +1,8 @@
 package com.excel.perfecttime;
 
 import android.content.Context;
+import android.os.Build;
+import android.util.Log;
 
 import com.excel.configuration.ConfigurationReader;
 import com.excel.excelclasslibrary.UtilNetwork;
@@ -164,7 +166,16 @@ public class PerfectTime {
 		setDay( String.valueOf( cal.get( Calendar.DAY_OF_MONTH ) ) );
 		setYear( String.valueOf( cal.get( Calendar.YEAR ) ) );
 		
-		String data = String.format( "date -s %s%s%s.%s%s%s", getYear(), getMonth(), getDate(), getHours(), getMinutes(), getSeconds() );
+		String data;
+		// Permissions for Android 6.0
+		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
+			data = String.format( "date -s %s%s%s%s%s.%s", getYear(), getMonth(), getDate(), getHours(), getMinutes(), getSeconds() );
+		}
+		else
+			data = String.format( "date -s %s%s%s.%s%s%s", getYear(), getMonth(), getDate(), getHours(), getMinutes(), getSeconds() );
+
+		Log.d( TAG, data );
+
 		UtilShell.executeShellCommandWithOp( data );
 	}
 	

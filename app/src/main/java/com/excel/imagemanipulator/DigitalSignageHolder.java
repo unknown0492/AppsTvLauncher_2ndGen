@@ -63,21 +63,34 @@ public class DigitalSignageHolder {
 				// Log.d( TAG, wpi[ i ].getFileName() + " - " + wpi[ i ].getFilePath() + " - " +wpi[ i ].getMD5() );
 			}
 
+			for ( int i = 0; i < wpi.length; i++ ){
+				File ff = new File( path + File.separator + wpi[ i ].getFileName() );
+				if( ff.isDirectory() )
+					continue;
+				// Log.d( "Files", "FileName : " + file[ i ].getName() );
+				//main_stack.add( path + File.separator + file[ i ].getName() );
+				main_stack.add( ff.getAbsolutePath() );
+			}
+
 
 		} catch ( JSONException e ) {
 			e.printStackTrace();
+
+
+			for ( int i = 0; i < file.length; i++ ){
+				File ff = new File( path + File.separator + file[ i ].getName() );
+				if( ff.isDirectory() )
+					continue;
+				// Log.d( "Files", "FileName : " + file[ i ].getName() );
+				//main_stack.add( path + File.separator + file[ i ].getName() );
+				main_stack.add( path + File.separator + file[ i ].getName() );
+			}
+
 		}
 
 
 
-		for ( int i = 0; i < wpi.length; i++ ){
-			File ff = new File( path + File.separator + wpi[ i ].getFileName() );
-			if( ff.isDirectory() )
-				continue;
-			// Log.d( "Files", "FileName : " + file[ i ].getName() );
-			//main_stack.add( path + File.separator + file[ i ].getName() );
-			main_stack.add( ff.getAbsolutePath() );
-		}
+
 	}
 	
 	public int getDigitalSignageCount(){

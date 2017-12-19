@@ -198,7 +198,7 @@
                                 android:textSize="25dp"
                                 android:gravity="center"
                                 android:layout_centerInParent="true"
-                                android:rotationX="90"
+                                android:alpha="0.0"
                                 />
 
                         </RelativeLayout>
@@ -213,7 +213,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center"
-                    android:rotationX="90">
+                    android:alpha="0.0">
 
                     <!--
                     <ImageView
@@ -279,7 +279,7 @@
                     android:layout_height="match_parent"
                     android:orientation="horizontal"
                     android:gravity="center"
-                    android:rotationX="90">
+                    android:alpha="0.0">
 
                     <ImageView
                         android:layout_width="369dp"
@@ -346,7 +346,7 @@
                 android:textSize="24dp"
                 android:textColor="@color/white"
                 android:layout_centerInParent="true"
-                android:rotationX="90" />
+                android:alpha="0.0" />
 
         </RelativeLayout>
 

@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -20,13 +21,18 @@ import com.excel.customitems.CustomItems;
 import com.excel.excelclasslibrary.UtilMisc;
 import com.excel.excelclasslibrary.UtilNetwork;
 import com.excel.excelclasslibrary.UtilShell;
+import com.excel.excelclasslibrary.UtilURL;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class ShortcutsActivity extends Activity {
 	
 	TextView tv_mac_address, tv_firmware_version, tv_cms_ip;
-	Button bt_room_no, bt_reboot, bt_root_browser, bt_mbox, bt_settings,
+	Button  bt_reboot, bt_root_browser, bt_mbox, bt_settings,
 			bt_terminal, bt_tv_channels_backup, bt_reboot_recovery, bt_ip_address,
 			bt_run_ots;
+	Button bt_room_no;
 	Context context = this;
 	final static String TAG = "MinimumShortcutsActivity";
 	ConfigurationReader configurationReader;
@@ -144,7 +150,14 @@ public class ShortcutsActivity extends Activity {
 			@Override
 			public void onClick( View v ) {
 				configurationReader = ConfigurationReader.reInstantiate();
-				
+
+				LinearLayout ll_parent = new LinearLayout( context );
+				ll_parent.setOrientation( LinearLayout.VERTICAL );
+				LinearLayout ll = new LinearLayout( context );
+				ll.setFocusableInTouchMode( true );
+				ll.setFocusable( true );
+				ll_parent.addView( ll );
+
 				AlertDialog.Builder ab = new AlertDialog.Builder( context );
 				ab.setTitle( "Set Room Number" );
 				ab.setMessage( "Note : Type only numbers without the word `ROOM`" );
@@ -155,31 +168,100 @@ public class ShortcutsActivity extends Activity {
 				
 				String room_no = configurationReader.getRoomNo();
 				et.setText( room_no.substring( 4, room_no.length() ) );
-				
-				ab.setView( et );
+
+				ll_parent.addView( et );
+
+				ab.setView( ll_parent );
 				ab.setPositiveButton( "Update", new DialogInterface.OnClickListener() {
 					
 					@Override
 					public void onClick( DialogInterface dialog, int which ) {
-						String room_no = et.getText().toString().trim();
-						if( room_no.equals( "" ) ){
+						final String r_no = et.getText().toString().trim();
+						if( r_no.equals( "" ) ){
 							CustomItems.showCustomToast( context, "error", "Room Number cannot be empty", 3000 );
 							return;
 						}
-						
-						// Update the Room Number in the /mnt/sdcard/appstv_data/configuration file
-						configurationWriter = ConfigurationWriter.getInstance( context );
-						room_no = "ROOM" + room_no;
-						if( !configurationWriter.setRoomNumber( room_no ) ){
-							CustomItems.showCustomToast( context, "error", "Failed to update Configuration File", 3000 );
-							return;
-						}
-						
-						bt_room_no.setText( room_no );
-						
+
 						// Update the Room Number on CMS
-						CustomItems.showCustomToast( context, "warning", "Room Number not yet updated on the CMS !", 5000 );
-						
+						//CustomItems.showCustomToast( context, "warning", "Room Number not yet updated on the CMS !", 5000 );
+
+						new Thread(new Runnable() {
+							@Override
+							public void run() {
+								String s = UtilNetwork.makeRequestForData( UtilURL.getWebserviceURL(), "POST",
+										UtilURL.getURLParamsFromPairs( new String[][]{
+												{ "mac_address", UtilNetwork.getMacAddress( context ) },
+												{ "what_do_you_want", "update_room_no" },
+												{ "room_no", "ROOM"+r_no }
+										} ));
+
+								if( s == null ){
+									Log.d( TAG, "Failed to Update Room Number" );
+									CustomItems.showCustomToast( context, "error", "Failed to Update Room Number !", 5000 );
+									//setRetryTimer();
+									return;
+								}
+
+								Log.d( TAG, "response : "+s );
+								JSONArray jsonArray = null;
+								JSONObject jsonObject = null;
+
+								try{
+									jsonArray = new JSONArray( s );
+									jsonObject = jsonArray.getJSONObject( 0 );
+
+									String type = jsonObject.getString( "type" );
+									String info = jsonObject.getString( "info" );
+									if ( type.equals( "error" ) ){
+										Log.e( TAG, "Failed to update room number" );
+
+										runOnUiThread(new Runnable() {
+											@Override
+											public void run() {
+												CustomItems.showCustomToast( context, "error", "Failed to update room number", 3000 );
+											}
+										});
+
+										return;
+									}
+									else if( type.equals( "success" ) ){
+										Log.d( TAG, info );
+										//CustomItems.showCustomToast( context, "success", info, 5000 );
+
+										// Update the Room Number in the /mnt/sdcard/appstv_data/configuration file
+										configurationWriter = ConfigurationWriter.getInstance( context );
+										if( !configurationWriter.setRoomNumber( "ROOM" + r_no ) ){
+
+											runOnUiThread(new Runnable() {
+												@Override
+												public void run() {
+													CustomItems.showCustomToast( context, "error", "Failed to update Configuration File", 3000 );
+												}
+											});
+
+											return;
+										}
+
+										runOnUiThread(new Runnable() {
+											@Override
+											public void run() {
+												bt_room_no.setText( "ROOM"+r_no );
+                                                CustomItems.showCustomToast( context, "success", "Room number has been updated !", 5000 );
+											}
+										});
+
+										Intent in = new Intent( "get_box_configuration" );
+										sendBroadcast( in );
+
+									}
+								}
+								catch( Exception e ){
+									e.printStackTrace();
+
+								}
+							}
+						}).start();
+
 					}
 					
 				});

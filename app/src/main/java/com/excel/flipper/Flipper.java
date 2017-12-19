@@ -64,21 +64,25 @@ public class Flipper {
 
                     if( Weather.isWeatherAvailable ){
                         //Log.d( TAG, "weather is available" );
-                        ll_clock_time.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
+                        //ll_clock_time.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
+                        ll_clock_time.animate().alpha( 0.0f ).setDuration( 300 ).withEndAction(new Runnable() {
                             @Override
                             public void run() {
-                                rl_weather.animate().rotationXBy( -90f ).setDuration( 300 ).start();
+                                //rl_weather.animate().rotationXBy( -90f ).setDuration( 300 ).start();
+                                rl_weather.animate().alpha( 1.0f ).setDuration( 300 ).start();
 
                                 new Handler().postDelayed(new Runnable() {
 
                                     @Override
                                     public void run(){
-                                        tv_temperature.animate().alpha( 0.0f ).setDuration( 300 ).withEndAction(new Runnable() {
+                                        tv_temperature.animate().alpha( 1.0f ).setDuration( 300 ).start();
+                                        tv_text.animate().alpha( 0.0f ).setDuration( 300 ).start();
+                                        /*.withEndAction(new Runnable() {
                                             @Override
                                             public void run() {
-                                                tv_text.animate().alpha( 1.0f ).setDuration( 300 ).start();
+                                                tv_text.animate().alpha( 0.0f ).setDuration( 300 ).start();
                                             }
-                                        }).start();
+                                        }).start();*/
                                     }
 
                                 }, Long.parseLong( configurationReader.getClockWeatherFlipInterval() )/2 );
@@ -91,13 +95,15 @@ public class Flipper {
                     }
                     else if( Flipper.isHotelLogoAvailable ){
                         // Log.d( TAG, "hotel logo is available" );
-                        ll_clock_time.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
+                        flipToIndex( INDEX_HOTEL_LOGO_SHOWING );
+                        //ll_clock_time.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
+                        ll_clock_time.animate().alpha( 0.0f ).setDuration( 300 ).withEndAction(new Runnable() {
                             @Override
                             public void run() {
-                                rl_hotel_logo.animate().rotationXBy( -90f ).setDuration( 300 ).start();
+                                //rl_hotel_logo.animate().rotationXBy( -90f ).setDuration( 300 ).start();
+                                rl_hotel_logo.animate().alpha( 1.0f ).setDuration( 300 ).start();
                             }
                         }).start();
-                        flipToIndex( INDEX_HOTEL_LOGO_SHOWING );
                         t_interval = Long.parseLong( configurationReader.getHotelLogoFlipInterval() );
                     }
 
@@ -107,37 +113,43 @@ public class Flipper {
 
                     if( Flipper.isHotelLogoAvailable ){
                         //Log.d( TAG, "hotel logo is available" );
-                        rl_weather.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
+                        flipToIndex( INDEX_HOTEL_LOGO_SHOWING );
+                        //rl_weather.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
+                        rl_weather.animate().alpha( 0.0f ).setDuration( 300 ).withEndAction(new Runnable() {
                             @Override
                             public void run() {
-                                rl_hotel_logo.animate().rotationXBy( -90f ).setDuration( 300 ).start();
+                                //rl_hotel_logo.animate().rotationXBy( -90f ).setDuration( 300 ).start();
+                                rl_hotel_logo.animate().alpha( 1.0f ).setDuration( 300 ).start();
                             }
                         }).start();
-                        flipToIndex( INDEX_HOTEL_LOGO_SHOWING );
                         t_interval = Long.parseLong( configurationReader.getHotelLogoFlipInterval() );
                     }
                     else{
-                        rl_weather.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
+                        flipToIndex( INDEX_CLOCK_SHOWING );
+                        // rl_weather.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
+                        rl_weather.animate().alpha( 0.0f ).setDuration( 300 ).withEndAction(new Runnable() {
                             @Override
                             public void run() {
-                                ll_clock_time.animate().rotationXBy( -90f ).setDuration( 300 ).start();
+                                //ll_clock_time.animate().rotationXBy( -90f ).setDuration( 300 ).start();
+                                ll_clock_time.animate().alpha( 1.0f ).setDuration( 300 ).start();
                             }
                         }).start();
-                        flipToIndex( INDEX_CLOCK_SHOWING );
                         t_interval = Long.parseLong( configurationReader.getClockWeatherFlipInterval() );
                     }
-                    tv_text.animate().alpha( 0.0f ).setDuration( 300 ).start();
-                    tv_temperature.animate().alpha( 1.0f ).setDuration( 300 ).start();
+                    tv_text.animate().alpha( 1.0f ).setDuration( 300 ).start();
+                    tv_temperature.animate().alpha( 0.0f ).setDuration( 300 ).start();
 
                 }
                 else{
-                    rl_hotel_logo.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
+                    flipToIndex( INDEX_CLOCK_SHOWING );
+                    // rl_hotel_logo.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
+                    rl_hotel_logo.animate().alpha( 0.0f ).setDuration( 300 ).withEndAction(new Runnable() {
                         @Override
                         public void run() {
-                            ll_clock_time.animate().rotationXBy( -90f ).setDuration( 300 ).start();
+                            //ll_clock_time.animate().rotationXBy( -90f ).setDuration( 300 ).start();
+                            ll_clock_time.animate().alpha( 1.0f ).setDuration( 300 ).start();
                         }
                     }).start();
-                    flipToIndex( INDEX_CLOCK_SHOWING );
                     t_interval = Long.parseLong( configurationReader.getClockWeatherFlipInterval() );
                 }
 
