@@ -402,4 +402,11 @@ public class ShortcutsActivity extends Activity {
 	public void setCMSIP(){
 		tv_cms_ip.setText( configurationReader.getCmsIp() );
 	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+
+		finish();
+	}
 }

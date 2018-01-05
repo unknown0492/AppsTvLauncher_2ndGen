@@ -33,7 +33,6 @@ import android.widget.Toast;
 import com.excel.ResumeTaskService;
 import com.excel.configuration.ConfigurationReader;
 import com.excel.configuration.LauncherJSONReader;
-import com.excel.configuration.PreinstallApps;
 import com.excel.customitems.CustomItems;
 import com.excel.excelclasslibrary.UtilFile;
 import com.excel.excelclasslibrary.UtilMisc;
@@ -138,12 +137,16 @@ public class MainActivity extends Activity {
 
 	RelativeLayout activity_main;
 
+	Stack<Integer> recreate_stack = new Stack<Integer>();
+
     @Override
     protected void onCreate( Bundle savedInstanceState )  {
         super.onCreate( savedInstanceState );
         hideActionBar();
 
         setContentView( R.layout.activity_main );
+
+        Log.d( TAG, "onCreate()" );
 
 		// Permissions for Android 6.0
 		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
@@ -177,12 +180,12 @@ public class MainActivity extends Activity {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        test_handler.post(new Runnable() {
+                        test_handler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
                                 setLauncherMenuItems();
                             }
-                        });
+                        }, 1000 );
                     }
                 }).start();
 
@@ -206,12 +209,19 @@ public class MainActivity extends Activity {
 
         restoreTvChannels();
 
-		startScreenCastService();
+		// startScreenCastService();
 
-        ds.resumeDigitalSignageSwitcher();
+        /*ds.resumeDigitalSignageSwitcher();
         weather.resumeYahooWeatherService();
 
-        clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
+        clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();*/
+
+		ds.resumeDigitalSignageSwitcher();
+		weather.resumeYahooWeatherService();
+
+		clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
+
+		startTetheringInfoSwitcher();
 
 	}
 
@@ -780,8 +790,11 @@ public class MainActivity extends Activity {
         /*ds.pauseDigitalSignageSwitcher();
         weather.pauseYahooWeatherService();
 
-        pauseTetheringInfoFlipper();
+
+		pauseTetheringInfoFlipper();
         clock_weather_hotel_logo_flipper.pauseClockWeatherLogoFlipper();*/
+
+
 
         pauseLauncherIdleTimer();
 
@@ -792,6 +805,8 @@ public class MainActivity extends Activity {
     @Override
 	protected void onResume() {
 		super.onResume();
+
+		Log.d( TAG, "inside onResume()" );
 
 		// Permissions for Android 6.0
 		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
@@ -821,13 +836,13 @@ public class MainActivity extends Activity {
                 long diff = now - access_onresume_time;
                 int sec = (int) diff / 1000;
                 Log.d( TAG, "sec : " + sec );
-                if ( sec <= 10 ){
+                if ( sec <= 15 ){
                     access_onresume_time = now;
                     //return;
                 }
                 else{
                     access_onresume_time = now;
-                    Log.d( TAG, "inside onResume()" );
+
 
                     new Handler().postDelayed(new Runnable() {
                         @Override
@@ -835,7 +850,7 @@ public class MainActivity extends Activity {
                             Intent in = new Intent(context, ResumeTaskService.class);
                             // startService(in);
 
-                            PreinstallApps[] paps = PreinstallApps.getPreinstallApps();
+                            /*PreinstallApps[] paps = PreinstallApps.getPreinstallApps();
                             for( int i = 0 ; i < paps.length; i++ ){
 
                                 if( paps[ i ].getForceKill().trim().equals( "force_kill" ) ) {
@@ -851,18 +866,32 @@ public class MainActivity extends Activity {
 
                             String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" ).trim();
                             UtilShell.executeShellCommandWithOp( "kill "+pid );
-                            Log.d( TAG, "Killed pid : "+pid+", of package com.android.dtv" );
+                            Log.d( TAG, "Killed pid : "+pid+", of package com.android.dtv" );*/
+
+
+							/*String pid = UtilShell.executeShellCommandWithOp( "pidof com.radio.fmradio" ).trim();
+							if( pid.equals( "" ) || (!pid.equals( "1" )) ) {
+								UtilShell.executeShellCommandWithOp("kill " + pid);
+								Log.d( TAG, "Killed pid : "+pid+", of package com.radio.fmradio" );
+							}
+
+							pid = UtilShell.executeShellCommandWithOp( "pidof com.spotify.tv.android" ).trim();
+							if( pid.equals( "" ) || (!pid.equals( "1" )) ) {
+								UtilShell.executeShellCommandWithOp("kill " + pid);
+								Log.d( TAG, "Killed pid : "+pid+", of package com.spotify.tv.android" );
+							}*/
+
                         }
-                    }, 500 );
+                    }, 1000 );
 
 
                     // restoreTvChannels();
 
-                    // configurationReader = ConfigurationReader.reInstantiate();
+                    configurationReader = ConfigurationReader.reInstantiate();
 
                     onUserInteraction();
 
-                    // startScreenCastService();
+                    startScreenCastService();
                 }
             }
 
@@ -871,9 +900,12 @@ public class MainActivity extends Activity {
         /*ds.resumeDigitalSignageSwitcher();
         weather.resumeYahooWeatherService();
 
-        clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
-        */
-        startTetheringInfoSwitcher();
+		clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
+		startTetheringInfoSwitcher();
+		*/
+
+
+
     }
 
     @Override
@@ -1507,6 +1539,10 @@ public class MainActivity extends Activity {
         pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
         //UtilShell.executeShellCommandWithOp( "kill "+pid );
 
+		UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/system/users/*",
+				"rm -r /data/system/users/*" );
+
+
         setTvChannelRestored( true );
         Log.d( TAG, "tv_channels.zip extracted successfully" );
     }
@@ -1570,6 +1606,25 @@ public class MainActivity extends Activity {
 
     /* Permission related content */
 
+
+
+
+    /*private void recreate1(){
+		Intent intent = new Intent( context, MainActivity.class );
+
+		intent.setFlags( Intent.FLAG_ACTIVITY_SINGLE_TOP );
+
+		startActivity( intent );
+
+	}
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+
+		onCreate(null);
+
+	}*/
 }
 
 

@@ -122,4 +122,12 @@ public class WebViewActivity extends Activity {
         });
 	}
 
+	@Override
+	protected void onPause() {
+		super.onPause();
+
+		Log.i( TAG, "onPause()" );
+
+		finish();
+	}
 }

@@ -3,7 +3,7 @@ package com.excel.appstvlauncher.secondgen;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.*;
 import android.widget.GridView;
 
 import java.util.Calendar;
