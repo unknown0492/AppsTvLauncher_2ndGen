@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Stack;
+import java.util.Vector;
 
 import static com.excel.configuration.Constants.PATH_LAUNCHER_CONFIG_FILE;
 import static com.excel.configuration.Constants.PATH_LAUNCHER_CONFIG_FILE_SYSTEM;
@@ -139,6 +140,8 @@ public class MainActivity extends Activity {
 
 	Stack<Integer> recreate_stack = new Stack<Integer>();
 
+	Vector sub_menu_items_vector;
+
     @Override
     protected void onCreate( Bundle savedInstanceState )  {
         super.onCreate( savedInstanceState );
@@ -173,6 +176,7 @@ public class MainActivity extends Activity {
 
 		configurationReader = ConfigurationReader.getInstance();
 
+
 		new AsyncTask<Void,Void,Void>(){
 
             @Override
@@ -194,6 +198,7 @@ public class MainActivity extends Activity {
         }.execute();
 
         createLauncheritemsUpdateBroadcast();
+
 
 
 		startPerfectTimeService();
@@ -267,6 +272,31 @@ public class MainActivity extends Activity {
         }
     }*/
 
+    public void fillSubMenuItems(){
+    	Log.d( TAG, "fillSubMenuItems()" );
+
+    	sub_menu_items_vector = new Vector();
+
+    	for( int i = 0 ; i < ljr.getMainItemsCount() ; i++ ){
+
+    		String[] temp_arr = ljr.getSubMenuItemNames( i );
+
+    		for( int j = 0 ; j < temp_arr.length ; j++ ){
+				String item_name_json = ljr.getSubItemValue( i, j, "item_name_translated" );
+				try {
+					JSONObject jso = new JSONObject( item_name_json );
+					Log.d( TAG, "display name : "+item_name_json );
+					temp_arr[ j ] = jso.getString( UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
+				} catch ( Exception e ) {
+					//e.printStackTrace();
+				}
+			}
+			sub_menu_items_vector.add( i, temp_arr );
+
+		}
+
+	}
+
     LinearLayout first_main_item = null;
     LinearLayout current_main_item = null;
     LinearLayout prev_main_item = null;
@@ -313,77 +343,84 @@ public class MainActivity extends Activity {
                         params.setMargins( 0, -50, 0, 0 );
                         ll.setLayoutParams(params);*/
 
-    					// Hide its sub-menu
+						// Hide its sub-menu
     					ObjectAnimator oa = ObjectAnimator.ofFloat( hsv_sub_menu, "translationY", 0 );
-    					oa.setDuration( 250 );
+    					oa.setDuration( 1 );
     					oa.start();
 
     					ObjectAnimator oa1 = ObjectAnimator.ofFloat( hsv_sub_menu, "alpha", 1.0f, 0.0f );
-    					oa1.setDuration( 250 );
+    					oa1.setDuration( 1 );
     					oa1.start();
 
 
                         new AsyncTask<Void, Void, Void>(){
 
                             @Override
-                            protected Void doInBackground(Void... voids) {
-                                sub_menu_values = ljr.getSubMenuItemNames( last_index_of_main_menu );
-                                for( int i = 0 ; i < sub_menu_values.length ; i++ ){
-                                    //String item_name = ljr.getSubItemValue( last_index_of_main_menu, i , "item_name_translated" );
-                                    String item_name_json = ljr.getSubItemValue( last_index_of_main_menu, i, "item_name_translated" );
-                                    try {
-                                        JSONObject jso = new JSONObject( item_name_json );
-                                        //Log.d( TAG, "display name : "+UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
-                                        sub_menu_values[ i ] = jso.getString( UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
-                                    }
-                                    catch ( Exception e ){
-                                        //e.printStackTrace();
-                                    }
-                                }
+                            protected Void doInBackground( Void... voids ) {
+                                sub_menu_values = ljr.getSubMenuItemNames( last_index_of_main_menu );//(String[])sub_menu_items_vector.get( last_index_of_main_menu );
 
+								Log.d( TAG, "Current language : "+UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
 
+                                // if( ! UtilMisc.getCustomLocaleLanguageConstant().getLanguage().equals( "en" ) ) {
+
+								/*
+								for ( int i = 0; i < sub_menu_values.length; i++ ) {
+									//String item_name = ljr.getSubItemValue( last_index_of_main_menu, i , "item_name_translated" );
+									Log.d( TAG, "loop "+i );
+									String item_name_json = ljr.getSubItemValue(last_index_of_main_menu, i, "item_name_translated");
+									try {
+										JSONObject jso = new JSONObject( item_name_json );
+										Log.d( TAG, "display name : "+item_name_json );
+										sub_menu_values[ i ] = jso.getString( UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
+									} catch ( Exception e ) {
+										e.printStackTrace();
+									}
+								}
+								*/
+
+								//}
+
+								//sub_menu_items_vector.add( i, sub_menu_values );
 
 
                                 return null;
                             }
 
                             @Override
-                            protected void onPostExecute(Void aVoid) {
+                            protected void onPostExecute( Void aVoid ) {
                                 new Handler().postDelayed( new Runnable() {
 
                                     @Override
                                     public void run() {
 
-                                        sma = new SubMenuAdapter( R.layout.sub_menu_items, context, sub_menu_values );
-                                        setSubMenuAdapter( sma );
+										sma = new SubMenuAdapter( R.layout.sub_menu_items, context, sub_menu_values );
+										setSubMenuAdapter( sma );
 
-                                        // Show its Sub-Menu
-                                        ObjectAnimator oaa = ObjectAnimator.ofFloat( hsv_sub_menu, "translationY", 40 );
-                                        oaa.setStartDelay( 250 );
-                                        oaa.setDuration( 250 );
-                                        oaa.start();
+										//ObjectAnimator oaa = ObjectAnimator.ofFloat( hsv_sub_menu, "translationY", 40 );
+										//oaa.setStartDelay( 250 );
+										//oaa.setDuration( 1 );
+										//oaa.start();
 
-                                        ObjectAnimator oaa1 = ObjectAnimator.ofFloat( hsv_sub_menu, "alpha", 0.0f, 1.0f );
-                                        oaa1.setStartDelay( 250 );
-                                        oaa1.setDuration( 250 );
-                                        oaa1.start();
+										// Show its Sub-Menu
+
+										ObjectAnimator oaa = ObjectAnimator.ofFloat( hsv_sub_menu, "translationY", 40 );
+										//oaa.setStartDelay( 250 );
+										oaa.setDuration( 1 );
+										oaa.start();
+
+										ObjectAnimator oaa1 = ObjectAnimator.ofFloat( hsv_sub_menu, "alpha", 0.0f, 1.0f );
+										//oaa1.setStartDelay( 250 );
+										oaa1.setDuration( 1 );
+										oaa1.start();
 
                                     }
-                                }, 250 );
+                                }, 750 );
 
-                                super.onPostExecute(aVoid);
+                                super.onPostExecute( aVoid );
                             }
                         }.execute();
 
-
-
-
-
     					last_index_of_main_menu = Integer.parseInt( v.getTag().toString() );
-
-
-
-
     				}
     				else{
     					// Log.d( null, "focus lost from "+tv.getText().toString() );
@@ -415,10 +452,18 @@ public class MainActivity extends Activity {
 		tv.setTextColor( context.getResources().getColor( R.color.light_blue ) );
 		tv.setScaleX( 1.45f );
 		tv.setScaleY( 1.45f );
+
+		//rl_elements.setVisibility( View.VISIBLE );
+		//ObjectAnimator oaa1 = ObjectAnimator.ofFloat( rl_elements, "alpha", 0.0f, 1.0f );
+		ObjectAnimator oaa1 = ObjectAnimator.ofFloat( rl_launcher_bg, "alpha", 0.0f, 1.0f );
+		oaa1.setStartDelay( 3000 );
+		oaa1.setDuration( 3000 );
+		oaa1.start();
     }
 
     public void setSubMenuAdapter( final SubMenuAdapter adapter ){
     	View first_element = null, last_element = null;
+		//hsv_sub_menu.setVisibility( View.VISIBLE );
     	ll_sub_menu_items.removeAllViews();
     	for( int i = 0 ; i < adapter.getCount(); i++ ){
     		LinearLayout v = (LinearLayout) adapter.getView( i, null, null );
@@ -508,6 +553,8 @@ public class MainActivity extends Activity {
 		// Step-3
 		ljr = new LauncherJSONReader( launcher_config_json );
 
+		//fillSubMenuItems();
+
 		// Step-4
 		int main_items_count = ljr.getMainItemsCount();
 
@@ -562,10 +609,13 @@ public class MainActivity extends Activity {
 		}
 		ma = new MenuAdapter( R.layout.main_menu_items, this, main_menu_values );
 
-
+		// fillSubMenuItems();
 
     	setMainMenuAdapter( ma );
         setSubMenuAdapter( sma );
+
+
+
 
     }
 
@@ -583,6 +633,12 @@ public class MainActivity extends Activity {
 				// System.gc();
 
 				recreate();
+				//finish();
+				//overridePendingTransition( 0, 0);
+				//startActivity(getIntent());
+				//overridePendingTransition( 0, 0);
+
+
 				/*Intent in = getIntent();
 				in.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
 				finish();
@@ -671,6 +727,10 @@ public class MainActivity extends Activity {
                     String language_code = jso.getString( "language_code" ).trim();
                     UtilShell.executeShellCommandWithOp( "setprop language_code "+language_code );
                     recreate();
+					//finish();
+					//overridePendingTransition( 0, 0);
+					//startActivity(getIntent());
+					//overridePendingTransition( 0, 0);
                 } catch ( JSONException e ) {
                     e.printStackTrace();
                 }
@@ -731,7 +791,8 @@ public class MainActivity extends Activity {
 
         tv_collar_text.setText( collar_text );
 		tv_collar_text.setSpeed( new Double( configurationReader.getCollarTextSpeed() ) );
-        tv_collar_text.startScroll();
+		tv_collar_text.startScroll();
+
     }
 
     /* Launcher Menu Items Related Functions */
@@ -743,7 +804,7 @@ public class MainActivity extends Activity {
     @Override
 	public boolean onKeyDown( int i, KeyEvent keyevent ){
 		String key_name = KeyEvent.keyCodeToString( i );
-		Log.d( null, "KeyPressed : "+i+","+key_name );
+		Log.d( TAG, "KeyPressed : "+i+","+key_name );
 
 		// Handle the Overflow left and right key movements for MAIN menu
 		if( handleMainMenuOverflow( i, keyevent ) ) return true;
@@ -824,31 +885,30 @@ public class MainActivity extends Activity {
         if( ! isLoadingCompleted() ) {
             //first_main_item.requestFocus();
 
-            showLoadingActivity();
+            //showLoadingActivity();
+			setIsLoadingCompleted( true );
             //return;
         }
         else {
 
-            if ( access_onresume_time == -1 ) {
-                access_onresume_time = System.currentTimeMillis();
-            } else {
-                long now = System.currentTimeMillis();
-                long diff = now - access_onresume_time;
-                int sec = (int) diff / 1000;
-                Log.d( TAG, "sec : " + sec );
-                if ( sec <= 15 ){
-                    access_onresume_time = now;
-                    //return;
-                }
-                else{
-                    access_onresume_time = now;
+			if (access_onresume_time == -1) {
+				access_onresume_time = System.currentTimeMillis();
+			} else {
+				long now = System.currentTimeMillis();
+				long diff = now - access_onresume_time;
+				int sec = (int) diff / 1000;
+				Log.d(TAG, "sec : " + sec);
+				if (sec <= 15) {
+					access_onresume_time = now;
+					//return;
+				} else {
+					access_onresume_time = now;
 
-
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            Intent in = new Intent(context, ResumeTaskService.class);
-                            // startService(in);
+					new Handler().postDelayed(new Runnable() {
+						@Override
+						public void run() {
+							Intent in = new Intent(context, ResumeTaskService.class);
+							// startService(in);
 
                             /*PreinstallApps[] paps = PreinstallApps.getPreinstallApps();
                             for( int i = 0 ; i < paps.length; i++ ){
@@ -881,21 +941,19 @@ public class MainActivity extends Activity {
 								Log.d( TAG, "Killed pid : "+pid+", of package com.spotify.tv.android" );
 							}*/
 
-                        }
-                    }, 1000 );
+						}
+					}, 1000 );
 
+					// restoreTvChannels();
 
-                    // restoreTvChannels();
+					configurationReader = ConfigurationReader.reInstantiate();
 
-                    configurationReader = ConfigurationReader.reInstantiate();
+					onUserInteraction();
 
-                    onUserInteraction();
-
-                    startScreenCastService();
-                }
-            }
-
-        }
+					startScreenCastService();
+				}
+			}
+		}
 
         /*ds.resumeDigitalSignageSwitcher();
         weather.resumeYahooWeatherService();
@@ -903,9 +961,6 @@ public class MainActivity extends Activity {
 		clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
 		startTetheringInfoSwitcher();
 		*/
-
-
-
     }
 
     @Override
@@ -981,7 +1036,26 @@ public class MainActivity extends Activity {
         //hsv_sub_menu.setBackground( context.getResources().getDrawable( R.drawable.submenu_bg1 ) );
     }
 
+    long movement_time = 0;
     public boolean handleMainMenuOverflow( int i, KeyEvent keyevent ){
+    	/*
+    	Log.d( TAG, "hehehehehe" );
+    	if( movement_time == 0 ){
+			movement_time = System.currentTimeMillis();
+		}
+		else{
+    		if( ( i == 22 ) || ( i == 21 ) ){
+				long current = System.currentTimeMillis();
+				long diff = current - movement_time;
+				Log.d( TAG, "mt : "+movement_time+", ct : "+current+", diff : "+diff );
+				if( diff <= 1000 ){
+					return false;
+				}
+				movement_time = System.currentTimeMillis();
+			}
+		}
+		*/
+
     	// When Last Child in the MAIN menu is reached, and right is pressed, then focus moves back to First child
     	if( ( main_menu_last_element_reached ) && ( i == 22 ) ){  // 22 -> Right
     		int endPos    = (int) ll_main_menu_items.getChildAt( 0 ).getX();
@@ -996,10 +1070,12 @@ public class MainActivity extends Activity {
 				}
 			}, 750 );
 
+
     		return true;
     	}
     	// When First Child in the MAIN menu is reached, and left is pressed, then focus moves back to Last child
     	if( ( main_menu_first_element_reached ) && ( i == 21 ) ){  // 21 -> Left
+
     		int endPos    = (int) ll_main_menu_items.getChildAt( ma.getCount() - 1 ).getX();
             int halfWidth = (int) ll_main_menu_items.getChildAt( ma.getCount() - 1 ).getWidth() / 2;
 
@@ -1011,6 +1087,7 @@ public class MainActivity extends Activity {
 					ll_main_menu_items.getChildAt( ma.getCount() - 1 ).requestFocus();
 				}
 			}, 750 );
+
 
     		return true;
     	}
@@ -1088,7 +1165,7 @@ public class MainActivity extends Activity {
         if (areLauncherElementsHidden) {
             ObjectAnimator.ofFloat(rl_elements, "alpha", 0.0f, 1.0f).setDuration(500).start();
             areLauncherElementsHidden = false;
-            // startLauncherIdleTimer();
+
         } else {
             startLauncherIdleTimer();
         }
