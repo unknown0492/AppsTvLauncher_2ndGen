@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>World Clock</title>
+    <link href="css/reset.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <link href="fonts/stylesheet.css" rel="stylesheet">
+</head>
+<body>
+    <div id="container">
+        <div class="div">
+            <p class="scroll-info">Scroll down or up to choose the country</p>
+            <a href="#" id="scrollUp" class="arrow"><img src="images/arrowup.png" alt=""></a>
+            <div id="inner">
+                <ul id="world-selection"> 
+                    <li>
+                        <a href="#" class="active" data-zone="Asia/Brunei" data-name="Singapore, Singapore">
+                            <img src="images/flag-singapore.png" alt="">
+                            <p>Singapore<br><span>Singapore</span></p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-zone="Australia/Sydney" data-name="Sydney, Australia">
+                            <img src="images/flag-aus.png" alt="">
+                            <p>Australia<br><span>Sydney</span></p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-zone="Pacific/Auckland" data-name="Wellington, New Zealand">
+                            <img src="images/flag-zealand.png" alt="">
+                            <p>New Zealand<br><span>WellingTon</span></p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-zone="America/New_York" data-name="New York, United States">
+                            <img src="images/flag-us.png" alt="">
+                            <p>United States<br><span>New York</span></p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-zone="Asia/Hong_Kong" data-name="Beijing, China ">
+                            <img src="images/flag-china.png" alt="">
+                            <p>China<br><span>Beijing</span></p>
+                        </a>
+                    </li>
+                   <li>
+                        <a href="#" data-zone="Asia/Kolkata" data-name="New Delhi, India ">
+                            <img src="images/flag-india.png" alt="">
+                            <p>India<br><span>New Delhi</span></p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-zone="Asia/Tokyo" data-name="Tokyo, Japan">
+                            <img src="images/flag-japan.png" alt="">
+                            <p>Japan<br><span>Tokyo</span></p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-zone="Asia/Seoul" data-name="Seoul, South Korea">
+                            <img src="images/flag-korea.png" alt="">
+                            <p>South Korea<br><span>Seoul</span></p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-zone="Asia/Bangkok" data-name="Bangkok, Thailand ">
+                            <img src="images/flag-thailand.png" alt="">
+                            <p>Thailand<br><span>Bangkok</span></p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-zone="Asia/Jakarta" data-name="Jakarta, Indonesia">
+                            <img src="images/flag-indo.png" alt="">
+                            <p>Indonesia<br><span>Jakarta</span></p>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <a href="#" id="scrollBottom" class="arrow"><img src="images/arrowdown.png" alt=""></a>
+        </div> <!-- /.div -->
+        <div class="right">
+            <h2 id="zone">Singapore, Singapore</h2>
+            <h1 id="time">10:15:20</h1>
+            <p>Today is <span id="date">Wednesday, January 16th, 2018</span></p>
+        </div><!-- /.right -->
+        <footer>
+            <p class="first">Press</p>
+            <button><img src="images/home.png" alt=""> Home</button>
+            <p>button to go to the main screen</p>
+        </footer>
+    </div><!-- /#container -->
+
+    <script type="text/javascript" src="js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="js/jquery-migrate-1.2.1.min.js"></script>
+    <script type="text/javascript" src="js/slick.min.js"></script>
+    <script type="text/javascript" src="js/jquery.mousewheel.min.js"></script>
+    <script type="text/javascript" src="js/moment.js"></script>
+    <script type="text/javascript" src="js/moment-timezone.js"></script>
+    <script type="text/javascript" src="js/timezones.js"></script>
+    <script type="text/javascript">
+        currentTimezone = 'Asia/Brunei';
+        currentTimezoneName = 'Singapore, Singapore';
+
+        moment.tz.add(zoneData.zones);
+
+        $(document).ready(function(){
+            $("#scrollUp").bind("click", function (event) {
+                event.preventDefault();
+                // Animates the scrollTop property by the specified
+                // step.
+                $("#inner").animate({
+                    scrollTop: "-=90px"
+                });
+            });
+            $("#scrollBottom").bind("click", function (event) {
+                event.preventDefault();
+                // Animates the scrollTop property by the specified
+                // step.
+                $("#inner").animate({
+                    scrollTop: "+=90px"
+                });
+            });
+
+            updateDate(currentTimezone,currentTimezoneName);
+            setInterval(function(){
+                updateDate(currentTimezone,currentTimezoneName);
+            }, 1000);
+        });
+
+        function updateDate(timezone,timezoneName){
+            time = moment().tz(timezone).format('HH:mm:ss');
+            date = moment().tz(timezone).format('dddd, MMMM Do, YYYY');
+            $('#time').html(time);
+            $('#zone').html(timezoneName);
+            $('#date').html(date);
+        }
+
+        var li = $('#world-selection').find('li');
+        var liSelected = $('#world-selection').find('li').first();
+        $(window).keydown(function(e){
+            console.log(e.which);
+            // down
+            if(e.which === 40){
+                if(liSelected){
+                    liSelected.find('a').removeClass('active');
+                    liSelected.removeClass('active');
+                    next = liSelected.next();
+                    if(next.length > 0){
+                        liSelected = next;
+                        liSelected.find('a').addClass('active');
+                        liSelected.addClass('active');
+                    }else{
+                        liSelected = li.eq(0);
+                        liSelected.find('a').addClass('active');
+                        liSelected.addClass('active');
+                    }
+                }else{
+                    liSelected = li.eq(0);
+                    liSelected.find('a').addClass('active');
+                    liSelected.addClass('active');
+                }
+                currentTimezone = liSelected.find('a').attr('data-zone');
+                currentTimezoneName = liSelected.find('a').attr('data-name');
+                updateDate(currentTimezone,currentTimezoneName);
+            }
+            // up
+            else if(e.which === 38){
+                if(liSelected){
+                    liSelected.find('a').removeClass('active');
+                    liSelected.removeClass('active');
+                    next = liSelected.prev();
+                    if(next.length > 0){
+                        liSelected = next;
+                        liSelected.find('a').addClass('active');
+                        liSelected.addClass('active');
+                    }else{
+                        liSelected = li.last();
+                        liSelected.find('a').addClass('active');
+                        liSelected.addClass('active');
+                    }
+                }else{
+                    liSelected = li.last();
+                    console.log('last element');
+                    console.log(liSelected);
+                    liSelected.find('a').addClass('active');
+                    liSelected.addClass('active');
+                }
+                currentTimezone = liSelected.find('a').attr('data-zone');
+                currentTimezoneName = liSelected.find('a').attr('data-name');
+                updateDate(currentTimezone,currentTimezoneName);
+            }
+        });
+    </script>
+</body>
+</html>

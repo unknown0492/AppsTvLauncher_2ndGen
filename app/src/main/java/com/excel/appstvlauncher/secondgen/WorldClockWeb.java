@@ -12,8 +12,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.excel.configuration.ConfigurationReader;
-import com.excel.excelclasslibrary.UtilNetwork;
-import com.excel.excelclasslibrary.UtilShell;
 
 import java.io.File;
 
@@ -34,26 +32,30 @@ public class WorldClockWeb extends Activity {
         init();
 
         Intent in = getIntent();
-        String web_view_url = in.getStringExtra( "web_view_url" );
-        String params = in.getStringExtra( "params" );
+        //String web_view_url = in.getStringExtra( "web_view_url" );
+        //String params = in.getStringExtra( "params" );
 
-        String URL = cr.getProtocol() + "://" + cr.getCmsIp() + File.separator + cr.getCmsSubDirectory() + File.separator + "webservice.php?";
+        String URL = "file:///android_asset/world_clock/index.html";//cr.getProtocol() + "://" + cr.getCmsIp() + File.separator + cr.getCmsSubDirectory() + File.separator + "webservice.php?";
         // String url_params = String.format( "what_do_you_want=%s&web_view_url=%s&", "cms_template", web_view_url );
-        String url_params = String.format( "what_do_you_want=%s&url_type=%s&", "url_forward", web_view_url );
-        String params_arr[] = params.split( "," );
-        for( int i = 0 ; i < params_arr.length ; i++ ){
+        //String url_params = String.format( "what_do_you_want=%s&url_type=%s&", "url_forward", web_view_url );
 
-            if( params_arr[ i ].equals( "mac_address" ) ){
-                url_params += "mac_address=" + UtilNetwork.getMacAddress( context ) + "&";
-            }
-            else if( params_arr[ i ].equals( "language_code" ) ){
-                String language_code = UtilShell.executeShellCommandWithOp( "getprop language_code" ).trim();
-                url_params += "language_code=" + language_code + "&";
-            }
+		/*
+		String params_arr[] = params.split( "," );
+		for( int i = 0 ; i < params_arr.length ; i++ ){
 
-        }
-        url_params = url_params.substring( 0, url_params.length() - 1 );
-        URL = URL + url_params;
+			if( params_arr[ i ].equals( "mac_address" ) ){
+				url_params += "mac_address=" + UtilNetwork.getMacAddress( context ) + "&";
+			}
+			else if( params_arr[ i ].equals( "language_code" ) ){
+				String language_code = UtilShell.executeShellCommandWithOp( "getprop language_code" ).trim();
+				url_params += "language_code=" + language_code + "&";
+
+				}
+
+		}
+		*/
+        //url_params = url_params.substring( 0, url_params.length() - 1 );
+        //URL = URL + url_params;
         Log.i( TAG, URL );
 
         wv_open_page.loadUrl( URL );
