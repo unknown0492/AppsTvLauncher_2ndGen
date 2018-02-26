@@ -30,10 +30,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.excel.ResumeTaskService;
 import com.excel.configuration.ConfigurationReader;
 import com.excel.configuration.LauncherJSONReader;
-import com.excel.configuration.PreinstallApps;
 import com.excel.customitems.CustomItems;
 import com.excel.excelclasslibrary.UtilFile;
 import com.excel.excelclasslibrary.UtilMisc;
@@ -170,6 +168,7 @@ public class MainActivity extends Activity {
 
 		configurationReader = ConfigurationReader.getInstance();
 
+		/*
 		new AsyncTask<Void,Void,Void>(){
 
             @Override
@@ -189,6 +188,8 @@ public class MainActivity extends Activity {
                 return null;
             }
         }.execute();
+		*/
+		setLauncherMenuItems();
 
         createLauncheritemsUpdateBroadcast();
 
@@ -208,10 +209,10 @@ public class MainActivity extends Activity {
 
 		startScreenCastService();
 
-        ds.resumeDigitalSignageSwitcher();
-        weather.resumeYahooWeatherService();
+        //ds.resumeDigitalSignageSwitcher();
+        //weather.resumeYahooWeatherService();
 
-        clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
+        //clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
 
 	}
 
@@ -330,10 +331,6 @@ public class MainActivity extends Activity {
                                         //e.printStackTrace();
                                     }
                                 }
-
-
-
-
                                 return null;
                             }
 
@@ -365,15 +362,7 @@ public class MainActivity extends Activity {
                             }
                         }.execute();
 
-
-
-
-
     					last_index_of_main_menu = Integer.parseInt( v.getTag().toString() );
-
-
-
-
     				}
     				else{
     					// Log.d( null, "focus lost from "+tv.getText().toString() );
@@ -777,11 +766,11 @@ public class MainActivity extends Activity {
 
 	private void onPauseContent(){
 
-        /*ds.pauseDigitalSignageSwitcher();
+        ds.pauseDigitalSignageSwitcher();
         weather.pauseYahooWeatherService();
 
         pauseTetheringInfoFlipper();
-        clock_weather_hotel_logo_flipper.pauseClockWeatherLogoFlipper();*/
+        clock_weather_hotel_logo_flipper.pauseClockWeatherLogoFlipper();
 
         pauseLauncherIdleTimer();
 
@@ -806,6 +795,7 @@ public class MainActivity extends Activity {
 	}
 
 	private void onResumeContent(){
+    	/*
         if( ! isLoadingCompleted() ) {
             //first_main_item.requestFocus();
 
@@ -867,13 +857,23 @@ public class MainActivity extends Activity {
             }
 
         }
+        */
 
         /*ds.resumeDigitalSignageSwitcher();
         weather.resumeYahooWeatherService();
 
         clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
         */
+		configurationReader = ConfigurationReader.reInstantiate();
+		onUserInteraction();
+		ds.resumeDigitalSignageSwitcher();
+		weather.resumeYahooWeatherService();
+
+		clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
         startTetheringInfoSwitcher();
+
+		UtilShell.executeShellCommandWithOp("am startservice -n com.waxrain.airplaydmr/com.waxrain.airplaydmr.WaxPlayService");
+
     }
 
     @Override
