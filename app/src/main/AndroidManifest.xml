@@ -57,12 +57,14 @@
         <activity
             android:name=".ClockActivity"
             android:label="Clock Activity"
-            android:theme="@style/AppTheme"></activity>
+            android:theme="@style/AppTheme" />
 
         <service
             android:name="com.excel.ResumeTaskService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
+
+        <activity android:name=".WorldClockWeb"></activity>
     </application>
 
 </manifest>
