@@ -753,6 +753,8 @@ public class MainActivity extends Activity {
 		super.onPause();
 		Log.d( TAG, "insde onPause()" );
 
+		onPauseContent();
+		/*
 		// Permissions for Android 6.0
 		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
 			if (checkPermissions()) {
@@ -763,6 +765,7 @@ public class MainActivity extends Activity {
 		else{
             onPauseContent();
         }
+        */
 	}
 
 	private void onPauseContent(){
@@ -783,6 +786,8 @@ public class MainActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 
+		onResumeContent();
+		/*
 		// Permissions for Android 6.0
 		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
 			if ( checkPermissions() ) {
@@ -793,85 +798,18 @@ public class MainActivity extends Activity {
 		else{
             onResumeContent();
         }
+        */
 	}
 
 	private void onResumeContent(){
-    	/*
-        if( ! isLoadingCompleted() ) {
-            //first_main_item.requestFocus();
 
-            showLoadingActivity();
-            //return;
-        }
-        else {
-
-            if ( access_onresume_time == -1 ) {
-                access_onresume_time = System.currentTimeMillis();
-            } else {
-                long now = System.currentTimeMillis();
-                long diff = now - access_onresume_time;
-                int sec = (int) diff / 1000;
-                Log.d( TAG, "sec : " + sec );
-                if ( sec <= 10 ){
-                    access_onresume_time = now;
-                    //return;
-                }
-                else{
-                    access_onresume_time = now;
-                    Log.d( TAG, "inside onResume()" );
-
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            Intent in = new Intent(context, ResumeTaskService.class);
-                            // startService(in);
-
-                            PreinstallApps[] paps = PreinstallApps.getPreinstallApps();
-                            for( int i = 0 ; i < paps.length; i++ ){
-
-                                if( paps[ i ].getForceKill().trim().equals( "force_kill" ) ) {
-                                    String pid = UtilShell.executeShellCommandWithOp( "pidof " + paps[ i ].getPackageName() ).trim();
-                                    pid = pid.trim();
-                                    if( pid.equals( "" ) || (!pid.equals( "1" )) )
-                                        UtilShell.executeShellCommandWithOp( "kill "+pid );
-                                    Log.d( TAG, "Killed pid : "+pid+", of package " + paps[ i ].getPackageName() );
-                                    continue;
-                                }
-                                Log.d( TAG, "Skipped : " + paps[ i ].getPackageName() + ", " + paps[ i ].getForceKill() );
-                            }
-
-                            String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" ).trim();
-                            UtilShell.executeShellCommandWithOp( "kill "+pid );
-                            Log.d( TAG, "Killed pid : "+pid+", of package com.android.dtv" );
-                        }
-                    }, 500 );
-
-
-                    // restoreTvChannels();
-
-                    // configurationReader = ConfigurationReader.reInstantiate();
-
-                    onUserInteraction();
-
-                    // startScreenCastService();
-                }
-            }
-
-        }
-        */
-
-        /*ds.resumeDigitalSignageSwitcher();
-        weather.resumeYahooWeatherService();
-
-        clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
-        */
 		if( ! isLoadingCompleted() ) {
 			//first_main_item.requestFocus();
 
 			showLoadingActivity();
 			//return;
 		}
-		else {
+		/*else {
 
 			if ( access_onresume_time == -1 ) {
 				access_onresume_time = System.currentTimeMillis();
@@ -901,7 +839,13 @@ public class MainActivity extends Activity {
 				}
 			}
 
-		}
+		}*/
+		onUserInteraction();
+
+		startScreenCastService();
+
+		configurationReader = ConfigurationReader.reInstantiate();
+		onUserInteraction();
 
 		ds.resumeDigitalSignageSwitcher();
 		weather.resumeYahooWeatherService();
@@ -915,6 +859,8 @@ public class MainActivity extends Activity {
 	protected void onDestroy() {
 		super.onDestroy();
 
+		onDestroyContent();
+		/*
 		// Permissions for Android 6.0
 		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
 			if (checkPermissions()) {
@@ -925,6 +871,7 @@ public class MainActivity extends Activity {
 		else{
             onDestroyContent();
         }
+        */
 	}
 
 	private void onDestroyContent(){
@@ -1074,6 +1021,8 @@ public class MainActivity extends Activity {
 
 		current_timestamp = System.currentTimeMillis();
 
+		onUserInteractionContent();
+		/*
 		// Permissions for Android 6.0
 		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
 			if (checkPermissions()) {
@@ -1082,6 +1031,7 @@ public class MainActivity extends Activity {
 		}
 		else
             onUserInteractionContent();
+		*/
 	}
 
     private void onUserInteractionContent(){
@@ -1119,9 +1069,9 @@ public class MainActivity extends Activity {
 					ObjectAnimator.ofFloat( rl_elements, "alpha", 1.0f, 0.0f ).setDuration( 500 ).start();
 					areLauncherElementsHidden = true;
 				}
-				else{
+				//else{
 					startLauncherIdleTimer();
-				}
+				//}
 
 			}
 		};
