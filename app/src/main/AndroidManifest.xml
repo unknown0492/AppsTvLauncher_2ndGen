@@ -47,7 +47,7 @@
         <activity
             android:name=".LoadingActivity"
             android:launchMode="singleInstance"
-            android:theme="@android:style/Theme.Black.NoTitleBar">
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -64,7 +64,8 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".WorldClockWeb"></activity>
+        <activity android:name=".WorldClockWeb"
+            android:theme="@style/AppTheme"></activity>
     </application>
 
 </manifest>

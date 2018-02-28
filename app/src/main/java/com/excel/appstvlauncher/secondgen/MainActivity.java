@@ -722,7 +722,9 @@ public class MainActivity extends Activity {
     @Override
 	public boolean onKeyDown( int i, KeyEvent keyevent ){
 		String key_name = KeyEvent.keyCodeToString( i );
-		Log.d( null, "KeyPressed : "+i+","+key_name );
+		Log.i( TAG, "KeyPressed : "+i+","+key_name );
+		//if( ( i == 19 ) || ( i == 20 ) || ( i == 21 ) || ( i == 22 ) )
+		//	return true;
 
 		// Handle the Overflow left and right key movements for MAIN menu
 		if( handleMainMenuOverflow( i, keyevent ) ) return true;
@@ -749,13 +751,12 @@ public class MainActivity extends Activity {
     @Override
 	protected void onPause() {
 		super.onPause();
-		Log.d( TAG,  "insde onPause()" );
+		Log.d( TAG, "insde onPause()" );
 
 		// Permissions for Android 6.0
 		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
 			if (checkPermissions()) {
 				//  permissions  granted.
-
 				onPauseContent();
 			}
 		}
@@ -864,15 +865,49 @@ public class MainActivity extends Activity {
 
         clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
         */
-		configurationReader = ConfigurationReader.reInstantiate();
-		onUserInteraction();
+		if( ! isLoadingCompleted() ) {
+			//first_main_item.requestFocus();
+
+			showLoadingActivity();
+			//return;
+		}
+		else {
+
+			if ( access_onresume_time == -1 ) {
+				access_onresume_time = System.currentTimeMillis();
+			} else {
+				long now = System.currentTimeMillis();
+				long diff = now - access_onresume_time;
+				int sec = (int) diff / 1000;
+				Log.d( TAG, "sec : " + sec );
+				if ( sec <= 10 ){
+					access_onresume_time = now;
+					//return;
+				}
+				else{
+					access_onresume_time = now;
+					Log.d( TAG, "time > 10 sec" );
+
+					// restoreTvChannels();
+
+					onUserInteraction();
+
+					startScreenCastService();
+
+					configurationReader = ConfigurationReader.reInstantiate();
+					onUserInteraction();
+
+					//UtilShell.executeShellCommandWithOp( "am startservice -n com.waxrain.airplaydmr/com.waxrain.airplaydmr.WaxPlayService" );
+				}
+			}
+
+		}
+
 		ds.resumeDigitalSignageSwitcher();
 		weather.resumeYahooWeatherService();
 
 		clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
-        startTetheringInfoSwitcher();
-
-		UtilShell.executeShellCommandWithOp("am startservice -n com.waxrain.airplaydmr/com.waxrain.airplaydmr.WaxPlayService");
+		startTetheringInfoSwitcher();
 
     }
 
