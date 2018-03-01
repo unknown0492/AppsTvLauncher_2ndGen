@@ -46,6 +46,7 @@ public class DigitalSignage{
         Drawable dr = ImageManipulator.getDecodedDrawable( context.getResources(), R.drawable.default_bg, 1920, 1020 );
         rl_launcher_bg.setBackgroundDrawable( dr );
         dr = null;
+
     }
 
     public void setDigitalSignageOnBackground( String path ){

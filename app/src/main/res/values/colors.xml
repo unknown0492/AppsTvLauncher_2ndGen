@@ -5,4 +5,5 @@
 	<item name="white" type="color">#ffffff</item>
 	<item name="black" type="color">#000000</item>
 	<item name="light_blue" type="color">#32dafe</item>
+	<item name="near_transparent" type="color">#00000001</item>
 </resources>

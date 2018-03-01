@@ -809,7 +809,7 @@ public class MainActivity extends Activity {
 			showLoadingActivity();
 			//return;
 		}
-		/*else {
+		else {
 
 			if ( access_onresume_time == -1 ) {
 				access_onresume_time = System.currentTimeMillis();
@@ -835,17 +835,19 @@ public class MainActivity extends Activity {
 					configurationReader = ConfigurationReader.reInstantiate();
 					onUserInteraction();
 
-					//UtilShell.executeShellCommandWithOp( "am startservice -n com.waxrain.airplaydmr/com.waxrain.airplaydmr.WaxPlayService" );
+					UtilShell.executeShellCommandWithOp( "am startservice -n com.waxrain.airplaydmr/com.waxrain.airplaydmr.WaxPlayService" );
 				}
 			}
 
-		}*/
+		}
+		/*
 		onUserInteraction();
 
 		startScreenCastService();
 
 		configurationReader = ConfigurationReader.reInstantiate();
 		onUserInteraction();
+		*/
 
 		ds.resumeDigitalSignageSwitcher();
 		weather.resumeYahooWeatherService();
@@ -1069,9 +1071,9 @@ public class MainActivity extends Activity {
 					ObjectAnimator.ofFloat( rl_elements, "alpha", 1.0f, 0.0f ).setDuration( 500 ).start();
 					areLauncherElementsHidden = true;
 				}
-				//else{
+				else{
 					startLauncherIdleTimer();
-				//}
+				}
 
 			}
 		};
