@@ -135,6 +135,11 @@ public class MainActivity extends Activity {
 	String ALPHABET = "KEYCODE_";
 
 	RelativeLayout activity_main;
+	LinearLayout first_main_item = null;
+	LinearLayout current_main_item = null;
+	LinearLayout prev_main_item = null;
+	Handler test_handler = new Handler();
+
 
     @Override
     protected void onCreate( Bundle savedInstanceState )  {
@@ -143,306 +148,168 @@ public class MainActivity extends Activity {
 
         setContentView( R.layout.activity_main );
 
-		// Permissions for Android 6.0
-		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
-			if (checkPermissions()) {
-				//  permissions  granted.
-				init();
-			}
-		}
-		else
-            init();
-
-		// activity_main = (RelativeLayout) findViewById( R.id.rl_launcher_bg );
-		// activity_main.requestFocus();
+		init();
     }
 
     /* Launcher Menu Items Related Functions */
 
-    Handler test_handler = new Handler();
+
 
 	@SuppressWarnings("deprecation")
 	public void init(){
 
-		initViews();
-
 		configurationReader = ConfigurationReader.getInstance();
 
-		/*
-		new AsyncTask<Void,Void,Void>(){
+		initViews();
+		new Handler().postDelayed(new Runnable() {
 
-            @Override
-            protected Void doInBackground(Void... voids) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        test_handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                setLauncherMenuItems();
-                            }
-                        });
-                    }
-                }).start();
+			@Override
+			public void run() {
+				setLauncherMenuItems();
+			}
 
-                return null;
-            }
-        }.execute();
-		*/
-		setLauncherMenuItems();
+		}, 1000 );
 
-        createLauncheritemsUpdateBroadcast();
-
-
+		createLauncheritemsUpdateBroadcast();
 		startPerfectTimeService();
 		createPerfectTimeReceiver();
 		startClockTicker();
-
 		startDateAndDayNameSwitcher();
-
 		initializeWeatherFeatures();
-
-        initializeClockWeatherHotelLogoFlipper();
-        checkIfHotelLogoToBeDisplayed();
-
-        restoreTvChannels();
-
+		initializeClockWeatherHotelLogoFlipper();
+		checkIfHotelLogoToBeDisplayed();
+		restoreTvChannels();
 		startScreenCastService();
 
-        //ds.resumeDigitalSignageSwitcher();
-        //weather.resumeYahooWeatherService();
+		this.ds.resumeDigitalSignageSwitcher();
+		this.weather.resumeYahooWeatherService();
+		this.clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
+		startTetheringInfoSwitcher();
 
-        //clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
 
 	}
 
-    /*int TOTAL_OPTIONS = 6;
-    int OPTION_PACKAGE_NAME =   0;
-    int OPTION_MD5          =   1;
-    int OPTION_BUTTON_ID    =   2;
-    int OPTION_SHOW         =   3;
-    int OPTION_WIPE_CACHE   =   4;
-    int OPTION_FORCE_KILL   =   5;
-    String papps_arr[][];
-    public void test(){
-        configurationReader = ConfigurationReader.getInstance();
-        String preinstall_apps = UtilFile.readData( "appstv_data", "preinstall_apps" );
-        Log.d( TAG, "preinstall_apps : "+preinstall_apps );
-        String temp[] = preinstall_apps.split( "," );
-        Log.d( TAG, "temp.length: " + temp.length );
-        String t[] = new String[ TOTAL_OPTIONS ];
-        int j = 0, k = 0;
-        papps_arr = new String[ temp.length/TOTAL_OPTIONS ][ TOTAL_OPTIONS ];
-        for( int i = 0 ; i < temp.length ; i++ ){
 
-            //for( int j = 0 ; j < TOTAL_OPTIONS ; j++ ){
-            Log.d( TAG, String.format( "Putting %s in t[ %d ]", temp[ i ], j ) );
-            t[ j++ ] = temp[ i ];
+	public void setMainMenuAdapter(final MenuAdapter adapter) {
+		for (int i = 0; i < this.ma.getCount(); i++) {
+			LinearLayout v = (LinearLayout) this.ma.getView(i, null, null);
+			this.ll_main_menu_items.addView(v);
+			if (i == 0) {
+				this.first_main_item = v;
+			}
+			v.setOnFocusChangeListener(new OnFocusChangeListener() {
+				public void onFocusChange(View v, boolean hasFocus) {
+					boolean z;
+					LinearLayout ll = (LinearLayout) v;
+					TextView tv = (TextView) ll.findViewById(R.id.tv_menu_item_name);
+					MainActivity.this.scrollCenter(ll, MainActivity.this.hsv_menu);
+					MainActivity.this.main_menu_last_element_reached = Integer.parseInt(v.getTag().toString()) == adapter.getCount() + -1;
+					MainActivity mainActivity = MainActivity.this;
+					if (Integer.parseInt(v.getTag().toString()) == 0) {
+						z = true;
+					} else {
+						z = false;
+					}
+					mainActivity.main_menu_first_element_reached = z;
+					MainActivity.this.sub_menu_first_element_reached = false;
+					MainActivity.this.sub_menu_last_element_reached = false;
+					MainActivity.this.prev_main_item = MainActivity.this.current_main_item;
+					if (!hasFocus) {
+						tv.setTextColor(MainActivity.this.context.getResources().getColor(R.color.white));
+						tv.setScaleX(1.0f);
+						tv.setScaleY(1.0f);
+						tv.setBackground(null);
+					} else if (MainActivity.this.prev_main_item != ll) {
+						Log.d(null, "focus gained on " + tv.getText().toString());
+						tv.setTextColor(MainActivity.this.context.getResources().getColor(R.color.light_blue));
+						tv.setScaleX(1.45f);
+						tv.setScaleY(1.45f);
+						MainActivity.this.current_main_item = ll;
+						ObjectAnimator oa = ObjectAnimator.ofFloat(MainActivity.this.hsv_sub_menu, "translationY", new float[]{0.0f});
+						oa.setDuration(250);
+						oa.start();
+						ObjectAnimator oa1 = ObjectAnimator.ofFloat(MainActivity.this.hsv_sub_menu, "alpha", new float[]{1.0f, 0.0f});
+						oa1.setDuration(250);
+						oa1.start();
+						new AsyncTask<Void, Void, Void>() {
+							protected Void doInBackground(Void... voids) {
+								MainActivity.this.sub_menu_values = MainActivity.this.ljr.getSubMenuItemNames(MainActivity.this.last_index_of_main_menu);
+								for (int i = 0; i < MainActivity.this.sub_menu_values.length; i++) {
+									try {
+										MainActivity.this.sub_menu_values[i] = new JSONObject(MainActivity.this.ljr.getSubItemValue(MainActivity.this.last_index_of_main_menu, i, "item_name_translated")).getString(UtilMisc.getCustomLocaleLanguageConstant().getLanguage());
+									} catch (Exception e) {
+									}
+								}
+								return null;
+							}
 
-            //}
-            if( (i + 1)%TOTAL_OPTIONS == 0 ){
-                Log.d( TAG, "" + (i+1) + " reached " );
-                j = 0;
-                Log.d( TAG, String.format( "putting papps_arr[ %d ] = t", k ) );
-                papps_arr[ k++ ] = t;
-                t = new String[ TOTAL_OPTIONS ];
-            }
-
-        }
-
-        for( int l = 0 ; l < papps_arr.length ; l++ ){
-            Log.d( TAG, "" + l + "->" );
-            for( int m = 0 ; m < papps_arr[ l ].length ; m++ ){
-                Log.d( TAG, "   " + m + "->" + papps_arr[ l ][ m ]);
-            }
-        }
-    }*/
-
-    LinearLayout first_main_item = null;
-    LinearLayout current_main_item = null;
-    LinearLayout prev_main_item = null;
-    public void setMainMenuAdapter( final MenuAdapter adapter ){
-    	for( int i = 0 ; i < ma.getCount(); i++ ){
-    		LinearLayout v = (LinearLayout) ma.getView( i, null, null );
-    		ll_main_menu_items.addView( v );
-
-            if( i == 0 ){
-				first_main_item = v;
-				//v.requestFocus();
-            }
-
-    		v.setOnFocusChangeListener( new OnFocusChangeListener() {
-
-    			@Override
-    			public void onFocusChange( View v, boolean hasFocus) {
-    				LinearLayout ll = (LinearLayout) v;
-    				TextView tv = (TextView) ll.findViewById( R.id.tv_menu_item_name );
-
-    				scrollCenter( ll, hsv_menu );
-
-    				main_menu_last_element_reached = (Integer.parseInt( v.getTag().toString() ) == adapter.getCount() - 1)?true:false;
-    	    		main_menu_first_element_reached = (Integer.parseInt( v.getTag().toString() ) == 0)?true:false;
-    	    		sub_menu_first_element_reached = false;
-    	    		sub_menu_last_element_reached = false;
-
-					prev_main_item = current_main_item;
-
-    				if( hasFocus ){
-						// This is to prevent animation when going back to main menu parent from its child sub menu
-						if( prev_main_item == ll )
-							return;
-
-    					Log.d( null, "focus gained on "+tv.getText().toString() );
-    					// tv.setTextColor( context.getResources().getColor( R.color.menu_text_active_color ) );
-    					tv.setTextColor( context.getResources().getColor( R.color.light_blue ) );
-                        tv.setScaleX( 1.45f );
-                        tv.setScaleY( 1.45f );
-
-						current_main_item = ll;
-                        //tv.setBackground( context.getResources().getDrawable( R.drawable.menu_bg_cut1 ) );
-                        /*LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) ll.getLayoutParams();
-                        params.setMargins( 0, -50, 0, 0 );
-                        ll.setLayoutParams(params);*/
-
-    					// Hide its sub-menu
-    					ObjectAnimator oa = ObjectAnimator.ofFloat( hsv_sub_menu, "translationY", 0 );
-    					oa.setDuration( 250 );
-    					oa.start();
-
-    					ObjectAnimator oa1 = ObjectAnimator.ofFloat( hsv_sub_menu, "alpha", 1.0f, 0.0f );
-    					oa1.setDuration( 250 );
-    					oa1.start();
-
-
-                        new AsyncTask<Void, Void, Void>(){
-
-                            @Override
-                            protected Void doInBackground(Void... voids) {
-                                sub_menu_values = ljr.getSubMenuItemNames( last_index_of_main_menu );
-                                for( int i = 0 ; i < sub_menu_values.length ; i++ ){
-                                    //String item_name = ljr.getSubItemValue( last_index_of_main_menu, i , "item_name_translated" );
-                                    String item_name_json = ljr.getSubItemValue( last_index_of_main_menu, i, "item_name_translated" );
-                                    try {
-                                        JSONObject jso = new JSONObject( item_name_json );
-                                        //Log.d( TAG, "display name : "+UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
-                                        sub_menu_values[ i ] = jso.getString( UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
-                                    }
-                                    catch ( Exception e ){
-                                        //e.printStackTrace();
-                                    }
-                                }
-                                return null;
-                            }
-
-                            @Override
-                            protected void onPostExecute(Void aVoid) {
-                                new Handler().postDelayed( new Runnable() {
-
-                                    @Override
-                                    public void run() {
-
-                                        sma = new SubMenuAdapter( R.layout.sub_menu_items, context, sub_menu_values );
-                                        setSubMenuAdapter( sma );
-
-                                        // Show its Sub-Menu
-                                        ObjectAnimator oaa = ObjectAnimator.ofFloat( hsv_sub_menu, "translationY", 40 );
-                                        oaa.setStartDelay( 250 );
-                                        oaa.setDuration( 250 );
-                                        oaa.start();
-
-                                        ObjectAnimator oaa1 = ObjectAnimator.ofFloat( hsv_sub_menu, "alpha", 0.0f, 1.0f );
-                                        oaa1.setStartDelay( 250 );
-                                        oaa1.setDuration( 250 );
-                                        oaa1.start();
-
-                                    }
-                                }, 250 );
-
-                                super.onPostExecute(aVoid);
-                            }
-                        }.execute();
-
-    					last_index_of_main_menu = Integer.parseInt( v.getTag().toString() );
-    				}
-    				else{
-    					// Log.d( null, "focus lost from "+tv.getText().toString() );
-    					tv.setTextColor( context.getResources().getColor( R.color.white ) );
-                        tv.setScaleX( 1.0f );
-                        tv.setScaleY( 1.0f );
-                        //tv.setBackground( context.getResources().getDrawable( R.drawable.submenu_bg ) );
-                        tv.setBackground( null );
-    					// Save the state of this View
-
-    				}
-    			}
-    		});
-
-    		v.setOnClickListener( new OnClickListener() {
-
-				@Override
-				public void onClick( View v ) {
-					int index = Integer.parseInt( v.getTag().toString() );
-					// Log.d( TAG, "Clicked : "+index );
-					processMainMenuItemClick( index );
+							protected void onPostExecute(Void aVoid) {
+								new Handler().postDelayed(new Runnable() {
+									public void run() {
+										MainActivity.this.sma = new SubMenuAdapter(R.layout.sub_menu_items, MainActivity.this.context, MainActivity.this.sub_menu_values);
+										MainActivity.this.setSubMenuAdapter(MainActivity.this.sma);
+										ObjectAnimator oaa = ObjectAnimator.ofFloat(MainActivity.this.hsv_sub_menu, "translationY", new float[]{40.0f});
+										oaa.setStartDelay(250);
+										oaa.setDuration(250);
+										oaa.start();
+										ObjectAnimator oaa1 = ObjectAnimator.ofFloat(MainActivity.this.hsv_sub_menu, "alpha", new float[]{0.0f, 1.0f});
+										oaa1.setStartDelay(250);
+										oaa1.setDuration(250);
+										oaa1.start();
+									}
+								}, 250);
+								super.onPostExecute(aVoid);
+							}
+						}.execute(new Void[0]);
+						MainActivity.this.last_index_of_main_menu = Integer.parseInt(v.getTag().toString());
+					}
 				}
 			});
-    	}
-
-    	// This is to set the First Item on main menu as Active
-		first_main_item.requestFocus();
-		TextView tv = (TextView) first_main_item.findViewById( R.id.tv_menu_item_name );
-		tv.setTextColor( context.getResources().getColor( R.color.light_blue ) );
-		tv.setScaleX( 1.45f );
-		tv.setScaleY( 1.45f );
-    }
-
-    public void setSubMenuAdapter( final SubMenuAdapter adapter ){
-    	View first_element = null, last_element = null;
-    	ll_sub_menu_items.removeAllViews();
-    	for( int i = 0 ; i < adapter.getCount(); i++ ){
-    		LinearLayout v = (LinearLayout) adapter.getView( i, null, null );
-    		ll_sub_menu_items.addView( v );
-
-    		v.setOnFocusChangeListener( new OnFocusChangeListener() {
-
-    			@Override
-    			public void onFocusChange( View v, boolean hasFocus ) {
-    				LinearLayout ll = (LinearLayout) v;
-    				TextView tv = (TextView) ll.findViewById( R.id.tv_sub_menu_item_name );
-
-    				// scrollCenter( ll, hsv_sub_menu );
-
-    				sub_menu_last_element_reached = (Integer.parseInt( v.getTag().toString() ) == adapter.getCount() - 1)?true:false;
-    	    		sub_menu_first_element_reached = (Integer.parseInt( v.getTag().toString() ) == 0)?true:false;
-    	    		main_menu_first_element_reached = false;
-    	    		main_menu_last_element_reached = false;
-
-    				if( hasFocus ){
-    					Log.d( null, "focus gained on "+tv.getText().toString() );
-    					tv.setBackground( context.getResources().getDrawable( R.drawable.button_focus ) );
-    				}
-    				else{
-    					// Log.d( null, "focus lost from "+tv.getText().toString() );
-    					//tv.setTextColor( context.getResources().getColor( R.color.white ) );
-    					tv.setBackground( context.getResources().getDrawable( R.drawable.submenu_bg1 ) );
-
-    				}
-    			}
-    		});
-
-    		v.setOnClickListener( new OnClickListener() {
-
-				@Override
-				public void onClick( View v ) {
-					int sub_menu_index = Integer.parseInt( v.getTag().toString() );
-					processSubMenuItemClick( last_index_of_main_menu, sub_menu_index );
+			v.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					MainActivity.this.processMainMenuItemClick(Integer.parseInt(v.getTag().toString()));
 				}
 			});
-    	}
+		}
+		this.first_main_item.requestFocus();
+		TextView tv = (TextView) this.first_main_item.findViewById(R.id.tv_menu_item_name);
+		tv.setTextColor(this.context.getResources().getColor(R.color.light_blue));
+		tv.setScaleX(1.45f);
+		tv.setScaleY(1.45f);
+	}
 
-        //first_main_item.requestFocus();
-
-    }
+	public void setSubMenuAdapter(final SubMenuAdapter adapter) {
+		this.ll_sub_menu_items.removeAllViews();
+		for (int i = 0; i < adapter.getCount(); i++) {
+			LinearLayout v = (LinearLayout) adapter.getView(i, null, null);
+			this.ll_sub_menu_items.addView(v);
+			v.setOnFocusChangeListener(new OnFocusChangeListener() {
+				public void onFocusChange(View v, boolean hasFocus) {
+					boolean z = true;
+					TextView tv = (TextView) ((LinearLayout) v).findViewById(R.id.tv_sub_menu_item_name);
+					MainActivity.this.sub_menu_last_element_reached = Integer.parseInt(v.getTag().toString()) == adapter.getCount() + -1;
+					MainActivity mainActivity = MainActivity.this;
+					if (Integer.parseInt(v.getTag().toString()) != 0) {
+						z = false;
+					}
+					mainActivity.sub_menu_first_element_reached = z;
+					MainActivity.this.main_menu_first_element_reached = false;
+					MainActivity.this.main_menu_last_element_reached = false;
+					if (hasFocus) {
+						Log.d(null, "focus gained on " + tv.getText().toString());
+						tv.setBackground(MainActivity.this.context.getResources().getDrawable(R.drawable.button_focus));
+						return;
+					}
+					tv.setBackground(MainActivity.this.context.getResources().getDrawable(R.drawable.submenu_bg1));
+				}
+			});
+			v.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					MainActivity.this.processSubMenuItemClick(MainActivity.this.last_index_of_main_menu, Integer.parseInt(v.getTag().toString()));
+				}
+			});
+		}
+	}
 
     public void scrollCenter( LinearLayout ll, View viewToScroll ) {
     	// Source : http://stackoverflow.com/questions/8642677/reduce-speed-of-smooth-scroll-in-scroll-view
@@ -452,101 +319,39 @@ public class MainActivity extends Activity {
         ObjectAnimator.ofInt( viewToScroll, "scrollX",  endPos + halfWidth - viewToScroll.getWidth() / 2 ).setDuration( 500 ).start();
     }
 
-    public void setLauncherMenuItems(){
-    	/**
-    	 *
-    	 * Algorithm
-    	 *
-    	 * 1. If /mnt/sdcard/appstv_data/launcher_config.json exist
-    	 *    2. Read content of launcher_config.json into String variable
-    	 *    3. Initialize LauncherJSONReader instance from the launcher_config.json content
-    	 *    4. Read main_items_count i.e. Total number of main menu items in the JSON
-    	 *    5. Run a Loop main_items_count times
-    	 *       6.  Read sub_items_count i.e. Total number of sub items under main item specified by loop iteration count
-    	 *       7.  If sub_items_count == 0 i.e. Main Menu Item does not have Sub Items
-    	 *           8. If item_type == "app"
-    	 *              9. { ~~~ }
-    	 *       10. If sub_items_count > 0
-    	 *           11.
-    	 *
-    	 *
-    	 *
-    	 *
-    	 */
-    	File configuration_file = new File( Environment.getExternalStorageDirectory() + File.separator + PATH_LAUNCHER_CONFIG_FILE );
+	public void setLauncherMenuItems() {
+		File configuration_file = new File(Environment.getExternalStorageDirectory() + File.separator + PATH_LAUNCHER_CONFIG_FILE);
 		String launcher_config_json = "";
-    	// Step-1
-    	if( configuration_file.exists() ) {
-			// Step-2
+		if (configuration_file.exists()) {
 			launcher_config_json = UtilFile.readData(configuration_file);
+		} else {
+			launcher_config_json = UtilFile.readData(new File(PATH_LAUNCHER_CONFIG_FILE_SYSTEM));
 		}
-		else{
-			launcher_config_json = UtilFile.readData( new File( PATH_LAUNCHER_CONFIG_FILE_SYSTEM ) );
-		}
-
-		// Step-3
-		ljr = new LauncherJSONReader( launcher_config_json );
-
-		// Step-4
-		int main_items_count = ljr.getMainItemsCount();
-
-        setCollarText( ljr );
-
-        // Step-5
-		int sub_items_count;
-		/*configurationReader = ConfigurationReader.reInstantiate();
-		String hotspot_enabled = configurationReader.getHotspotEnabled();
-		if( hotspot_enabled.equals( "0" ) )
-			main_menu_values = new String[ main_items_count-1 ];
-		else*/
-			main_menu_values = new String[ main_items_count ];
-
-		for( int i = 0, j=0 ; i < main_items_count ; i++ ){
-			//sub_items_count = ljr.getSubItemsCount( i );
-			// Log.d( TAG, "sub_items_count : "+sub_items_count );
-			//j = i;
-			// Step-6
-			sub_items_count = ljr.getSubItemsCount( i );
-			//Log.d( TAG, "sub items count : "+sub_items_count );
-
-			// Step-7
-			if( sub_items_count == 0 ){
-
-				// Step-8
-				String item_type = ljr.getMainItemValue( i, "item_type" );
-				if( item_type.equals( "app" ) ){
-
-				}
+		this.ljr = new LauncherJSONReader(launcher_config_json);
+		int main_items_count = this.ljr.getMainItemsCount();
+		setCollarText(this.ljr);
+		this.main_menu_values = new String[main_items_count];
+		int i = 0;
+		while (i < main_items_count) {
+			String item_name;
+			if (this.ljr.getSubItemsCount(i) != 0 || this.ljr.getMainItemValue(i, "item_type").equals("app")) {
+				item_name = this.ljr.getMainItemValue(i, "item_name");
+			} else {
+				item_name = this.ljr.getMainItemValue(i, "item_name");
 			}
-			/*else if( ljr.getMainItemValue( i, "item_type" ).equals( "expandable-hotspot" ) ){
-
-				if( hotspot_enabled.equals( "0" ) ){
-					continue;
-				}
-			}*/
-            String item_name = ljr.getMainItemValue( i, "item_name" );
-            String item_name_json = ljr.getMainItemValue( i, "item_name_translated" );
-            try {
-            	Log.d( TAG, item_name_json );
-                JSONObject jso = new JSONObject( item_name_json );
-                //Log.d( TAG, "display name : "+UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
-                item_name = jso.getString( UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
-            }
-            catch ( Exception e ){
-                item_name = ljr.getMainItemValue( i, "item_name" );
-                e.printStackTrace();
-            }
-            main_menu_values[ i ] = item_name;
-
+			try {
+				item_name = new JSONObject(this.ljr.getMainItemValue(i, "item_name_translated")).getString(UtilMisc.getCustomLocaleLanguageConstant().getLanguage());
+			} catch (Exception e) {
+				item_name = this.ljr.getMainItemValue(i, "item_name");
+				e.printStackTrace();
+			}
+			this.main_menu_values[i] = item_name;
+			i++;
 		}
-		ma = new MenuAdapter( R.layout.main_menu_items, this, main_menu_values );
-
-
-
-    	setMainMenuAdapter( ma );
-        setSubMenuAdapter( sma );
-
-    }
+		this.ma = new MenuAdapter(R.layout.main_menu_items, this, this.main_menu_values);
+		setMainMenuAdapter(this.ma);
+		setSubMenuAdapter(this.sma);
+	}
 
 	public void createLauncheritemsUpdateBroadcast(){
 
@@ -741,28 +546,21 @@ public class MainActivity extends Activity {
 		// Short-Cut key toggling
 		shortCutKeyMonitor( key_name );
 
-		if( i == 4 ){
-			return true;
+		if (i != 4) {
+			return super.onKeyDown(i, keyevent);
 		}
-
-		return super.onKeyDown( i, keyevent );
+		return true;
 	}
 
     @Override
 	protected void onPause() {
 		super.onPause();
-		Log.d( TAG, "insde onPause()" );
-
-		// Permissions for Android 6.0
-		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
-			if (checkPermissions()) {
-				//  permissions  granted.
-				onPauseContent();
-			}
-		}
-		else{
-            onPauseContent();
-        }
+		Log.d(TAG, "insde onPause()");
+		//this.ds.pauseDigitalSignageSwitcher();
+		//this.weather.pauseYahooWeatherService();
+		/*this.clock_weather_hotel_logo_flipper.pauseClockWeatherLogoFlipper();
+		pauseTetheringInfoFlipper();*/
+		pauseLauncherIdleTimer();
 	}
 
 	private void onPauseContent(){
@@ -783,16 +581,19 @@ public class MainActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 
-		// Permissions for Android 6.0
-		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
-			if ( checkPermissions() ) {
-				//  permissions  granted.
-				onResumeContent();
-			}
+		if ( ! isLoadingCompleted() ) {
+			showLoadingActivity();
 		}
-		else{
-            onResumeContent();
-        }
+		Log.d( TAG, "insde onResume()" );
+		this.configurationReader = ConfigurationReader.reInstantiate();
+
+		onUserInteraction();
+		//this.ds.resumeDigitalSignageSwitcher();
+		//this.weather.resumeYahooWeatherService();
+		/*this.clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
+		startTetheringInfoSwitcher();*/
+
+		UtilShell.executeShellCommandWithOp( "am startservice -n com.waxrain.airplaydmr/com.waxrain.airplaydmr.WaxPlayService" );
 	}
 
 	private void onResumeContent(){
@@ -915,16 +716,10 @@ public class MainActivity extends Activity {
 	protected void onDestroy() {
 		super.onDestroy();
 
-		// Permissions for Android 6.0
-		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
-			if (checkPermissions()) {
-				//  permissions  granted.
-				onDestroyContent();
-			}
-		}
-		else{
-            onDestroyContent();
-        }
+		deletePerfectTimeReceiver();
+		this.weather.deleteYahooWeatherReceiver();
+		deleteLauncheritemsUpdateBroadcast();
+		this.clock_weather_hotel_logo_flipper.deleteHotelLogoAvailabilityReceiver();
 	}
 
 	private void onDestroyContent(){
@@ -946,42 +741,33 @@ public class MainActivity extends Activity {
     }
 
     public void initViews(){
-    	hsv_menu = (HorizontalScrollView) findViewById( R.id.hsv_menu );
-        iv_menu_left_fade = (ImageView) findViewById( R.id.iv_menu_left_fade );
-        iv_menu_right_fade = (ImageView) findViewById( R.id.iv_menu_right_fade );
-        ll_main_menu_items = (LinearLayout) findViewById( R.id.ll_main_menu_items );
-        main_menu_values = new String[]{ "Live TV", "Information", "Settings", "Movies", "Games", "WiFi" };
-        //sub_menu_values = new String[]{ "Sub Menu 1", "Sub Menu 2", "Sub Menu 3", "Sub Menu 4", "Sub Menu 5", "Sub Menu 6", "Sub Menu 7", "Sub Menu 8" };
-        sub_menu_values = new String[]{ "" };
-        sma = new SubMenuAdapter( R.layout.sub_menu_items, context, sub_menu_values );
-
-        tv_collar_text = (ScrollTextView) findViewById( R.id.tv_collar_text );
-        hsv_sub_menu = (HorizontalScrollView) findViewById( R.id.hsv_sub_menu );
-        ll_sub_menu_items = (LinearLayout) findViewById( R.id.ll_sub_menu_items );
-        rl_elements = (RelativeLayout) findViewById( R.id.rl_elements );
-        tv_clock_hours = (TextView) findViewById( R.id.tv_clock_hours );
-        tv_clock_minutes = (TextView) findViewById( R.id.tv_clock_minutes );
-        tv_date = (TextView) findViewById( R.id.tv_date );
-        tv_day_name = (TextView) findViewById( R.id.tv_day_name );
-        // iv_weather = (ImageView) findViewById( R.id.iv_weather );
-        iv_weather = (AnimatedGifImageView) findViewById( R.id.iv_weather );
-        tv_temperature = (TextView) findViewById( R.id.tv_temperature );
-        tv_text = (TextView) findViewById( R.id.tv_text );
-        rl_weather = (LinearLayout) findViewById( R.id.rl_weather );
-        rl_clock = (RelativeLayout) findViewById( R.id.rl_clock );
-        ll_clock_time = (LinearLayout) findViewById( R.id.ll_clock_time );
-        rl_launcher_bg = (RelativeLayout) findViewById( R.id.rl_launcher_bg );
-        tv_ssid = (TextView) findViewById( R.id.tv_ssid );
-        tv_tethering_password = (TextView) findViewById(R.id.tv_tethering_password);
-        rl_tethering_info = (RelativeLayout) findViewById( R.id.rl_tethering_info );
-        rl_hotel_logo = (LinearLayout) findViewById( R.id.rl_hotel_logo );
-        //digitalSignageHolder = new DigitalSignageHolder( this );
-		ds = new DigitalSignage( context, rl_launcher_bg );
-        //digitalSignageSwitcher = new Timer();
-
-        //hsv_menu.setBackground( context.getResources().getDrawable( R.drawable.menu_bg7 ) );
-        //tv_collar_text.setBackground( context.getResources().getDrawable( R.drawable.submenu_bg1 ) );
-        //hsv_sub_menu.setBackground( context.getResources().getDrawable( R.drawable.submenu_bg1 ) );
+		this.hsv_menu = (HorizontalScrollView) findViewById(R.id.hsv_menu);
+		this.iv_menu_left_fade = (ImageView) findViewById(R.id.iv_menu_left_fade);
+		this.iv_menu_right_fade = (ImageView) findViewById(R.id.iv_menu_right_fade);
+		this.ll_main_menu_items = (LinearLayout) findViewById(R.id.ll_main_menu_items);
+		this.main_menu_values = new String[]{"Live TV", "Information", "Settings", "Movies", "Games", "WiFi"};
+		this.sub_menu_values = new String[]{""};
+		this.sma = new SubMenuAdapter(R.layout.sub_menu_items, this.context, this.sub_menu_values);
+		this.tv_collar_text = (ScrollTextView) findViewById(R.id.tv_collar_text);
+		this.hsv_sub_menu = (HorizontalScrollView) findViewById(R.id.hsv_sub_menu);
+		this.ll_sub_menu_items = (LinearLayout) findViewById(R.id.ll_sub_menu_items);
+		this.rl_elements = (RelativeLayout) findViewById(R.id.rl_elements);
+		this.tv_clock_hours = (TextView) findViewById(R.id.tv_clock_hours);
+		this.tv_clock_minutes = (TextView) findViewById(R.id.tv_clock_minutes);
+		this.tv_date = (TextView) findViewById(R.id.tv_date);
+		this.tv_day_name = (TextView) findViewById(R.id.tv_day_name);
+		this.iv_weather = (AnimatedGifImageView) findViewById(R.id.iv_weather);
+		this.tv_temperature = (TextView) findViewById(R.id.tv_temperature);
+		this.tv_text = (TextView) findViewById(R.id.tv_text);
+		this.rl_weather = (LinearLayout) findViewById(R.id.rl_weather);
+		this.rl_clock = (RelativeLayout) findViewById(R.id.rl_clock);
+		this.ll_clock_time = (LinearLayout) findViewById(R.id.ll_clock_time);
+		this.rl_launcher_bg = (RelativeLayout) findViewById(R.id.rl_launcher_bg);
+		this.tv_ssid = (TextView) findViewById(R.id.tv_ssid);
+		this.tv_tethering_password = (TextView) findViewById(R.id.tv_tethering_password);
+		this.rl_tethering_info = (RelativeLayout) findViewById(R.id.rl_tethering_info);
+		this.rl_hotel_logo = (LinearLayout) findViewById(R.id.rl_hotel_logo);
+		this.ds = new DigitalSignage(this.context, this.rl_launcher_bg);
     }
 
     public boolean handleMainMenuOverflow( int i, KeyEvent keyevent ){
@@ -1074,14 +860,15 @@ public class MainActivity extends Activity {
 
 		current_timestamp = System.currentTimeMillis();
 
-		// Permissions for Android 6.0
-		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
-			if (checkPermissions()) {
-				onUserInteractionContent();
-			}
+		pauseLauncherIdleTimer();
+
+		if (areLauncherElementsHidden) {
+			ObjectAnimator.ofFloat(rl_elements, "alpha", 0.0f, 1.0f).setDuration(500).start();
+			areLauncherElementsHidden = false;
+			// startLauncherIdleTimer();
+		} else {
+			startLauncherIdleTimer();
 		}
-		else
-            onUserInteractionContent();
 	}
 
     private void onUserInteractionContent(){

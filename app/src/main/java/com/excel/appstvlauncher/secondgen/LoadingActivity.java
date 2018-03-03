@@ -5,7 +5,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -53,14 +52,14 @@ public class LoadingActivity extends Activity {
         progress_bar.setMax( maxProgress );
     }
 
-    @Override
+    /*@Override
     public boolean onKeyDown( int keyCode, KeyEvent event ) {
 
         String key_name = KeyEvent.keyCodeToString( keyCode );
         Log.d( null, "KeyPressed : "+keyCode+","+key_name );
 
         return true;
-    }
+    }*/
 
     private void startLoading(){
         Log.d( "LoadingActivity", "startLoading()" );
