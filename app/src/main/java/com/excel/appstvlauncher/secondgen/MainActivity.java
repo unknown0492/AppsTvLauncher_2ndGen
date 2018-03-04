@@ -560,6 +560,7 @@ public class MainActivity extends Activity {
 		//this.weather.pauseYahooWeatherService();
 		/*this.clock_weather_hotel_logo_flipper.pauseClockWeatherLogoFlipper();
 		pauseTetheringInfoFlipper();*/
+		pauseTetheringInfoFlipper();
 		pauseLauncherIdleTimer();
 	}
 
@@ -584,16 +585,49 @@ public class MainActivity extends Activity {
 		if ( ! isLoadingCompleted() ) {
 			showLoadingActivity();
 		}
-		Log.d( TAG, "insde onResume()" );
-		this.configurationReader = ConfigurationReader.reInstantiate();
+		else {
 
-		onUserInteraction();
+			if (access_onresume_time == -1) {
+				access_onresume_time = System.currentTimeMillis();
+			} else {
+				long now = System.currentTimeMillis();
+				long diff = now - access_onresume_time;
+				int sec = (int) diff / 1000;
+				Log.d(TAG, "sec : " + sec);
+				if (sec <= 15) {
+					access_onresume_time = now;
+					//return;
+				} else {
+					access_onresume_time = now;
+
+					/*new Handler().postDelayed(new Runnable() {
+						@Override
+						public void run() {
+
+						}
+					}, 1000 );*/
+
+					// restoreTvChannels();
+
+					onUserInteraction();
+
+					startScreenCastService();
+				}
+			}
+		}
+		Log.d( TAG, "insde onResume()" );
+		//this.configurationReader = ConfigurationReader.reInstantiate();
+
+		//onUserInteraction();
 		//this.ds.resumeDigitalSignageSwitcher();
 		//this.weather.resumeYahooWeatherService();
 		/*this.clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
 		startTetheringInfoSwitcher();*/
 
-		UtilShell.executeShellCommandWithOp( "am startservice -n com.waxrain.airplaydmr/com.waxrain.airplaydmr.WaxPlayService" );
+		configurationReader = ConfigurationReader.reInstantiate();
+		startTetheringInfoSwitcher();
+
+		//UtilShell.executeShellCommandWithOp( "am startservice -n com.waxrain.airplaydmr/com.waxrain.airplaydmr.WaxPlayService" );
 	}
 
 	private void onResumeContent(){
