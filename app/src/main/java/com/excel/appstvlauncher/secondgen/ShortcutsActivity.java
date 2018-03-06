@@ -279,7 +279,7 @@ public class ShortcutsActivity extends Activity {
 			
 			@Override
 			public void onClick( View v ) {
-				UtilShell.executeShellCommandWithOp( "reboot" );
+				UtilShell.executeShellCommand( "reboot" );
 			}
 		});
 	}
@@ -360,7 +360,7 @@ public class ShortcutsActivity extends Activity {
 			
 			@Override
 			public void onClick( View v ) {
-				UtilShell.executeShellCommandWithOp( "am start -a android.intent.action.MAIN -n com.android.settings/.Settings" );
+				UtilShell.executeShellCommand( "am start -a android.intent.action.MAIN -n com.android.settings/.Settings" );
 			}
 		});
 	}
@@ -394,7 +394,7 @@ public class ShortcutsActivity extends Activity {
 			
 			@Override
 			public void onClick( View v ) {
-				UtilShell.executeShellCommandWithOp( "reboot recovery" );
+				UtilShell.executeShellCommand( "reboot recovery" );
 			}
 		});
 	}

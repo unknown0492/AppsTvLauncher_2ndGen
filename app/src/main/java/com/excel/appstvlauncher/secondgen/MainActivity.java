@@ -453,7 +453,7 @@ public class MainActivity extends Activity {
                     JSONArray jsa = new JSONArray( metadata );
                     JSONObject jso = jsa.getJSONObject( 0 );
                     String language_code = jso.getString( "language_code" ).trim();
-                    UtilShell.executeShellCommandWithOp( "setprop language_code "+language_code );
+                    UtilShell.executeShellCommand( "setprop language_code "+language_code );
                     recreate();
                 } catch ( JSONException e ) {
                     e.printStackTrace();
@@ -1177,7 +1177,7 @@ public class MainActivity extends Activity {
             }
             // 9-1-9
             else if( key_1.equals( NINE ) && key_2.equals( ONE ) && key_3.equals( NINE ) ){
-                UtilShell.executeShellCommandWithOp( "reboot" );
+                UtilShell.executeShellCommand( "reboot" );
             }
             // P-O-P  -> Refresh Launcher
             else if( key_1.equals( P ) && key_2.equals( O ) && key_3.equals( P ) ){
@@ -1199,7 +1199,7 @@ public class MainActivity extends Activity {
 
 	public void startScreenCastService(){
 		if( configurationReader.getAirplayEnabled().equals( "1" ) )
-			UtilShell.executeShellCommandWithOp( "am startservice -n com.waxrain.airplaydmr/com.waxrain.airplaydmr.WaxPlayService" );
+			UtilShell.executeShellCommand( "am startservice -n com.waxrain.airplaydmr/com.waxrain.airplaydmr.WaxPlayService" );
 	}
 
     private void checkIfHotelLogoToBeDisplayed(){
@@ -1226,7 +1226,7 @@ public class MainActivity extends Activity {
 
     public static void setIsLoadingCompleted( boolean is_it ){
         String s = (is_it)?"1":"0";
-        UtilShell.executeShellCommandWithOp( "setprop is_loading_complete " + s );
+        UtilShell.executeShellCommand( "setprop is_loading_complete " + s );
     }
 
     public boolean isLoadingCompleted(){
@@ -1264,13 +1264,13 @@ public class MainActivity extends Activity {
 			Log.i(TAG, "/data/data/com.google.android.youtube.tv : exist");
 
 			// 2. Remove all data from /data/data/com.google.android.youtube.tv
-			UtilShell.executeShellCommandWithOp( "rm -r /data/data/com.google.android.youtube.tv/*" );
+			UtilShell.executeShellCommand( "rm -r /data/data/com.google.android.youtube.tv/*" );
 
 			// 3. Copy the default data for youtube from /system/appstv_data/com.google.android.youtube.tv
-			UtilShell.executeShellCommandWithOp( "cp -r /system/appstv_data/com.google.android.youtube.tv/* /data/data/com.google.android.youtube.tv" );
+			UtilShell.executeShellCommand( "cp -r /system/appstv_data/com.google.android.youtube.tv/* /data/data/com.google.android.youtube.tv" );
 
 			// 4. CHMOD -R 777 to make it executable, just in case
-			UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/data/com.google.android.youtube.tv" );
+			UtilShell.executeShellCommand( "chmod -R 777 /data/data/com.google.android.youtube.tv" );
 		}
 		else {
             Log.d( TAG, "Android is below 6" );
@@ -1295,8 +1295,8 @@ public class MainActivity extends Activity {
 			//if( ! file1.exists() ){
 			if (!s_file1.trim().equals("yes")) {
 				Log.e(TAG, "/data/data/com.google.android.youtube.tv/shared_prefs : Not exist, hence creating it");
-				UtilShell.executeShellCommandWithOp("chmod -R 777 /data/data/com.google.android.youtube.tv");
-				UtilShell.executeShellCommandWithOp("mkdir /data/data/com.google.android.youtube.tv/shared_prefs");
+				UtilShell.executeShellCommand("chmod -R 777 /data/data/com.google.android.youtube.tv");
+				UtilShell.executeShellCommand("mkdir /data/data/com.google.android.youtube.tv/shared_prefs");
 			}
 
 			// 3. Check if the youtube.xml exist at /system/appstv_data/youtube.xml
@@ -1309,24 +1309,24 @@ public class MainActivity extends Activity {
 			}
 
 			// 4. Copy /system/appstv_data/youtube.xml TO /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml
-			UtilShell.executeShellCommandWithOp("chmod -R 777 /data/data/com.google.android.youtube.tv");
-			UtilShell.executeShellCommandWithOp("chmod -R 777 /data/data/com.google.android.youtube.tv/shared_prefs");
-			UtilShell.executeShellCommandWithOp("chmod 777 /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml");
+			UtilShell.executeShellCommand("chmod -R 777 /data/data/com.google.android.youtube.tv");
+			UtilShell.executeShellCommand("chmod -R 777 /data/data/com.google.android.youtube.tv/shared_prefs");
+			UtilShell.executeShellCommand("chmod 777 /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml");
 
-			UtilShell.executeShellCommandWithOp("chmod -R 777 /system/appstv_data");
-			UtilShell.executeShellCommandWithOp("chmod -R 777 /system/appstv_data/youtube.xml");
+			UtilShell.executeShellCommand("chmod -R 777 /system/appstv_data");
+			UtilShell.executeShellCommand("chmod -R 777 /system/appstv_data/youtube.xml");
 
-			UtilShell.executeShellCommandWithOp("rm /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml");
-			UtilShell.executeShellCommandWithOp("cp /system/appstv_data/youtube.xml /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml");
+			UtilShell.executeShellCommand("rm /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml");
+			UtilShell.executeShellCommand("cp /system/appstv_data/youtube.xml /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml");
 
 			Log.i(TAG, "restored youtube.xml");
 
 			// 5. Delete Google Account Database
-			UtilShell.executeShellCommandWithOp("chmod -R 777 /data/system/users/0");
-			UtilShell.executeShellCommandWithOp("rm /data/system/users/0/accounts.db");
-			UtilShell.executeShellCommandWithOp("rm /data/system/users/0/accounts.db-journal");
+			UtilShell.executeShellCommand("chmod -R 777 /data/system/users/0");
+			UtilShell.executeShellCommand("rm /data/system/users/0/accounts.db");
+			UtilShell.executeShellCommand("rm /data/system/users/0/accounts.db-journal");
 
-			UtilShell.executeShellCommandWithOp("am force-stop com.google.android.youtube.tv");
+			UtilShell.executeShellCommand("am force-stop com.google.android.youtube.tv");
 		}
 	}
 
@@ -1341,20 +1341,20 @@ public class MainActivity extends Activity {
 
     public void setTvChannelRestored( boolean is_it ){
         String s = ( is_it )?"1":"0";
-        UtilShell.executeShellCommandWithOp( "setprop is_tv_ch_restored " + s );
+        UtilShell.executeShellCommand( "setprop is_tv_ch_restored " + s );
     }
 
     public void unzipTvChannelsZip(){
         Log.i( TAG, "unzipTvChannelsZip() executed" );
 
-        UtilShell.executeShellCommandWithOp( "rm -r /mnt/sdcard/appstv_data/tv_channels/backup",
+        UtilShell.executeShellCommand( "rm -r /mnt/sdcard/appstv_data/tv_channels/backup",
                 "unzip -o /mnt/sdcard/appstv_data/tv_channels/tv_channels.zip -d /mnt/sdcard/appstv_data/tv_channels" );
 
         // 1. kill com.android.dtv
         String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
         //UtilShell.executeShellCommandWithOp( "kill "+pid );
 
-        UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/hdtv",
+        UtilShell.executeShellCommand( "chmod -R 777 /data/hdtv",
                 "rm -r /data/hdtv/*",
                 "cp -r /mnt/sdcard/appstv_data/tv_channels/backup/hdtv/* /data/hdtv",
                 "chmod -R 777 /data/hdtv" );
