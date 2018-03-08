@@ -203,9 +203,9 @@ public class MainActivity extends Activity {
 					LinearLayout ll = (LinearLayout) v;
 					TextView tv = (TextView) ll.findViewById(R.id.tv_menu_item_name);
 					MainActivity.this.scrollCenter(ll, MainActivity.this.hsv_menu);
-					MainActivity.this.main_menu_last_element_reached = Integer.parseInt(v.getTag().toString()) == adapter.getCount() + -1;
+					MainActivity.this.main_menu_last_element_reached = Integer.parseInt( v.getTag().toString() ) == adapter.getCount() + -1;
 					MainActivity mainActivity = MainActivity.this;
-					if (Integer.parseInt(v.getTag().toString()) == 0) {
+					if ( Integer.parseInt( v.getTag().toString() ) == 0 ) {
 						z = true;
 					} else {
 						z = false;
@@ -612,6 +612,8 @@ public class MainActivity extends Activity {
 					onUserInteraction();
 
 					startScreenCastService();
+
+					UtilShell.executeShellCommand( "am force-stop com.google.android.youtube.tv" );
 				}
 			}
 		}
@@ -626,6 +628,8 @@ public class MainActivity extends Activity {
 
 		configurationReader = ConfigurationReader.reInstantiate();
 		startTetheringInfoSwitcher();
+
+		System.gc();
 
 		//UtilShell.executeShellCommandWithOp( "am startservice -n com.waxrain.airplaydmr/com.waxrain.airplaydmr.WaxPlayService" );
 	}
@@ -1229,7 +1233,7 @@ public class MainActivity extends Activity {
         UtilShell.executeShellCommand( "setprop is_loading_complete " + s );
     }
 
-    public boolean isLoadingCompleted(){
+    public static boolean isLoadingCompleted(){
         String s = UtilShell.executeShellCommandWithOp( "getprop is_loading_complete" ).trim();
         return s.equals( "1" )?true:false;
     }
@@ -1248,11 +1252,11 @@ public class MainActivity extends Activity {
 
 			// Kill Youtube running in background
 			String pid = UtilShell.executeShellCommandWithOp("pidof com.google.android.youtube.tv").trim();
-			UtilShell.executeShellCommandWithOp("kill " + pid);
+			UtilShell.executeShellCommand("kill " + pid);
 
 			// Kill again, as it starts automatically after first killing
 			pid = UtilShell.executeShellCommandWithOp("pidof com.google.android.youtube.tv").trim();
-			UtilShell.executeShellCommandWithOp("kill " + pid);
+			UtilShell.executeShellCommand("kill " + pid);
 
 			// 1. Check if youtube package exist com.google.android.youtube.tv
 			File file = new File("/data/data/com.google.android.youtube.tv");
@@ -1277,7 +1281,7 @@ public class MainActivity extends Activity {
 
 			// Kill Youtube running in background
 			String pid = UtilShell.executeShellCommandWithOp("pidof com.google.android.youtube.tv").trim();
-			UtilShell.executeShellCommandWithOp("kill " + pid);
+			UtilShell.executeShellCommand("kill " + pid);
 
 			// 1. Check if youtube package exist com.google.android.youtube.tv
 			File file = new File("/data/data/com.google.android.youtube.tv");

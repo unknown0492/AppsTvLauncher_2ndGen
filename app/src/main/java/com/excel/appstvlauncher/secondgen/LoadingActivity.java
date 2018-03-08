@@ -64,6 +64,12 @@ public class LoadingActivity extends Activity {
     private void startLoading(){
         Log.d( "LoadingActivity", "startLoading()" );
 
+        if( MainActivity.isLoadingCompleted() ){
+            finish();
+            overridePendingTransition( 0, 0 );
+            return;
+        }
+
         new AsyncTask< Void, Void, Void >(){
 
             @Override
@@ -76,7 +82,7 @@ public class LoadingActivity extends Activity {
                                 public void run() {
                                     progress_bar.setProgress( progress++ );
                                     // Log.d( null, "" + progress );
-                                    if( progress == maxProgress ) {
+                                    if( progress > maxProgress ) {
                                         MainActivity.setIsLoadingCompleted( true );
                                         // Log.d( "LoadingActivity", "Monkey executing now !" );
                                         // UtilShell.executeShellCommandWithOp( "monkey -p com.excel.appstvlauncher.secondgen -c android.intent.category.LAUNCHER 1" );
