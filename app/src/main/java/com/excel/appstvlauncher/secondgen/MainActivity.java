@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -161,14 +162,45 @@ public class MainActivity extends Activity {
 		configurationReader = ConfigurationReader.getInstance();
 
 		initViews();
-		new Handler().postDelayed(new Runnable() {
+		/*new Handler().postDelayed(new Runnable() {
 
 			@Override
 			public void run() {
 				setLauncherMenuItems();
 			}
 
-		}, 1000 );
+		}, 1000 );*/
+
+		new AsyncTask<Void,Void,Void>(){
+
+			@Override
+			protected Void doInBackground(Void... voids) {
+				Handler hh = new Handler(Looper.getMainLooper() );
+				//hh.getLooper().prepare();
+				hh.post(new Runnable() {
+					@Override
+					public void run() {
+						runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								setLauncherMenuItems();
+							}
+						});
+
+					}
+				});
+
+				return null;
+			}
+
+			@Override
+			protected void onPostExecute(Void aVoid) {
+				super.onPostExecute(aVoid);
+
+				setMainMenuAdapter(ma);
+				setSubMenuAdapter(sma);
+			}
+		}.execute();
 
 		createLauncheritemsUpdateBroadcast();
 		startPerfectTimeService();
@@ -181,10 +213,10 @@ public class MainActivity extends Activity {
 		restoreTvChannels();
 		startScreenCastService();
 
-		this.ds.resumeDigitalSignageSwitcher();
-		this.weather.resumeYahooWeatherService();
-		this.clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
-		startTetheringInfoSwitcher();
+		ds.resumeDigitalSignageSwitcher();
+		//weather.resumeYahooWeatherService();
+		//clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
+		//startTetheringInfoSwitcher();
 
 
 	}
@@ -249,11 +281,11 @@ public class MainActivity extends Activity {
 										MainActivity.this.sma = new SubMenuAdapter(R.layout.sub_menu_items, MainActivity.this.context, MainActivity.this.sub_menu_values);
 										MainActivity.this.setSubMenuAdapter(MainActivity.this.sma);
 										ObjectAnimator oaa = ObjectAnimator.ofFloat(MainActivity.this.hsv_sub_menu, "translationY", new float[]{40.0f});
-										oaa.setStartDelay(250);
+										//oaa.setStartDelay(250);
 										oaa.setDuration(250);
 										oaa.start();
 										ObjectAnimator oaa1 = ObjectAnimator.ofFloat(MainActivity.this.hsv_sub_menu, "alpha", new float[]{0.0f, 1.0f});
-										oaa1.setStartDelay(250);
+										//oaa1.setStartDelay(250);
 										oaa1.setDuration(250);
 										oaa1.start();
 									}
@@ -349,8 +381,8 @@ public class MainActivity extends Activity {
 			i++;
 		}
 		this.ma = new MenuAdapter(R.layout.main_menu_items, this, this.main_menu_values);
-		setMainMenuAdapter(this.ma);
-		setSubMenuAdapter(this.sma);
+		/*setMainMenuAdapter(this.ma);
+		setSubMenuAdapter(this.sma);*/
 	}
 
 	public void createLauncheritemsUpdateBroadcast(){
@@ -560,7 +592,12 @@ public class MainActivity extends Activity {
 		//this.weather.pauseYahooWeatherService();
 		/*this.clock_weather_hotel_logo_flipper.pauseClockWeatherLogoFlipper();
 		pauseTetheringInfoFlipper();*/
+
 		pauseTetheringInfoFlipper();
+		//ds.pauseDigitalSignageSwitcher();
+		weather.pauseYahooWeatherService();
+		clock_weather_hotel_logo_flipper.pauseClockWeatherLogoFlipper();
+
 		pauseLauncherIdleTimer();
 	}
 
@@ -572,6 +609,8 @@ public class MainActivity extends Activity {
         pauseTetheringInfoFlipper();
         clock_weather_hotel_logo_flipper.pauseClockWeatherLogoFlipper();
 
+        pauseTetheringInfoFlipper();
+
         pauseLauncherIdleTimer();
 
     }
@@ -581,6 +620,11 @@ public class MainActivity extends Activity {
     @Override
 	protected void onResume() {
 		super.onResume();
+
+		startTetheringInfoSwitcher();
+		//ds.resumeDigitalSignageSwitcher();
+		weather.resumeYahooWeatherService();
+		clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
 
 		if ( ! isLoadingCompleted() ) {
 			showLoadingActivity();
@@ -627,7 +671,7 @@ public class MainActivity extends Activity {
 		startTetheringInfoSwitcher();*/
 
 		configurationReader = ConfigurationReader.reInstantiate();
-		startTetheringInfoSwitcher();
+
 
 		System.gc();
 
@@ -1230,7 +1274,7 @@ public class MainActivity extends Activity {
 
     public static void setIsLoadingCompleted( boolean is_it ){
         String s = (is_it)?"1":"0";
-        UtilShell.executeShellCommand( "setprop is_loading_complete " + s );
+        UtilShell.executeShellCommandWithOp( "setprop is_loading_complete " + s );
     }
 
     public static boolean isLoadingCompleted(){

@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -45,6 +46,15 @@ public class LoadingActivity extends Activity {
 
     }
 
+    @Override
+    public boolean onKeyDown( int keyCode, KeyEvent event ) {
+
+        String key_name = KeyEvent.keyCodeToString( keyCode );
+        Log.d( null, "KeyPressed : "+keyCode+","+key_name );
+
+        return true;
+    }
+
 
     private void setProgressBarConfig(){
         progress_bar.setIndeterminate( false );
@@ -64,11 +74,11 @@ public class LoadingActivity extends Activity {
     private void startLoading(){
         Log.d( "LoadingActivity", "startLoading()" );
 
-        if( MainActivity.isLoadingCompleted() ){
+        /*if( MainActivity.isLoadingCompleted() ){
             finish();
             overridePendingTransition( 0, 0 );
             return;
-        }
+        }*/
 
         new AsyncTask< Void, Void, Void >(){
 
@@ -82,7 +92,7 @@ public class LoadingActivity extends Activity {
                                 public void run() {
                                     progress_bar.setProgress( progress++ );
                                     // Log.d( null, "" + progress );
-                                    if( progress > maxProgress ) {
+                                    if( progress == maxProgress ) {
                                         MainActivity.setIsLoadingCompleted( true );
                                         // Log.d( "LoadingActivity", "Monkey executing now !" );
                                         // UtilShell.executeShellCommandWithOp( "monkey -p com.excel.appstvlauncher.secondgen -c android.intent.category.LAUNCHER 1" );

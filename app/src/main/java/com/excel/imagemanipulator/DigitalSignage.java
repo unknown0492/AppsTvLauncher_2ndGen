@@ -2,6 +2,7 @@ package com.excel.imagemanipulator;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
@@ -48,14 +49,34 @@ public class DigitalSignage{
         dr = null;
     }
 
-    public void setDigitalSignageOnBackground( String path ){
-        Drawable dr = ImageManipulator.getDecodedDrawable( path, 1920, 1020 );
+    public void setDigitalSignageOnBackground( final String path ){
+        new AsyncTask<Void,Void,Drawable>(){
+
+            @Override
+            protected Drawable doInBackground(Void... voids) {
+                Drawable dr = ImageManipulator.getDecodedDrawable( path, 1920, 1020 );
+                return dr;
+            }
+
+            @Override
+            protected void onPostExecute(Drawable drawable) {
+                super.onPostExecute(drawable);
+
+                if( drawable == null )
+                    setDefaultWallpaperOnBackground();
+                else{
+                    rl_launcher_bg.setBackgroundDrawable( drawable );
+                }
+            }
+        }.execute();
+
+        /*Drawable dr = ImageManipulator.getDecodedDrawable( path, 1920, 1020 );
         if( dr == null ){
             setDefaultWallpaperOnBackground();
             return;
         }
         rl_launcher_bg.setBackgroundDrawable( dr );
-        dr = null;
+        dr = null;*/
     }
 
 
