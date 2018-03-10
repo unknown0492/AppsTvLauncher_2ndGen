@@ -41,6 +41,7 @@ import com.excel.flipper.Flipper;
 import com.excel.imagemanipulator.DigitalSignage;
 import com.excel.imagemanipulator.DigitalSignageHolder;
 import com.excel.perfecttime.PerfectTimeService;
+import com.excel.util.MD5;
 import com.excel.yahooweather.Weather;
 
 import org.json.JSONArray;
@@ -657,7 +658,7 @@ public class MainActivity extends Activity {
 
 					startScreenCastService();
 
-					UtilShell.executeShellCommand( "am force-stop com.google.android.youtube.tv" );
+					//UtilShell.executeShellCommand( "am force-stop com.google.android.youtube.tv" );
 				}
 			}
 		}
@@ -1395,24 +1396,70 @@ public class MainActivity extends Activity {
     public void unzipTvChannelsZip(){
         Log.i( TAG, "unzipTvChannelsZip() executed" );
 
-        UtilShell.executeShellCommand( "rm -r /mnt/sdcard/appstv_data/tv_channels/backup",
-                "unzip -o /mnt/sdcard/appstv_data/tv_channels/tv_channels.zip -d /mnt/sdcard/appstv_data/tv_channels" );
+		UtilShell.executeShellCommandWithOp( "rm -r /mnt/sdcard/appstv_data/tv_channels/backup",
+				"unzip -o /mnt/sdcard/appstv_data/tv_channels/tv_channels.zip -d /mnt/sdcard/appstv_data/tv_channels" );
 
-        // 1. kill com.android.dtv
-        String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
-        //UtilShell.executeShellCommandWithOp( "kill "+pid );
+		// Compare the file program.db
+		File programdb_internal = new File( "/data/hdtv/program.db" );
+		File programdb_sdcard	= new File( "/mnt/sdcard/appstv_data/tv_channels/backup/hdtv/program.db" );
 
-        UtilShell.executeShellCommand( "chmod -R 777 /data/hdtv",
-                "rm -r /data/hdtv/*",
-                "cp -r /mnt/sdcard/appstv_data/tv_channels/backup/hdtv/* /data/hdtv",
-                "chmod -R 777 /data/hdtv" );
 
-        // last. kill com.android.dtv
-        pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
-        //UtilShell.executeShellCommandWithOp( "kill "+pid );
+		if( !programdb_sdcard.exists() ) {
+			Log.e( TAG, "Restore terminated, program.db file does not exist on sdcard" );
+			setTvChannelRestored( true );
+			return;
+		}
 
-        setTvChannelRestored( true );
-        Log.d( TAG, "tv_channels.zip extracted successfully" );
+		try {
+
+			String md5_internal = "";
+			String md5_sdcard 	= MD5.getMD5Checksum( programdb_sdcard );
+
+			if( !programdb_internal.exists() ) {
+				md5_internal = "xxxxx";
+				Log.d( TAG, "Internal program.db does not exist" );
+				//return;
+			}
+			else{
+				md5_internal = MD5.getMD5Checksum( programdb_internal );
+			}
+
+			Log.d( TAG, md5_internal + "," +md5_sdcard );
+
+			// If the two files do not match, then restore
+			if( ! md5_internal.equals( md5_sdcard ) ) {
+
+
+				// 1. kill com.android.dtv
+				//String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
+				//UtilShell.executeShellCommandWithOp( "kill "+pid );
+
+				UtilShell.executeShellCommand( "chmod -R 777 /data/hdtv",
+						"rm -r /data/hdtv/*",
+						"cp -r /mnt/sdcard/appstv_data/tv_channels/backup/hdtv/* /data/hdtv",
+						"chmod -R 777 /data/hdtv" );
+
+				Log.d( TAG, "tv_channels.zip extracted successfully" );
+
+				// last. kill com.android.dtv
+				//pid = UtilShell.executeShellCommandWithOp("pidof com.android.dtv");
+				//UtilShell.executeShellCommandWithOp( "kill "+pid );
+
+				Log.i( TAG, "Restored tv channels successfully !" );
+
+				//setTvChannelRestored( true );
+			}
+			else{
+				Log.i( TAG, "TV channels not restored because they are same !" );
+
+			}
+			setTvChannelRestored( true );
+		}
+		catch ( Exception e ){
+			e.printStackTrace();
+		}
+
+
     }
 
     public void restoreTvChannels(){

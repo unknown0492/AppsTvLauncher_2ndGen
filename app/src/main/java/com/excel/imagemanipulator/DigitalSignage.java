@@ -44,7 +44,7 @@ public class DigitalSignage{
     public void setDefaultWallpaperOnBackground(){
         //Bitmap bmp = ImageManipulator.getDecodedBitmap( getResources(), R.drawable.default_bg, 1920, 1020 );
         //Drawable dr = new BitmapDrawable( bmp );
-        Drawable dr = ImageManipulator.getDecodedDrawable( context.getResources(), R.drawable.default_bg, 1920, 1020 );
+        Drawable dr = ImageManipulator.getDecodedDrawable( context.getResources(), R.drawable.default_bg_black, 1920, 1020 );
         rl_launcher_bg.setBackgroundDrawable( dr );
         dr = null;
     }

@@ -3,7 +3,7 @@
     android:id="@+id/rl_launcher_bg"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/launcher_bg3"
+    android:background="@drawable/default_bg_black"
     tools:context="com.excel.appstvlauncher.secondgen.MainActivity" >
 
 
