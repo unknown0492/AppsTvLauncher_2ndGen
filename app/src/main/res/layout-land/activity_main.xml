@@ -297,10 +297,11 @@
 
 
             <!-- Collar Text -->
-            <com.excel.appstvlauncher.secondgen.ScrollTextView
+
+            <!--<com.excel.appstvlauncher.secondgen.ScrollTextView
                 android:id="@+id/tv_collar_text"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="50dp"
                 android:focusableInTouchMode="true"
                 android:ellipsize="marquee"
                 android:marqueeRepeatLimit="marquee_forever"
@@ -311,7 +312,21 @@
                 android:background="@drawable/submenu_bg1"
                 android:paddingLeft="10dp"
                 android:paddingTop="7dp"
-                android:layout_weight="8" />
+                android:layout_weight="8" />-->
+
+
+
+            <TextView
+                android:id="@+id/tv_collar_text1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:textColor="#ffffff"
+                android:textSize="25dp"
+                android:background="@drawable/submenu_bg1"
+                android:paddingLeft="0dp"
+                android:paddingTop="7dp"
+                android:layout_weight="8"
+                />
             <!--/ Collar Text -->
 
 
