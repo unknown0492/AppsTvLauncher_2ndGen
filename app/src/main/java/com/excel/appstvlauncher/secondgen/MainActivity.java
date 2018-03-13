@@ -38,7 +38,6 @@ import com.excel.flipper.Flipper;
 import com.excel.imagemanipulator.DigitalSignage;
 import com.excel.imagemanipulator.DigitalSignageHolder;
 import com.excel.perfecttime.PerfectTimeService;
-import com.excel.util.MD5;
 import com.excel.yahooweather.Weather;
 
 import org.json.JSONArray;
@@ -1249,6 +1248,28 @@ public class MainActivity extends Activity {
 	}
 
 	public void unzipTvChannelsZip(){
+
+        Log.i( TAG, "unzipTvChannelsZip() executed" );
+
+        UtilShell.executeShellCommandWithOp( "rm -r /mnt/sdcard/appstv_data/tv_channels/backup",
+                "unzip -o /mnt/sdcard/appstv_data/tv_channels/tv_channels.zip -d /mnt/sdcard/appstv_data/tv_channels" );
+
+        // 1. kill com.android.dtv
+        String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
+        //UtilShell.executeShellCommandWithOp( "kill "+pid );
+
+        UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/hdtv",
+                "rm -r /data/hdtv/*",
+                "cp -r /mnt/sdcard/appstv_data/tv_channels/backup/hdtv/* /data/hdtv",
+                "chmod -R 777 /data/hdtv" );
+
+        // last. kill com.android.dtv
+        pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
+        //UtilShell.executeShellCommandWithOp( "kill "+pid );
+
+        setTvChannelRestored( true );
+        Log.d( TAG, "tv_channels.zip extracted successfully" );
+	    /*
 		Log.i( TAG, "unzipTvChannelsZip() executed" );
 
 		UtilShell.executeShellCommandWithOp( "rm -r /mnt/sdcard/appstv_data/tv_channels/backup",
@@ -1298,7 +1319,7 @@ public class MainActivity extends Activity {
 						"chmod -R 777 /data/hdtv" );
 
 
-				/*
+
 				UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/hdtv",
 						"rm -r /data/hdtv/*",
 						"cp /mnt/sdcard/appstv_data/tv_channels/backup/hdtv/blackpackagefilter.xml /data/hdtv/blackpackagefilter.xml",
@@ -1306,7 +1327,7 @@ public class MainActivity extends Activity {
 						"cp /mnt/sdcard/appstv_data/tv_channels/backup/hdtv/epg.db /data/hdtv/epg.db",
 						"cp /mnt/sdcard/appstv_data/tv_channels/backup/hdtv/program.db /data/hdtv/program.db",
 						"chmod -R 777 /data/hdtv" );
-				*/
+
 
 				Log.d( TAG, "tv_channels.zip extracted successfully" );
 
@@ -1317,17 +1338,17 @@ public class MainActivity extends Activity {
 				Log.i( TAG, "Restored tv channels successfully !" );
 
 				//setTvChannelRestored( true );
-			/*}
+			}
 			else{
 				Log.i( TAG, "TV channels not restored because they are same !" );
 
-			}*/
+			}
 			setTvChannelRestored( true );
 		}
 		catch ( Exception e ){
 			e.printStackTrace();
 		}
-
+*/
 
 	}
 
