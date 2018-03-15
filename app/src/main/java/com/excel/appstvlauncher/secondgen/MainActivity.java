@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -45,6 +46,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -215,173 +220,278 @@ public class MainActivity extends Activity {
 		startScreenCastService();
 
 		ds.resumeDigitalSignageSwitcher();
+        startTetheringInfoSwitcher();
+		//weather.resumeYahooWeatherService();
+		clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
 
 
+		//restoreYoutubeSettings();
 
 	}
 
 
 	public void setMainMenuAdapter(final MenuAdapter adapter) {
-		for (int i = 0; i < this.ma.getCount(); i++) {
-			Log.d( TAG, "Setting main adapter " + i );
-			LinearLayout v = (LinearLayout) this.ma.getView(i, null, null);
-			this.ll_main_menu_items.addView(v);
-			if (i == 0) {
+		for (int i = 0; i < ma.getCount(); i++) {
+			//Log.d( TAG, "Setting main adapter " + i );
+			LinearLayout v = (LinearLayout) ma.getView( i, null, null );
+			ll_main_menu_items.addView( v );
+			if ( i == 0 ) {
 				this.first_main_item = v;
 			}
-			v.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-				public void onFocusChange(View v, boolean hasFocus) {
-					boolean z;
-					LinearLayout ll = (LinearLayout) v;
-					TextView tv = (TextView) ll.findViewById(R.id.tv_menu_item_name);
-					MainActivity.this.scrollCenter(ll, MainActivity.this.hsv_menu);
-					MainActivity.this.main_menu_last_element_reached = Integer.parseInt( v.getTag().toString() ) == adapter.getCount() + -1;
-					//MainActivity mainActivity = MainActivity.this;
-					if ( Integer.parseInt( v.getTag().toString() ) == 0 ) {
-						z = true;
-					} else {
-						z = false;
-					}
-					main_menu_first_element_reached = z;
-					MainActivity.this.sub_menu_first_element_reached = false;
-					MainActivity.this.sub_menu_last_element_reached = false;
-					MainActivity.this.prev_main_item = MainActivity.this.current_main_item;
-					if (!hasFocus) {
-						tv.setTextColor(context.getResources().getColor(R.color.white));
-						tv.setScaleX(1.0f);
-						tv.setScaleY(1.0f);
-						tv.setBackground(null);
-					} else if (MainActivity.this.prev_main_item != ll) {
-						Log.d(null, "focus gained on " + tv.getText().toString());
-						tv.setTextColor(context.getResources().getColor(R.color.light_blue));
-						tv.setScaleX(1.45f);
-						tv.setScaleY(1.45f);
-						MainActivity.this.current_main_item = ll;
-						ObjectAnimator oa = ObjectAnimator.ofFloat(MainActivity.this.hsv_sub_menu, "translationY", new float[]{0.0f});
-						oa.setDuration(0);
-						oa.start();
-						ObjectAnimator oa1 = ObjectAnimator.ofFloat(MainActivity.this.hsv_sub_menu, "alpha", new float[]{1.0f, 0.0f});
-						oa1.setDuration(0);
-						oa1.start();
-						new AsyncTask<Void, Void, Void>() {
-							protected Void doInBackground(Void... voids) {
-								MainActivity.this.sub_menu_values = MainActivity.this.ljr.getSubMenuItemNames(MainActivity.this.last_index_of_main_menu);
-								for (int i = 0; i < MainActivity.this.sub_menu_values.length; i++) {
-									try {
-										MainActivity.this.sub_menu_values[i] = new JSONObject(MainActivity.this.ljr.getSubItemValue(MainActivity.this.last_index_of_main_menu, i, "item_name_translated")).getString(UtilMisc.getCustomLocaleLanguageConstant().getLanguage());
-									} catch (Exception e) {
-									}
-								}
-								return null;
-							}
+			v.setOnFocusChangeListener( new View.OnFocusChangeListener() {
 
-							protected void onPostExecute(Void aVoid) {
-								new Handler().postDelayed(new Runnable() {
-									public void run() {
-										MainActivity.this.sma = new SubMenuAdapter(R.layout.sub_menu_items, context, MainActivity.this.sub_menu_values);
-										MainActivity.this.setSubMenuAdapter(MainActivity.this.sma);
-										ObjectAnimator oaa = ObjectAnimator.ofFloat(MainActivity.this.hsv_sub_menu, "translationY", new float[]{40.0f});
-										//oaa.setStartDelay(250);
-										oaa.setDuration(0);
-										oaa.start();
-										ObjectAnimator oaa1 = ObjectAnimator.ofFloat(MainActivity.this.hsv_sub_menu, "alpha", new float[]{0.0f, 1.0f});
-										//oaa1.setStartDelay(250);
-										oaa1.setDuration(0);
-										oaa1.start();
-									}
-								}, 250);
-								super.onPostExecute(aVoid);
-							}
-						}.execute(new Void[0]);
-						MainActivity.this.last_index_of_main_menu = Integer.parseInt(v.getTag().toString());
-					}
+			    public void onFocusChange( View v, boolean hasFocus ) {
+                    LinearLayout ll = (LinearLayout) v;
+                    TextView tv = (TextView) ll.findViewById( R.id.tv_menu_item_name );
+
+                    scrollCenter( ll, hsv_menu );
+
+                    main_menu_last_element_reached = (Integer.parseInt( v.getTag().toString() ) == adapter.getCount() - 1)?true:false;
+                    main_menu_first_element_reached = (Integer.parseInt( v.getTag().toString() ) == 0)?true:false;
+                    sub_menu_first_element_reached = false;
+                    sub_menu_last_element_reached = false;
+
+                    prev_main_item = current_main_item;
+
+                    if( hasFocus ){
+                        // This is to prevent animation when going back to main menu parent from its child sub menu
+                        if( prev_main_item == ll )
+                            return;
+
+                        Log.d( null, "focus gained on "+tv.getText().toString() );
+                        tv.setTextColor( context.getResources().getColor( R.color.light_blue ) );
+                        tv.setScaleX( 1.45f );
+                        tv.setScaleY( 1.45f );
+
+                        current_main_item = ll;
+
+                        // Hide its sub-menu
+                        ObjectAnimator oa = ObjectAnimator.ofFloat( hsv_sub_menu, "translationY", 0 );
+                        oa.setDuration( 0 );
+                        oa.start();
+
+                        ObjectAnimator oa1 = ObjectAnimator.ofFloat( hsv_sub_menu, "alpha", 1.0f, 0.0f );
+                        oa1.setDuration( 0 );
+                        oa1.start();
+
+
+                        new AsyncTask<Void, Void, Void>(){
+
+                            @Override
+                            protected Void doInBackground(Void... voids) {
+                                sub_menu_values = ljr.getSubMenuItemNames( last_index_of_main_menu );
+                                for( int i = 0 ; i < sub_menu_values.length ; i++ ){
+                                    //String item_name = ljr.getSubItemValue( last_index_of_main_menu, i , "item_name_translated" );
+                                    String item_name_json = ljr.getSubItemValue( last_index_of_main_menu, i, "item_name_translated" );
+                                    try {
+                                        JSONObject jso = new JSONObject( item_name_json );
+                                        //Log.d( TAG, "display name : "+UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
+                                        sub_menu_values[ i ] = jso.getString( UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
+                                    }
+                                    catch ( Exception e ){
+                                        //e.printStackTrace();
+                                    }
+                                }
+                                return null;
+                            }
+
+                            @Override
+                            protected void onPostExecute(Void aVoid) {
+                                new Handler().postDelayed( new Runnable() {
+
+                                    @Override
+                                    public void run() {
+
+                                        sma = new SubMenuAdapter( R.layout.sub_menu_items, context, sub_menu_values );
+                                        setSubMenuAdapter( sma );
+
+                                        // Show its Sub-Menu
+                                        ObjectAnimator oaa = ObjectAnimator.ofFloat( hsv_sub_menu, "translationY", 40 );
+                                        //oaa.setStartDelay( 250 );
+                                        oaa.setDuration( 0 );
+                                        oaa.start();
+
+                                        ObjectAnimator oaa1 = ObjectAnimator.ofFloat( hsv_sub_menu, "alpha", 0.0f, 1.0f );
+                                        //oaa1.setStartDelay( 250 );
+                                        oaa1.setDuration( 0 );
+                                        oaa1.start();
+
+                                    }
+                                }, 250 );
+
+                                super.onPostExecute(aVoid);
+                            }
+                        }.execute();
+
+                        last_index_of_main_menu = Integer.parseInt( v.getTag().toString() );
+                    }
+                    else{
+                        // Log.d( null, "focus lost from "+tv.getText().toString() );
+                        tv.setTextColor( context.getResources().getColor( R.color.white ) );
+                        tv.setScaleX( 1.0f );
+                        tv.setScaleY( 1.0f );
+                        //tv.setBackground( context.getResources().getDrawable( R.drawable.submenu_bg ) );
+                        tv.setBackground( null );
+                        // Save the state of this View
+
+                    }
+
 				}
 			});
 			v.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
-					MainActivity.this.processMainMenuItemClick(Integer.parseInt(v.getTag().toString()));
+                    processMainMenuItemClick( Integer.parseInt( v.getTag().toString() ) );
 				}
 			});
 		}
-		this.first_main_item.requestFocus();
-		TextView tv = (TextView) this.first_main_item.findViewById(R.id.tv_menu_item_name);
-		tv.setTextColor(context.getResources().getColor(R.color.light_blue));
-		tv.setScaleX(1.45f);
-		tv.setScaleY(1.45f);
+        first_main_item.requestFocus();
+        TextView tv = (TextView) first_main_item.findViewById( R.id.tv_menu_item_name );
+        tv.setTextColor( context.getResources().getColor( R.color.light_blue ) );
+        tv.setScaleX( 1.45f );
+        tv.setScaleY( 1.45f );
 	}
 
 	public void setSubMenuAdapter(final SubMenuAdapter adapter) {
-		this.ll_sub_menu_items.removeAllViews();
-		for (int i = 0; i < adapter.getCount(); i++) {
-			Log.d( TAG, "Setting sub adapter " + i );
-			LinearLayout v = (LinearLayout) adapter.getView(i, null, null);
-			this.ll_sub_menu_items.addView(v);
-			v.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-				public void onFocusChange(View v, boolean hasFocus) {
-					boolean z = true;
-					TextView tv = (TextView) ((LinearLayout) v).findViewById(R.id.tv_sub_menu_item_name);
-					MainActivity.this.sub_menu_last_element_reached = Integer.parseInt(v.getTag().toString()) == adapter.getCount() + -1;
-					MainActivity mainActivity = MainActivity.this;
-					if (Integer.parseInt(v.getTag().toString()) != 0) {
-						z = false;
-					}
-					mainActivity.sub_menu_first_element_reached = z;
-					MainActivity.this.main_menu_first_element_reached = false;
-					MainActivity.this.main_menu_last_element_reached = false;
-					if (hasFocus) {
-						Log.d(null, "focus gained on " + tv.getText().toString());
-						tv.setBackground(context.getResources().getDrawable(R.drawable.button_focus));
-						return;
-					}
-					tv.setBackground(context.getResources().getDrawable(R.drawable.submenu_bg1));
-				}
-			});
-			v.setOnClickListener(new View.OnClickListener() {
-				public void onClick(View v) {
-					MainActivity.this.processSubMenuItemClick(MainActivity.this.last_index_of_main_menu, Integer.parseInt(v.getTag().toString()));
-				}
-			});
-		}
+
+        ll_sub_menu_items.removeAllViews();
+        for( int i = 0 ; i < adapter.getCount(); i++ ){
+            LinearLayout v = (LinearLayout) adapter.getView( i, null, null );
+            ll_sub_menu_items.addView( v );
+
+            v.setOnFocusChangeListener( new View.OnFocusChangeListener() {
+
+                @Override
+                public void onFocusChange( View v, boolean hasFocus ) {
+                    LinearLayout ll = (LinearLayout) v;
+                    TextView tv = (TextView) ll.findViewById( R.id.tv_sub_menu_item_name );
+
+                    // scrollCenter( ll, hsv_sub_menu );
+
+                    sub_menu_last_element_reached = (Integer.parseInt( v.getTag().toString() ) == adapter.getCount() - 1)?true:false;
+                    sub_menu_first_element_reached = (Integer.parseInt( v.getTag().toString() ) == 0)?true:false;
+                    main_menu_first_element_reached = false;
+                    main_menu_last_element_reached = false;
+
+                    if( hasFocus ){
+                        Log.d( null, "focus gained on "+tv.getText().toString() );
+                        tv.setBackground( context.getResources().getDrawable( R.drawable.button_focus ) );
+                    }
+                    else{
+                        // Log.d( null, "focus lost from "+tv.getText().toString() );
+                        //tv.setTextColor( context.getResources().getColor( R.color.white ) );
+                        tv.setBackground( context.getResources().getDrawable( R.drawable.submenu_bg1 ) );
+
+                    }
+                }
+            });
+
+            v.setOnClickListener( new View.OnClickListener() {
+
+                @Override
+                public void onClick( View v ) {
+                    int sub_menu_index = Integer.parseInt( v.getTag().toString() );
+                    processSubMenuItemClick( last_index_of_main_menu, sub_menu_index );
+                }
+            });
+        }
 	}
 
 	public void scrollCenter( LinearLayout ll, View viewToScroll ) {
 		// Source : http://stackoverflow.com/questions/8642677/reduce-speed-of-smooth-scroll-in-scroll-view
-		int endPos    = (int) ll.getX();
+		/*int endPos    = (int) ll.getX();
 		int halfWidth = (int) ll.getWidth() / 2;
 
-		ObjectAnimator.ofInt( viewToScroll, "scrollX",  endPos + halfWidth - viewToScroll.getWidth() / 2 ).setDuration( 500 ).start();
+		ObjectAnimator.ofInt( viewToScroll, "scrollX",  endPos + halfWidth - viewToScroll.getWidth() / 2 ).setDuration( 500 ).start();*/
 	}
 
 	public void setLauncherMenuItems() {
-		File configuration_file = new File(Environment.getExternalStorageDirectory() + File.separator + PATH_LAUNCHER_CONFIG_FILE);
-		String launcher_config_json = "";
-		if (configuration_file.exists()) {
-			launcher_config_json = UtilFile.readData(configuration_file);
-		} else {
-			launcher_config_json = UtilFile.readData(new File(PATH_LAUNCHER_CONFIG_FILE_SYSTEM));
-		}
-		this.ljr = new LauncherJSONReader(launcher_config_json);
-		int main_items_count = this.ljr.getMainItemsCount();
-		setCollarText(this.ljr);
-		this.main_menu_values = new String[main_items_count];
-		int i = 0;
-		while (i < main_items_count) {
-			String item_name;
-			if (this.ljr.getSubItemsCount(i) != 0 || this.ljr.getMainItemValue(i, "item_type").equals("app")) {
-				item_name = this.ljr.getMainItemValue(i, "item_name");
-			} else {
-				item_name = this.ljr.getMainItemValue(i, "item_name");
-			}
-			try {
-				item_name = new JSONObject(this.ljr.getMainItemValue(i, "item_name_translated")).getString(UtilMisc.getCustomLocaleLanguageConstant().getLanguage());
-			} catch (Exception e) {
-				item_name = this.ljr.getMainItemValue(i, "item_name");
-				e.printStackTrace();
-			}
-			this.main_menu_values[i] = item_name;
-			i++;
-		}
-		this.ma = new MenuAdapter(R.layout.main_menu_items, this, this.main_menu_values);
+        /**
+         *
+         * Algorithm
+         *
+         * 1. If /mnt/sdcard/appstv_data/launcher_config.json exist
+         *    2. Read content of launcher_config.json into String variable
+         *    3. Initialize LauncherJSONReader instance from the launcher_config.json content
+         *    4. Read main_items_count i.e. Total number of main menu items in the JSON
+         *    5. Run a Loop main_items_count times
+         *       6.  Read sub_items_count i.e. Total number of sub items under main item specified by loop iteration count
+         *       7.  If sub_items_count == 0 i.e. Main Menu Item does not have Sub Items
+         *           8. If item_type == "app"
+         *              9. { ~~~ }
+         *       10. If sub_items_count > 0
+         *           11.
+         *
+         *
+         *
+         *
+         */
+        File configuration_file = new File( Environment.getExternalStorageDirectory() + File.separator + PATH_LAUNCHER_CONFIG_FILE );
+        String launcher_config_json = "";
+        // Step-1
+        if( configuration_file.exists() ) {
+            // Step-2
+            launcher_config_json = UtilFile.readData(configuration_file);
+        }
+        else{
+            launcher_config_json = UtilFile.readData( new File( PATH_LAUNCHER_CONFIG_FILE_SYSTEM ) );
+        }
+
+        // Step-3
+        ljr = new LauncherJSONReader( launcher_config_json );
+
+        // Step-4
+        int main_items_count = ljr.getMainItemsCount();
+
+        setCollarText( ljr );
+
+        // Step-5
+        int sub_items_count;
+		/*configurationReader = ConfigurationReader.reInstantiate();
+		String hotspot_enabled = configurationReader.getHotspotEnabled();
+		if( hotspot_enabled.equals( "0" ) )
+			main_menu_values = new String[ main_items_count-1 ];
+		else*/
+        main_menu_values = new String[ main_items_count ];
+
+        for( int i = 0, j=0 ; i < main_items_count ; i++ ){
+            //sub_items_count = ljr.getSubItemsCount( i );
+            // Log.d( TAG, "sub_items_count : "+sub_items_count );
+            //j = i;
+            // Step-6
+            sub_items_count = ljr.getSubItemsCount( i );
+            //Log.d( TAG, "sub items count : "+sub_items_count );
+
+            // Step-7
+            if( sub_items_count == 0 ){
+
+                // Step-8
+                String item_type = ljr.getMainItemValue( i, "item_type" );
+                if( item_type.equals( "app" ) ){
+
+                }
+            }
+			/*else if( ljr.getMainItemValue( i, "item_type" ).equals( "expandable-hotspot" ) ){
+
+				if( hotspot_enabled.equals( "0" ) ){
+					continue;
+				}
+			}*/
+            String item_name = ljr.getMainItemValue( i, "item_name" );
+            String item_name_json = ljr.getMainItemValue( i, "item_name_translated" );
+            try {
+                Log.d( TAG, item_name_json );
+                JSONObject jso = new JSONObject( item_name_json );
+                //Log.d( TAG, "display name : "+UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
+                item_name = jso.getString( UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
+            }
+            catch ( Exception e ){
+                item_name = ljr.getMainItemValue( i, "item_name" );
+                e.printStackTrace();
+            }
+            main_menu_values[ i ] = item_name;
+
+        }
+        ma = new MenuAdapter( R.layout.main_menu_items, this, main_menu_values );
 		/*setMainMenuAdapter(this.ma);
 		setSubMenuAdapter(this.sma);*/
 	}
@@ -495,6 +605,20 @@ public class MainActivity extends Activity {
 				//Log.d( TAG, "metadata : "+metadata );
 				return;
 			}
+            else if( item_type.equals( "part" ) ){
+                String metadata = ljr.getSubItemValue( main_menu_item_index, sub_item_index, "metadata" );
+                try {
+                    JSONArray jsa = new JSONArray( metadata );
+                    JSONObject jso = jsa.getJSONObject( 0 );
+                    String activity = jso.getString( "activity_name" ).trim();
+                    Intent in = new Intent( context, Class.forName( getPackageName() + "." + activity )  );
+                    startActivity( in );
+                }
+                catch ( Exception e ){
+                    CustomItems.showCustomToast( context, "error", "Cant open World Clock !", 3000 );
+                    //e.printStackTrace();
+                }
+            }
 		}
 	}
 
@@ -570,10 +694,10 @@ public class MainActivity extends Activity {
 		//	return true;
 
 		// Handle the Overflow left and right key movements for MAIN menu
-		if( handleMainMenuOverflow( i, keyevent ) ) return true;
+		//if( handleMainMenuOverflow( i, keyevent ) ) return true;
 
 		// Handle the Overflow left and right key movements for SUB menu
-		if( handleSubMenuOverflow( i, keyevent ) ) return true;
+		//if( handleSubMenuOverflow( i, keyevent ) ) return true;
 
 		// When on Sub menu, and Up is pressed, Move the focus back to Sub-Menu's Parent
 		if( handleSubMenuToMainMenuFocus( i, keyevent ) ) return true;
@@ -596,11 +720,11 @@ public class MainActivity extends Activity {
 		Log.d(TAG, "insde onPause()");
 
 
-		pauseTetheringInfoFlipper();
+		/*pauseTetheringInfoFlipper();
 		//weather.pauseYahooWeatherService();
 		clock_weather_hotel_logo_flipper.pauseClockWeatherLogoFlipper();
 
-		pauseLauncherIdleTimer();
+		pauseLauncherIdleTimer();*/
 	}
 
 
@@ -610,7 +734,17 @@ public class MainActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 
-		startTetheringInfoSwitcher();
+        if ( ! isLoadingCompleted() ) {
+            //setIsLoadingCompleted( true );
+            showLoadingActivity();
+        }
+        onUserInteraction();
+
+
+
+
+
+		/*startTetheringInfoSwitcher();
 		//weather.resumeYahooWeatherService();
 		clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
 
@@ -633,12 +767,6 @@ public class MainActivity extends Activity {
 				} else {
 					access_onresume_time = now;
 
-					/*new Handler().postDelayed(new Runnable() {
-						@Override
-						public void run() {
-
-						}
-					}, 1000 );*/
 
 					// restoreTvChannels();
 
@@ -649,22 +777,13 @@ public class MainActivity extends Activity {
 					// UtilShell.executeShellCommandWithOp( "am force-stop com.google.android.youtube.tv" );
 				}
 			}
-		}
+		}*/
 		Log.d( TAG, "insde onResume()" );
-		//this.configurationReader = ConfigurationReader.reInstantiate();
-
-		//onUserInteraction();
-		//this.ds.resumeDigitalSignageSwitcher();
-		//this.weather.resumeYahooWeatherService();
-		/*this.clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
-		startTetheringInfoSwitcher();*/
-
-		configurationReader = ConfigurationReader.reInstantiate();
 
 
-		//System.gc();
+		//configurationReader = ConfigurationReader.reInstantiate();
 
-		//UtilShell.executeShellCommandWithOp( "am startservice -n com.waxrain.airplaydmr/com.waxrain.airplaydmr.WaxPlayService" );
+
 	}
 
 	@Override
@@ -1143,6 +1262,137 @@ public class MainActivity extends Activity {
 		overridePendingTransition( 0, 0 );
 	}
 
+    private void copyAssets() {
+        AssetManager assetManager = getAssets();
+        String[] files = null;
+        try {
+            files = assetManager.list("");
+        } catch (IOException e) {
+            Log.e("tag", "Failed to get asset file list.", e);
+        }
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+            in = assetManager.open("com.google.android.youtube.tv.zip");
+            File outFile = new File("/mnt/sdcard/com.google.android.youtube.tv.zip");
+            out = new FileOutputStream(outFile);
+            copyFile(in, out);
+        } catch(IOException e) {
+            Log.e("tag", "Failed to copy asset file: " + "com.google.android.youtube.tv.zip", e);
+        }
+        finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    // NOOP
+                }
+            }
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    // NOOP
+                }
+            }
+        }
+        /*if (files != null) for (String filename : files) {
+            InputStream in = null;
+            OutputStream out = null;
+            try {
+                in = assetManager.open(filename);
+                File outFile = new File(getExternalFilesDir(null), filename);
+                out = new FileOutputStream(outFile);
+                copyFile(in, out);
+            } catch(IOException e) {
+                Log.e("tag", "Failed to copy asset file: " + filename, e);
+            }
+            finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        // NOOP
+                    }
+                }
+                if (out != null) {
+                    try {
+                        out.close();
+                    } catch (IOException e) {
+                        // NOOP
+                    }
+                }
+            }
+        }*/
+        /*InputStream stream = null;
+        OutputStream output = null;
+
+        try {
+            for (String fileName : this.getAssets().list( "youtube_new" ) ) {
+                Log.d( "ADA", fileName );
+                stream = this.getAssets().open( "youtube_new/" + fileName);
+                output = new BufferedOutputStream( new FileOutputStream( this.getFilesDir() + "/newDirectory/" + fileName));
+
+                byte data[] = new byte[1024];
+                int count;
+
+                while ((count = stream.read(data)) != -1) {
+                    output.write(data, 0, count);
+                }
+
+                output.flush();
+                output.close();
+                stream.close();
+
+                //stream = null;
+                //output = null;
+            }
+        }
+        catch ( Exception e ){
+            e.printStackTrace();
+        }*/
+    }
+    public void moveAssetToStorageDir(String path){
+        File file = getExternalFilesDir(null);
+        String rootPath = file.getPath() + "/" + path;
+        try{
+            String [] paths = getAssets().list(path);
+            for(int i=0; i<paths.length; i++){
+                if(paths[i].indexOf(".")==-1){
+                    File dir = new File(rootPath + paths[i]);
+                    dir.mkdir();
+                    moveAssetToStorageDir(paths[i]);
+                }else {
+                    File dest = null;
+                    InputStream in = null;
+                    if(path.length() == 0) {
+                        dest = new File(rootPath + paths[i]);
+                        in = getAssets().open(paths[i]);
+                    }else{
+                        dest = new File(rootPath + "/" + paths[i]);
+                        in = getAssets().open(path + "/" + paths[i]);
+                    }
+                    dest.createNewFile();
+                    FileOutputStream out = new FileOutputStream(dest);
+                    byte [] buff = new byte[in.available()];
+                    in.read(buff);
+                    out.write(buff);
+                    out.close();
+                    in.close();
+                }
+            }
+        }catch (Exception exp){
+            exp.printStackTrace();
+        }
+    }
+    private void copyFile(InputStream in, OutputStream out) throws IOException {
+        byte[] buffer = new byte[1024];
+        int read;
+        while((read = in.read(buffer)) != -1){
+            out.write(buffer, 0, read);
+        }
+    }
+
 	public void restoreYoutubeSettings(){
 		// This works differently  for 5.1 and 6.0, so we differentiate it
 		// Permissions for Android 6.0
@@ -1169,8 +1419,19 @@ public class MainActivity extends Activity {
 			// 2. Remove all data from /data/data/com.google.android.youtube.tv
 			UtilShell.executeShellCommandWithOp( "rm -r /data/data/com.google.android.youtube.tv/*" );
 
+
+			// Copy the youtube settings from assets folder to sdcard
+            copyAssets();
+            // Unzip the youtube backup file
+            UtilShell.executeShellCommandWithOp( "mkdir /mnt/sdcard", "rm -r /mnt/sdcard/com.google.android.youtube.tv/*",
+                    "unzip -o /mnt/sdcard/com.google.android.youtube.tv.zip -d /mnt/sdcard" );
+
+            //moveAssetToStorageDir( "" );
+
+
 			// 3. Copy the default data for youtube from /system/appstv_data/com.google.android.youtube.tv
-			UtilShell.executeShellCommandWithOp( "cp -r /system/appstv_data/com.google.android.youtube.tv/* /data/data/com.google.android.youtube.tv" );
+			//UtilShell.executeShellCommandWithOp( "cp -r /system/appstv_data/com.google.android.youtube.tv/* /data/data/com.google.android.youtube.tv" );
+			UtilShell.executeShellCommandWithOp( "cp -r /mnt/sdcard/com.google.android.youtube.tv/* /data/data/com.google.android.youtube.tv" );
 
 			// 4. CHMOD -R 777 to make it executable, just in case
 			UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/data/com.google.android.youtube.tv" );
