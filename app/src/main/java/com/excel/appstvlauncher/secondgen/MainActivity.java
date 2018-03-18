@@ -738,7 +738,37 @@ public class MainActivity extends Activity {
             //setIsLoadingCompleted( true );
             showLoadingActivity();
         }
-        onUserInteraction();
+		else {
+
+			if (access_onresume_time == -1) {
+				access_onresume_time = System.currentTimeMillis();
+			} else {
+				long now = System.currentTimeMillis();
+				long diff = now - access_onresume_time;
+				int sec = (int) diff / 1000;
+				Log.d(TAG, "sec : " + sec);
+				if (sec <= 10) {
+					access_onresume_time = now;
+					//return;
+				} else {
+					access_onresume_time = now;
+
+
+					unzipTvChannelsZip();
+
+					onUserInteraction();
+
+					String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
+					UtilShell.executeShellCommandWithOp( "kill "+pid );
+
+					//startScreenCastService();
+
+					// UtilShell.executeShellCommandWithOp( "am force-stop com.google.android.youtube.tv" );
+				}
+			}
+		}
+        //onUserInteraction();
+
 
 
 
@@ -1615,6 +1645,7 @@ public class MainActivity extends Activity {
 
 	public void restoreTvChannels(){
 		if( ! isTvChannelRestored() ){
+		    UtilShell.executeShellCommandWithOp( "monkey -p com.excel.datagrammonitor.secondgen -c android.intent.category.LAUNCHER 1" );
 			unzipTvChannelsZip();
 			restoreYoutubeSettings();
 		}
