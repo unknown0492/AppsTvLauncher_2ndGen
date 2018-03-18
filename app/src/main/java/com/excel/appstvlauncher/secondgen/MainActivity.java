@@ -14,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -157,6 +158,35 @@ public class MainActivity extends Activity {
 
     /* Launcher Menu Items Related Functions */
 
+    AsyncTask<Void, Void, Void> initLauncherMenuItems = new AsyncTask<Void, Void, Void>() {
+        @Override
+        protected Void doInBackground(Void... voids) {
+            Handler hh = new Handler(Looper.getMainLooper() );
+            //hh.getLooper().prepare();
+            hh.post(new Runnable() {
+                @Override
+                public void run() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            setLauncherMenuItems();
+                        }
+                    });
+
+                }
+            });
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            setMainMenuAdapter(ma);
+            setSubMenuAdapter(sma);
+        }
+    };
 
 
 	@SuppressWarnings("deprecation")
@@ -166,46 +196,17 @@ public class MainActivity extends Activity {
 
 		initViews();
 
-		new Handler().post(new Runnable() {
+		/*new Handler().post(new Runnable() {
 			@Override
 			public void run() {
 				setLauncherMenuItems();
 				setMainMenuAdapter(ma);
 				setSubMenuAdapter(sma);
 			}
-		});
+		});*/
 
 
-		/*new AsyncTask<Void,Void,Void>(){
-
-			@Override
-			protected Void doInBackground(Void... voids) {
-				Handler hh = new Handler(Looper.getMainLooper() );
-				//hh.getLooper().prepare();
-				hh.post(new Runnable() {
-					@Override
-					public void run() {
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								setLauncherMenuItems();
-							}
-						});
-
-					}
-				});
-
-				return null;
-			}
-
-			@Override
-			protected void onPostExecute(Void aVoid) {
-				super.onPostExecute(aVoid);
-
-				setMainMenuAdapter(ma);
-				setSubMenuAdapter(sma);
-			}
-		}.execute();*/
+        initLauncherMenuItems.execute();
 
 
 		createLauncheritemsUpdateBroadcast();
@@ -213,21 +214,35 @@ public class MainActivity extends Activity {
 		createPerfectTimeReceiver();
 		startClockTicker();
 		startDateAndDayNameSwitcher();
-		//initializeWeatherFeatures();
+		initializeWeatherFeatures();
 		initializeClockWeatherHotelLogoFlipper();
 		checkIfHotelLogoToBeDisplayed();
 		restoreTvChannels();
 		startScreenCastService();
 
 		ds.resumeDigitalSignageSwitcher();
-        startTetheringInfoSwitcher();
-		//weather.resumeYahooWeatherService();
-		clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
+
+        /*startTetheringInfoSwitcher();
+		weather.resumeYahooWeatherService();
+		clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();*/
 
 
 		//restoreYoutubeSettings();
 
 	}
+
+	final Handler unzipTVHandler = new Handler( Looper.getMainLooper() );
+	AsyncTask<Void, Void, Void> unzipTVAsync = new AsyncTask<Void, Void, Void>() {
+
+	    @Override
+        protected Void doInBackground(Void... voids) {
+            unzipTvChannelsZip();
+            String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
+            UtilShell.executeShellCommandWithOp( "kill "+pid );
+            startScreenCastService();
+            return null;
+        }
+    };
 
 
 	public void setMainMenuAdapter(final MenuAdapter adapter) {
@@ -398,10 +413,10 @@ public class MainActivity extends Activity {
 
 	public void scrollCenter( LinearLayout ll, View viewToScroll ) {
 		// Source : http://stackoverflow.com/questions/8642677/reduce-speed-of-smooth-scroll-in-scroll-view
-		/*int endPos    = (int) ll.getX();
+		int endPos    = (int) ll.getX();
 		int halfWidth = (int) ll.getWidth() / 2;
 
-		ObjectAnimator.ofInt( viewToScroll, "scrollX",  endPos + halfWidth - viewToScroll.getWidth() / 2 ).setDuration( 500 ).start();*/
+		ObjectAnimator.ofInt( viewToScroll, "scrollX",  endPos + halfWidth - viewToScroll.getWidth() / 2 ).setDuration( 500 ).start();
 	}
 
 	public void setLauncherMenuItems() {
@@ -720,11 +735,11 @@ public class MainActivity extends Activity {
 		Log.d(TAG, "insde onPause()");
 
 
-		/*pauseTetheringInfoFlipper();
-		//weather.pauseYahooWeatherService();
+		pauseTetheringInfoFlipper();
+		weather.pauseYahooWeatherService();
 		clock_weather_hotel_logo_flipper.pauseClockWeatherLogoFlipper();
 
-		pauseLauncherIdleTimer();*/
+		pauseLauncherIdleTimer();
 	}
 
 
@@ -733,6 +748,10 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
+
+		startTetheringInfoSwitcher();
+		weather.resumeYahooWeatherService();
+		clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
 
         if ( ! isLoadingCompleted() ) {
             //setIsLoadingCompleted( true );
@@ -753,15 +772,16 @@ public class MainActivity extends Activity {
 				} else {
 					access_onresume_time = now;
 
+                    unzipTvChannelsZip();
+                    String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
+                    UtilShell.executeShellCommandWithOp( "kill "+pid );
 
-					unzipTvChannelsZip();
+                    startScreenCastService();
 
 					onUserInteraction();
 
-					String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
-					UtilShell.executeShellCommandWithOp( "kill "+pid );
 
-					//startScreenCastService();
+
 
 					// UtilShell.executeShellCommandWithOp( "am force-stop com.google.android.youtube.tv" );
 				}
@@ -1646,8 +1666,7 @@ public class MainActivity extends Activity {
 	public void restoreTvChannels(){
 		if( ! isTvChannelRestored() ){
 		    UtilShell.executeShellCommandWithOp( "monkey -p com.excel.datagrammonitor.secondgen -c android.intent.category.LAUNCHER 1" );
-			unzipTvChannelsZip();
-			restoreYoutubeSettings();
+			//unzipTvChannelsZip();
 			restoreYoutubeSettings();
 		}
 	}
