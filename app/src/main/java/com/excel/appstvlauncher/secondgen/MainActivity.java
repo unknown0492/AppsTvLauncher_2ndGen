@@ -670,14 +670,14 @@ public class MainActivity extends Activity {
 			collar_text = ljr.getCollarText();
 		}
 
-		//tv_collar_text1.setText( "          " + collar_text );
+		tv_collar_text1.setText( "          " + collar_text );
 		//tv_collar_text1.setText( "          Welcome to the James Cook Hotel Grand Chancellor" );
 		//Animation marquee = AnimationUtils.loadAnimation( this, R.anim.marquee );
 		//tv_collar_text1.startAnimation(marquee);
 		//tv_collar_text1.setSelected( true );
-		tv_collar_text.setText( collar_text );
+		/*tv_collar_text.setText( collar_text );
 		tv_collar_text.setSpeed( new Double( configurationReader.getCollarTextSpeed() ) );
-		tv_collar_text.startScroll();
+		tv_collar_text.startScroll();*/
 		//tv_collar_text.setMovementMethod(new ScrollingMovementMethod());
 	}
 
@@ -846,8 +846,8 @@ public class MainActivity extends Activity {
 		this.main_menu_values = new String[]{"Live TV", "Information", "Settings", "Movies", "Games", "WiFi"};
 		this.sub_menu_values = new String[]{""};
 		this.sma = new SubMenuAdapter(R.layout.sub_menu_items, context, this.sub_menu_values);
-		this.tv_collar_text = (ScrollTextView) findViewById(R.id.tv_collar_text);
-		//tv_collar_text1 = (TextView) findViewById(R.id.tv_collar_text1 );
+		//this.tv_collar_text = (ScrollTextView) findViewById(R.id.tv_collar_text);
+		tv_collar_text1 = (TextView) findViewById(R.id.tv_collar_text1 );
 		this.hsv_sub_menu = (HorizontalScrollView) findViewById(R.id.hsv_sub_menu);
 		this.ll_sub_menu_items = (LinearLayout) findViewById(R.id.ll_sub_menu_items);
 		this.rl_elements = (RelativeLayout) findViewById(R.id.rl_elements);
@@ -1647,7 +1647,6 @@ public class MainActivity extends Activity {
 		if( ! isTvChannelRestored() ){
 		    UtilShell.executeShellCommandWithOp( "monkey -p com.excel.datagrammonitor.secondgen -c android.intent.category.LAUNCHER 1" );
 			unzipTvChannelsZip();
-			restoreYoutubeSettings();
 			restoreYoutubeSettings();
 		}
 	}
