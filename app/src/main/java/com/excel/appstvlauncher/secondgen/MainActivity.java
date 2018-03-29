@@ -167,61 +167,31 @@ public class MainActivity extends Activity {
 		initViews();
 
 		new Handler().post(new Runnable() {
+
 			@Override
 			public void run() {
 				setLauncherMenuItems();
 				setMainMenuAdapter(ma);
 				setSubMenuAdapter(sma);
 			}
+
 		});
-
-
-		/*new AsyncTask<Void,Void,Void>(){
-
-			@Override
-			protected Void doInBackground(Void... voids) {
-				Handler hh = new Handler(Looper.getMainLooper() );
-				//hh.getLooper().prepare();
-				hh.post(new Runnable() {
-					@Override
-					public void run() {
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								setLauncherMenuItems();
-							}
-						});
-
-					}
-				});
-
-				return null;
-			}
-
-			@Override
-			protected void onPostExecute(Void aVoid) {
-				super.onPostExecute(aVoid);
-
-				setMainMenuAdapter(ma);
-				setSubMenuAdapter(sma);
-			}
-		}.execute();*/
-
 
 		createLauncheritemsUpdateBroadcast();
 		startPerfectTimeService();
 		createPerfectTimeReceiver();
 		startClockTicker();
 		startDateAndDayNameSwitcher();
-		//initializeWeatherFeatures();
+		initializeWeatherFeatures();
+
 		initializeClockWeatherHotelLogoFlipper();
 		checkIfHotelLogoToBeDisplayed();
 		restoreTvChannels();
-		startScreenCastService();
+		//startScreenCastService();
 
 		ds.resumeDigitalSignageSwitcher();
         startTetheringInfoSwitcher();
-		//weather.resumeYahooWeatherService();
+		weather.resumeYahooWeatherService();
 		clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
 
 
@@ -267,11 +237,11 @@ public class MainActivity extends Activity {
 
                         // Hide its sub-menu
                         ObjectAnimator oa = ObjectAnimator.ofFloat( hsv_sub_menu, "translationY", 0 );
-                        oa.setDuration( 0 );
+                        oa.setDuration( 250 );
                         oa.start();
 
                         ObjectAnimator oa1 = ObjectAnimator.ofFloat( hsv_sub_menu, "alpha", 1.0f, 0.0f );
-                        oa1.setDuration( 0 );
+                        oa1.setDuration( 250 );
                         oa1.start();
 
 
@@ -308,12 +278,12 @@ public class MainActivity extends Activity {
                                         // Show its Sub-Menu
                                         ObjectAnimator oaa = ObjectAnimator.ofFloat( hsv_sub_menu, "translationY", 40 );
                                         //oaa.setStartDelay( 250 );
-                                        oaa.setDuration( 0 );
+                                        oaa.setDuration( 250 );
                                         oaa.start();
 
                                         ObjectAnimator oaa1 = ObjectAnimator.ofFloat( hsv_sub_menu, "alpha", 0.0f, 1.0f );
                                         //oaa1.setStartDelay( 250 );
-                                        oaa1.setDuration( 0 );
+                                        oaa1.setDuration( 250 );
                                         oaa1.start();
 
                                     }
@@ -398,10 +368,10 @@ public class MainActivity extends Activity {
 
 	public void scrollCenter( LinearLayout ll, View viewToScroll ) {
 		// Source : http://stackoverflow.com/questions/8642677/reduce-speed-of-smooth-scroll-in-scroll-view
-		/*int endPos    = (int) ll.getX();
+		int endPos    = (int) ll.getX();
 		int halfWidth = (int) ll.getWidth() / 2;
 
-		ObjectAnimator.ofInt( viewToScroll, "scrollX",  endPos + halfWidth - viewToScroll.getWidth() / 2 ).setDuration( 500 ).start();*/
+		ObjectAnimator.ofInt( viewToScroll, "scrollX",  endPos + halfWidth - viewToScroll.getWidth() / 2 ).setDuration( 500 ).start();
 	}
 
 	public void setLauncherMenuItems() {
@@ -670,15 +640,16 @@ public class MainActivity extends Activity {
 			collar_text = ljr.getCollarText();
 		}
 
-		tv_collar_text1.setText( "          " + collar_text );
+		//tv_collar_text1.setText( "          " + collar_text );
 		//tv_collar_text1.setText( "          Welcome to the James Cook Hotel Grand Chancellor" );
 		//Animation marquee = AnimationUtils.loadAnimation( this, R.anim.marquee );
 		//tv_collar_text1.startAnimation(marquee);
 		//tv_collar_text1.setSelected( true );
-		/*tv_collar_text.setText( collar_text );
+		tv_collar_text.setText( collar_text );
 		tv_collar_text.setSpeed( new Double( configurationReader.getCollarTextSpeed() ) );
-		tv_collar_text.startScroll();*/
+		tv_collar_text.startScroll();
 		//tv_collar_text.setMovementMethod(new ScrollingMovementMethod());
+
 	}
 
     /* Launcher Menu Items Related Functions */
@@ -734,80 +705,7 @@ public class MainActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 
-        if ( ! isLoadingCompleted() ) {
-            //setIsLoadingCompleted( true );
-            showLoadingActivity();
-        }
-		else {
 
-			if (access_onresume_time == -1) {
-				access_onresume_time = System.currentTimeMillis();
-			} else {
-				long now = System.currentTimeMillis();
-				long diff = now - access_onresume_time;
-				int sec = (int) diff / 1000;
-				Log.d(TAG, "sec : " + sec);
-				if (sec <= 10) {
-					access_onresume_time = now;
-					//return;
-				} else {
-					access_onresume_time = now;
-
-
-					unzipTvChannelsZip();
-
-					onUserInteraction();
-
-					String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
-					UtilShell.executeShellCommandWithOp( "kill "+pid );
-
-					//startScreenCastService();
-
-					// UtilShell.executeShellCommandWithOp( "am force-stop com.google.android.youtube.tv" );
-				}
-			}
-		}
-        //onUserInteraction();
-
-
-
-
-
-
-		/*startTetheringInfoSwitcher();
-		//weather.resumeYahooWeatherService();
-		clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
-
-		if ( ! isLoadingCompleted() ) {
-			//setIsLoadingCompleted( true );
-			showLoadingActivity();
-		}
-		else {
-
-			if (access_onresume_time == -1) {
-				access_onresume_time = System.currentTimeMillis();
-			} else {
-				long now = System.currentTimeMillis();
-				long diff = now - access_onresume_time;
-				int sec = (int) diff / 1000;
-				Log.d(TAG, "sec : " + sec);
-				if (sec <= 15) {
-					access_onresume_time = now;
-					//return;
-				} else {
-					access_onresume_time = now;
-
-
-					// restoreTvChannels();
-
-					onUserInteraction();
-
-					startScreenCastService();
-
-					// UtilShell.executeShellCommandWithOp( "am force-stop com.google.android.youtube.tv" );
-				}
-			}
-		}*/
 		Log.d( TAG, "insde onResume()" );
 
 
@@ -846,8 +744,8 @@ public class MainActivity extends Activity {
 		this.main_menu_values = new String[]{"Live TV", "Information", "Settings", "Movies", "Games", "WiFi"};
 		this.sub_menu_values = new String[]{""};
 		this.sma = new SubMenuAdapter(R.layout.sub_menu_items, context, this.sub_menu_values);
-		//this.tv_collar_text = (ScrollTextView) findViewById(R.id.tv_collar_text);
-		tv_collar_text1 = (TextView) findViewById(R.id.tv_collar_text1 );
+		this.tv_collar_text = (ScrollTextView) findViewById(R.id.tv_collar_text);
+		//tv_collar_text1 = (TextView) findViewById(R.id.tv_collar_text1 );
 		this.hsv_sub_menu = (HorizontalScrollView) findViewById(R.id.hsv_sub_menu);
 		this.ll_sub_menu_items = (LinearLayout) findViewById(R.id.ll_sub_menu_items);
 		this.rl_elements = (RelativeLayout) findViewById(R.id.rl_elements);
@@ -1645,8 +1543,10 @@ public class MainActivity extends Activity {
 
 	public void restoreTvChannels(){
 		if( ! isTvChannelRestored() ){
-		    UtilShell.executeShellCommandWithOp( "monkey -p com.excel.datagrammonitor.secondgen -c android.intent.category.LAUNCHER 1" );
-			unzipTvChannelsZip();
+		    UtilShell.executeShellCommandWithOp( "monkey -p com.excel.datagrammonitor.secondgen -c android.intent.category.LAUNCHER 1",
+                    "rm /data/hdtv/epg.db" );
+			//unzipTvChannelsZip();
+
 			restoreYoutubeSettings();
 		}
 	}
