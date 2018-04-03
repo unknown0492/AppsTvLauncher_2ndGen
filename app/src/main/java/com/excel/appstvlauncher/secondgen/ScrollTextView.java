@@ -1,8 +1,9 @@
 package com.excel.appstvlauncher.secondgen;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Rect;
-import android.os.Handler;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -78,36 +79,29 @@ public class ScrollTextView extends android.support.v7.widget.AppCompatTextView 
 	 */
 	int distance, duration;
 	public void resumeScroll() {
-		Log.e( "tag", "pausing collar for 20 sec ");
-		new Handler().postDelayed(new Runnable() {
-			@Override
-			public void run() {
-				Log.e( "tag", "collar resumed ");
 
-				if (!mPaused)
-					return;
+		if ( !mPaused )
+			return;
 
-				// Do not know why it would not scroll sometimes
-				// if setHorizontallyScrolling is called in constructor.
-				setHorizontallyScrolling(true);
+		// Do not know why it would not scroll sometimes
+		// if setHorizontallyScrolling is called in constructor.
+		setHorizontallyScrolling(true);
 
-				// use LinearInterpolator for steady scrolling
-				mSlr = new Scroller(getContext(), new LinearInterpolator());
-				setScroller(mSlr);
+		// use LinearInterpolator for steady scrolling
+		mSlr = new Scroller(getContext(), new LinearInterpolator());
+		setScroller(mSlr);
 
-				int scrollingLen = calculateScrollingLen();
-				distance = scrollingLen - (getWidth() + mXPaused);
-				duration = new Double(  (1.00000 * distance) / getSpeed()).intValue() * 1000;//(new Double(mRndDuration * distance * 1.00000/ scrollingLen)).intValue();
+		int scrollingLen = calculateScrollingLen();
+		distance = scrollingLen - (getWidth() + mXPaused);
+		duration = new Double(  (1.00000 * distance) / getSpeed()).intValue() * 1000;//(new Double(mRndDuration * distance * 1.00000/ scrollingLen)).intValue();
 
-				//Log.e( "AAA", String.format( "scrollingLen %d, distance %d, duration %d, speed %.02f" , scrollingLen, distance, duration, getSpeed()));
+		//Log.e( "AAA", String.format( "scrollingLen %d, distance %d, duration %d, speed %.02f" , scrollingLen, distance, duration, getSpeed()));
 
-				setVisibility(VISIBLE);
+		setVisibility(VISIBLE);
 
-				mSlr.startScroll(mXPaused, 0, distance, 0, duration );
-				invalidate();
-				mPaused = false;
-			}
-		}, 0);
+		mSlr.startScroll(mXPaused, 0, distance, 0, duration );
+		invalidate();
+		mPaused = false;
 
 	}
 
@@ -154,11 +148,36 @@ public class ScrollTextView extends android.support.v7.widget.AppCompatTextView 
 	public void computeScroll() {
 		super.computeScroll();
 
-		if (null == mSlr) return;
+		// Log.d( "tag", "computeScroll() called" );
 
-		if (mSlr.isFinished() && (!mPaused)) {
-			this.startScroll();
+		if ( null == mSlr ) return;
+
+		if ( mSlr.isFinished() && ( !mPaused ) ) {
+
+			Log.d( "tag", "computeScroll() pausing for 20 seconds" );
+			//pauseScroll();
+			LocalBroadcastManager.getInstance( getContext() ).sendBroadcast( new Intent( "refresh_collar_text" ) );
+
+
+			// if screensaver is OFF, then start the ticker text after 20 seconds
+			/*if( !MainActivity.getIsScreenSaverON() ) {
+
+				new Handler().postDelayed( new Runnable() {
+
+					@Override
+					public void run() {
+						startScroll();
+					}
+
+				}, 20000 );
+			}*/
+
+
 		}
+		/*if( MainActivity.getIsScreenSaverON() ) {
+
+			pauseScroll();
+		}*/
 	}
 
 	public int getRndDuration() {
@@ -182,4 +201,6 @@ public class ScrollTextView extends android.support.v7.widget.AppCompatTextView 
 	public void setSpeed( double speed ) {
 		this.speed = speed;
 	}
+
+
 }

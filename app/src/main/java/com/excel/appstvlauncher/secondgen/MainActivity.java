@@ -117,6 +117,7 @@ public class MainActivity extends Activity {
 	VirussTimer ssid_password_flipper;
 	Runnable ssid_password_runnable;
 	boolean isSSIDShowing = true;
+	String collar_text = "empty";
 
 	ConfigurationReader configurationReader;
 
@@ -143,6 +144,8 @@ public class MainActivity extends Activity {
 	LinearLayout current_main_item = null;
 	LinearLayout prev_main_item = null;
 	Handler test_handler = new Handler();
+
+	static boolean is_screensaver_on = false;
 
 
 	@Override
@@ -188,10 +191,12 @@ public class MainActivity extends Activity {
 		restoreTvChannels();
 		//startScreenCastService();
 
-		ds.resumeDigitalSignageSwitcher();
+		//ds.resumeDigitalSignageSwitcher();
         /*startTetheringInfoSwitcher();
 		weather.resumeYahooWeatherService();
 		clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();*/
+
+        startLauncherIdleTimer();
 
 
 		//restoreYoutubeSettings();
@@ -627,7 +632,7 @@ public class MainActivity extends Activity {
 
 	public void setCollarText( LauncherJSONReader ljr ){
 		// Set Collar Text
-		String collar_text = ljr.getCollarText();
+		collar_text = ljr.getCollarText();
 		String collar_text_translated = ljr.getCollarTextTranslated();
 
 		try{
@@ -647,8 +652,68 @@ public class MainActivity extends Activity {
 		tv_collar_text.setText( collar_text );
 		tv_collar_text.setSpeed( new Double( configurationReader.getCollarTextSpeed() ) );
 		tv_collar_text.startScroll();
-		//tv_collar_text.setMovementMethod(new ScrollingMovementMethod());
+        /*new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                tv_collar_text.pauseScroll();
+            }
+        }, 10000 );
 
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                tv_collar_text.startScroll();
+            }
+        }, 20000 );*/
+
+		//tv_collar_text.setMovementMethod(new ScrollingMovementMethod());
+		createCollarTextRefreshBroadcast();
+
+	}
+
+	BroadcastReceiver collarTextRefreshReceiver;
+	Handler tickerDelayHandler;
+	Runnable tickerDelayRunnable;
+
+	public void createCollarTextRefreshBroadcast(){
+
+		collarTextRefreshReceiver = new BroadcastReceiver() {
+
+			@Override
+			public void onReceive( Context context, Intent intent ) {
+				Log.i( TAG, "One iteration of collar text completed" );
+				tv_collar_text.setVisibility( View.INVISIBLE );
+
+				tickerDelayHandler = new Handler();
+				tickerDelayRunnable = new Runnable() {
+
+					@Override
+					public void run() {
+
+						if( !getIsScreenSaverON() ) {
+
+							//tv_collar_text = null;
+							//tv_collar_text = (ScrollTextView) findViewById( R.id.tv_collar_text );
+							tv_collar_text.setText( collar_text );
+							tv_collar_text.setSpeed( new Double( configurationReader.getCollarTextSpeed() ) );
+							tv_collar_text.startScroll();
+
+						}
+						else{
+							Log.d( TAG, "Screensaver is on, keep pausing the collar text, check afer 40 seconds !" );
+							//tv_collar_text.pauseScroll();
+							tickerDelayHandler.postDelayed( tickerDelayRunnable, 40000 );
+						}
+
+					}
+
+				};
+				tickerDelayHandler.postDelayed( tickerDelayRunnable, 20000 );
+
+			}
+		};
+
+		LocalBroadcastManager.getInstance( context ).registerReceiver( collarTextRefreshReceiver, new IntentFilter( "refresh_collar_text" ) );
 	}
 
     /* Launcher Menu Items Related Functions */
@@ -667,7 +732,7 @@ public class MainActivity extends Activity {
 		//if( handleMainMenuOverflow( i, keyevent ) ) return true;
 
 		// Handle the Overflow left and right key movements for SUB menu
-		//if( handleSubMenuOverflow( i, keyevent ) ) return true;
+		if( handleSubMenuOverflow( i, keyevent ) ) return true;
 
 		// When on Sub menu, and Up is pressed, Move the focus back to Sub-Menu's Parent
 		if( handleSubMenuToMainMenuFocus( i, keyevent ) ) return true;
@@ -689,9 +754,12 @@ public class MainActivity extends Activity {
 		super.onPause();
 		Log.d(TAG, "insde onPause()");
 
+        ds.pauseDigitalSignageSwitcher();
 		pauseTetheringInfoFlipper();
 		//weather.pauseYahooWeatherService();
 		clock_weather_hotel_logo_flipper.pauseClockWeatherLogoFlipper();
+		pauseClockTicker();
+        //tv_collar_text.pauseScroll();
 
 		pauseLauncherIdleTimer();
 	}
@@ -705,9 +773,13 @@ public class MainActivity extends Activity {
 
 		Log.d( TAG, "insde onResume()" );
 
+        ds.resumeDigitalSignageSwitcher();
         startTetheringInfoSwitcher();
         //weather.resumeYahooWeatherService();
         clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
+        startClockTicker();
+        //tv_collar_text.startScroll();
+        onUserInteraction();
 
         if ( ! isLoadingCompleted() ) {
             //setIsLoadingCompleted( true );
@@ -731,7 +803,7 @@ public class MainActivity extends Activity {
 
                     //unzipTvChannelsZip();
 
-                    onUserInteraction();
+
 
 					/*String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
 					UtilShell.executeShellCommandWithOp( "kill "+pid );*/
@@ -742,6 +814,8 @@ public class MainActivity extends Activity {
                 }
             }
         }
+
+
 
 
 		//configurationReader = ConfigurationReader.reInstantiate();
@@ -897,7 +971,14 @@ public class MainActivity extends Activity {
 		if (areLauncherElementsHidden) {
 			ObjectAnimator.ofFloat(rl_elements, "alpha", 0.0f, 1.0f).setDuration(500).start();
 			areLauncherElementsHidden = false;
-			// startLauncherIdleTimer();
+			setIsScreenSaverON( false );
+			if( tickerDelayHandler != null )
+				tickerDelayHandler.removeCallbacks( tickerDelayRunnable );
+			tv_collar_text.startScroll();
+
+			//LocalBroadcastManager.getInstance( context ).sendBroadcast( new Intent( "refresh_collar_text" ) );
+			//tv_collar_text.startScroll();
+			startLauncherIdleTimer();
 		} else {
 			startLauncherIdleTimer();
 		}
@@ -920,10 +1001,14 @@ public class MainActivity extends Activity {
 
 				Log.d( TAG, String.format( "now : %d, current : %d, difference : %d, n-c : %d", now, current_timestamp, difference, ( now - current_timestamp ) ) );
 
+                // Start the Screen Saver
 				if( difference > Integer.parseInt( configurationReader.getIdleTimeoutInterval() )/1000 ){
+				//if( difference > Integer.parseInt( "30" ) ){
 					Log.d( null, "difference > " );
 					ObjectAnimator.ofFloat( rl_elements, "alpha", 1.0f, 0.0f ).setDuration( 500 ).start();
 					areLauncherElementsHidden = true;
+					setIsScreenSaverON( true );
+					//tv_collar_text.pauseScroll();
 				}
 				else{
 					startLauncherIdleTimer();
@@ -931,7 +1016,6 @@ public class MainActivity extends Activity {
 
 			}
 		};
-
 
     	//new Handler().postDelayed( launcher_idle_runnable, TEN_SECONDS_MILLIS );
 		launcher_idle_timer.start( launcher_idle_runnable );
@@ -982,39 +1066,57 @@ public class MainActivity extends Activity {
 		LocalBroadcastManager.getInstance( this).unregisterReceiver( perfectTimeReceiver );
 	}
 
+	VirussTimer clockTickerTimer;
+	Runnable clockTickerRunnable;
+
 	public void startClockTicker(){
-		new Handler().postDelayed( new Runnable() {
 
-			@Override
-			public void run(){
-				Calendar cal = Calendar.getInstance();
+	    clockTickerTimer = new VirussTimer( 60000 );
+		clockTickerRunnable = new Runnable() {
 
-				if( clock_seconds == null )
-					clock_seconds = "0";
+            @Override
+            public void run(){
+                Log.d( TAG, "Clock Ticking !" );
 
-				int minute, hours, seconds, month, year;
-				String date_string = "";
-				String date = "";
+                Calendar cal = Calendar.getInstance();
+
+                if( clock_seconds == null )
+                    clock_seconds = "0";
+
+                int minute, hours, seconds, month, year;
+                String date_string = "";
+                String date = "";
 
 				/*if( ( seconds = cal.get( Calendar.SECOND ) ) != Integer.parseInt( tv_clock_minutes.getText().toString() ) )
 					tv_clock_minutes.setText( (seconds<10)?"0"+seconds:seconds+"" );*/
-				if( ( minute = cal.get( Calendar.MINUTE ) ) != Integer.parseInt( tv_clock_minutes.getText().toString() ) )
-					tv_clock_minutes.setText( (minute<10)?"0"+minute:minute+"" );
-				if( ( hours = cal.get( Calendar.HOUR_OF_DAY ) ) != Integer.parseInt( tv_clock_hours.getText().toString() ) )
-					tv_clock_hours.setText( (hours<10)?"0"+hours:hours+"" );
-				date = (cal.get( Calendar.DATE )<10)?"0"+cal.get( Calendar.DATE ):cal.get( Calendar.DATE )+"";
-				year = cal.get( Calendar.YEAR );
-				//date_string = date + " " + (new SimpleDateFormat( "MMM" )).format( cal.getTime() ) + ", " + year;
-				date_string = date + " " + Calendar.getInstance().getDisplayName( Calendar.MONTH, Calendar.SHORT, UtilMisc.getCustomLocaleLanguageConstant() ) + ", " + year;
-				tv_date.setText( date_string );
-				//tv_day_name.setText( ( new SimpleDateFormat( "EEEE" )).format( cal.getTime() ) );
-				tv_day_name.setText( Calendar.getInstance().getDisplayName( Calendar.DAY_OF_WEEK, Calendar.LONG, UtilMisc.getCustomLocaleLanguageConstant() ) );
+                if( ( minute = cal.get( Calendar.MINUTE ) ) != Integer.parseInt( tv_clock_minutes.getText().toString() ) )
+                    tv_clock_minutes.setText( (minute<10)?"0"+minute:minute+"" );
+                if( ( hours = cal.get( Calendar.HOUR_OF_DAY ) ) != Integer.parseInt( tv_clock_hours.getText().toString() ) )
+                    tv_clock_hours.setText( (hours<10)?"0"+hours:hours+"" );
+                date = (cal.get( Calendar.DATE )<10)?"0"+cal.get( Calendar.DATE ):cal.get( Calendar.DATE )+"";
+                year = cal.get( Calendar.YEAR );
+                //date_string = date + " " + (new SimpleDateFormat( "MMM" )).format( cal.getTime() ) + ", " + year;
+                date_string = date + " " + Calendar.getInstance().getDisplayName( Calendar.MONTH, Calendar.SHORT, UtilMisc.getCustomLocaleLanguageConstant() ) + ", " + year;
+                tv_date.setText( date_string );
+                //tv_day_name.setText( ( new SimpleDateFormat( "EEEE" )).format( cal.getTime() ) );
+                tv_day_name.setText( Calendar.getInstance().getDisplayName( Calendar.DAY_OF_WEEK, Calendar.LONG, UtilMisc.getCustomLocaleLanguageConstant() ) );
 
-				startClockTicker();
+                // startClockTicker();
+                clockTickerTimer.start( clockTickerRunnable );
 
-			}
-		}, 1000*60 );
+            }
+        };
+
+        // new Handler().postDelayed( clockTickerRunnable, 1000*60 );
+        clockTickerTimer.start( clockTickerRunnable );
+
 	}
+
+	public void pauseClockTicker(){
+	    if( clockTickerTimer != null )
+            clockTickerTimer.stop( clockTickerRunnable );
+        Log.d( TAG, "pauseClockTicker()" );
+    }
 
 	public void startDateAndDayNameSwitcher(){
 		// configurationReader = ConfigurationReader.reInstantiate();
@@ -1175,6 +1277,15 @@ public class MainActivity extends Activity {
 			key_combination.removeAllElements();
 		}
 	}
+
+
+	public static void setIsScreenSaverON( boolean is_on ){
+	    is_screensaver_on = is_on;
+    }
+
+    public static boolean getIsScreenSaverON(){
+	    return is_screensaver_on;
+    }
     
     
     /*

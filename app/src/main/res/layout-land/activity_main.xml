@@ -112,6 +112,7 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:orientation="horizontal"
+            android:background="@drawable/submenu_bg1"
             android:layout_alignParentBottom="true">
 
 
@@ -309,7 +310,7 @@
                 android:singleLine="true"
                 android:textColor="#ffffff"
                 android:textSize="25dp"
-                android:background="@drawable/submenu_bg1"
+
                 android:paddingLeft="10dp"
                 android:paddingTop="7dp"
                 android:layout_weight="8" />
