@@ -147,6 +147,10 @@ public class MainActivity extends Activity {
 
 	static boolean is_screensaver_on = false;
 
+	BroadcastReceiver collarTextRefreshReceiver;
+	Handler tickerDelayHandler;
+	Runnable tickerDelayRunnable;
+
 
 	@Override
 	protected void onCreate( Bundle savedInstanceState )  {
@@ -189,7 +193,7 @@ public class MainActivity extends Activity {
 		initializeClockWeatherHotelLogoFlipper();
 		checkIfHotelLogoToBeDisplayed();
 		restoreTvChannels();
-		//startScreenCastService();
+		startScreenCastService();
 
 		//ds.resumeDigitalSignageSwitcher();
         /*startTetheringInfoSwitcher();
@@ -671,9 +675,7 @@ public class MainActivity extends Activity {
 
 	}
 
-	BroadcastReceiver collarTextRefreshReceiver;
-	Handler tickerDelayHandler;
-	Runnable tickerDelayRunnable;
+
 
 	public void createCollarTextRefreshBroadcast(){
 
@@ -692,23 +694,22 @@ public class MainActivity extends Activity {
 
 						if( !getIsScreenSaverON() ) {
 
-							//tv_collar_text = null;
-							//tv_collar_text = (ScrollTextView) findViewById( R.id.tv_collar_text );
+							tv_collar_text = null;
+							tv_collar_text = (ScrollTextView) findViewById( R.id.tv_collar_text );
 							tv_collar_text.setText( collar_text );
 							tv_collar_text.setSpeed( new Double( configurationReader.getCollarTextSpeed() ) );
 							tv_collar_text.startScroll();
 
 						}
 						else{
-							Log.d( TAG, "Screensaver is on, keep pausing the collar text, check afer 40 seconds !" );
-							//tv_collar_text.pauseScroll();
-							tickerDelayHandler.postDelayed( tickerDelayRunnable, 40000 );
+							Log.d( TAG, "Screensaver is on, keep pausing the collar text, check afer 60 seconds !" );
+							tickerDelayHandler.postDelayed( tickerDelayRunnable, 60000 );
 						}
 
 					}
 
 				};
-				tickerDelayHandler.postDelayed( tickerDelayRunnable, 20000 );
+				tickerDelayHandler.postDelayed( tickerDelayRunnable, 60000 );
 
 			}
 		};
@@ -778,11 +779,9 @@ public class MainActivity extends Activity {
         //weather.resumeYahooWeatherService();
         clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
         startClockTicker();
-        //tv_collar_text.startScroll();
         onUserInteraction();
 
         if ( ! isLoadingCompleted() ) {
-            //setIsLoadingCompleted( true );
             showLoadingActivity();
         }
         else {
@@ -808,7 +807,9 @@ public class MainActivity extends Activity {
 					/*String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
 					UtilShell.executeShellCommandWithOp( "kill "+pid );*/
 
-                    //startScreenCastService();
+                    startScreenCastService();
+
+					// configurationReader = ConfigurationReader.reInstantiate();
 
                     // UtilShell.executeShellCommandWithOp( "am force-stop com.google.android.youtube.tv" );
                 }
@@ -1593,10 +1594,14 @@ public class MainActivity extends Activity {
         String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
         //UtilShell.executeShellCommandWithOp( "kill "+pid );
 
-        UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/hdtv",
-                "rm -r /data/hdtv/*",
-                "cp -r /mnt/sdcard/appstv_data/tv_channels/backup/hdtv/* /data/hdtv",
-                "chmod -R 777 /data/hdtv" );
+//      UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/hdtv",
+//			"rm -r /data/hdtv/*",
+//          "cp -r /mnt/sdcard/appstv_data/tv_channels/backup/hdtv/* /data/hdtv",
+//          "chmod -R 777 /data/hdtv" );
+
+		UtilShell.executeShellCommandWithOp( "chmod -R 777 /system/appstv_data/*",
+				"cp /mnt/sdcard/appstv_data/tv_channels/backup/hdtv/program.db /system/appstv_data/program.db",
+				"chmod 777 /system/appstv_data/program.db" );
 
         // last. kill com.android.dtv
         pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
@@ -1690,7 +1695,7 @@ public class MainActivity extends Activity {
 	public void restoreTvChannels(){
 		if( ! isTvChannelRestored() ){
 		    UtilShell.executeShellCommandWithOp( "monkey -p com.excel.datagrammonitor.secondgen -c android.intent.category.LAUNCHER 1" );
-			//unzipTvChannelsZip();
+			unzipTvChannelsZip();
 
 			restoreYoutubeSettings();
 		}
