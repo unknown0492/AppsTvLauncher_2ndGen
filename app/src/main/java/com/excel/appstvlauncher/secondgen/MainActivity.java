@@ -200,8 +200,7 @@ public class MainActivity extends Activity {
 		weather.resumeYahooWeatherService();
 		clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();*/
 
-        startLauncherIdleTimer();
-
+        onUserInteraction();
 
 		//restoreYoutubeSettings();
 
@@ -648,29 +647,15 @@ public class MainActivity extends Activity {
 			collar_text = ljr.getCollarText();
 		}
 
-		//tv_collar_text1.setText( "          " + collar_text );
+		tv_collar_text1.setText( "          " + collar_text );
 		//tv_collar_text1.setText( "          Welcome to the James Cook Hotel Grand Chancellor" );
 		//Animation marquee = AnimationUtils.loadAnimation( this, R.anim.marquee );
 		//tv_collar_text1.startAnimation(marquee);
 		//tv_collar_text1.setSelected( true );
-		tv_collar_text.setText( collar_text );
+		/*tv_collar_text.setText( collar_text );
 		tv_collar_text.setSpeed( new Double( configurationReader.getCollarTextSpeed() ) );
-		tv_collar_text.startScroll();
-        /*new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                tv_collar_text.pauseScroll();
-            }
-        }, 10000 );
+		tv_collar_text.startScroll();*/
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                tv_collar_text.startScroll();
-            }
-        }, 20000 );*/
-
-		//tv_collar_text.setMovementMethod(new ScrollingMovementMethod());
 		createCollarTextRefreshBroadcast();
 
 	}
@@ -709,7 +694,7 @@ public class MainActivity extends Activity {
 					}
 
 				};
-				tickerDelayHandler.postDelayed( tickerDelayRunnable, 60000 );
+				tickerDelayHandler.postDelayed( tickerDelayRunnable, 5000 );
 
 			}
 		};
@@ -768,6 +753,8 @@ public class MainActivity extends Activity {
 
 	long access_onresume_time = -1;
 
+	static GenericAsyncTask clearYouTubeSdCardCacheOnResume;
+
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -802,14 +789,22 @@ public class MainActivity extends Activity {
 
                     //unzipTvChannelsZip();
 
+					clearYouTubeSdCardCacheOnResume = new GenericAsyncTask(){
 
+						@Override
+						protected Void doInBackground( Void... voids ) {
+							clearYouTubeSDCardCache();
+							configurationReader = ConfigurationReader.reInstantiate();
+							return null;
+						}
+
+					};
+					clearYouTubeSdCardCacheOnResume.execute();
 
 					/*String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
 					UtilShell.executeShellCommandWithOp( "kill "+pid );*/
 
                     startScreenCastService();
-
-					// configurationReader = ConfigurationReader.reInstantiate();
 
                     // UtilShell.executeShellCommandWithOp( "am force-stop com.google.android.youtube.tv" );
                 }
@@ -854,8 +849,8 @@ public class MainActivity extends Activity {
 		this.main_menu_values = new String[]{"Live TV", "Information", "Settings", "Movies", "Games", "WiFi"};
 		this.sub_menu_values = new String[]{""};
 		this.sma = new SubMenuAdapter(R.layout.sub_menu_items, context, this.sub_menu_values);
-		this.tv_collar_text = (ScrollTextView) findViewById(R.id.tv_collar_text);
-		//tv_collar_text1 = (TextView) findViewById(R.id.tv_collar_text1 );
+		//this.tv_collar_text = (ScrollTextView) findViewById(R.id.tv_collar_text);
+		tv_collar_text1 = (TextView) findViewById(R.id.tv_collar_text1 );
 		this.hsv_sub_menu = (HorizontalScrollView) findViewById(R.id.hsv_sub_menu);
 		this.ll_sub_menu_items = (LinearLayout) findViewById(R.id.ll_sub_menu_items);
 		this.rl_elements = (RelativeLayout) findViewById(R.id.rl_elements);
@@ -975,10 +970,9 @@ public class MainActivity extends Activity {
 			setIsScreenSaverON( false );
 			if( tickerDelayHandler != null )
 				tickerDelayHandler.removeCallbacks( tickerDelayRunnable );
-			tv_collar_text.startScroll();
+			startClockTicker();
 
 			//LocalBroadcastManager.getInstance( context ).sendBroadcast( new Intent( "refresh_collar_text" ) );
-			//tv_collar_text.startScroll();
 			startLauncherIdleTimer();
 		} else {
 			startLauncherIdleTimer();
@@ -1009,7 +1003,7 @@ public class MainActivity extends Activity {
 					ObjectAnimator.ofFloat( rl_elements, "alpha", 1.0f, 0.0f ).setDuration( 500 ).start();
 					areLauncherElementsHidden = true;
 					setIsScreenSaverON( true );
-					//tv_collar_text.pauseScroll();
+					pauseClockTicker();
 				}
 				else{
 					startLauncherIdleTimer();
@@ -1569,6 +1563,14 @@ public class MainActivity extends Activity {
 		}
 	}
 
+	public void clearYouTubeSDCardCache(){
+		// Clearing clearYouTubeSDCardCache()
+		Log.d( TAG, "clearYouTubeSDCardCache()" );
+
+		UtilShell.executeShellCommandWithOp( "rm -r /mnt/sdcard/Android/obb/com.google.android.youtube.tv",
+				"rm -r /mnt/sdcard/Android/data/com.google.android.youtube.tv" );
+
+	}
 
 
     /* TV Channels restore related functions BEGINS */
@@ -1590,14 +1592,18 @@ public class MainActivity extends Activity {
         UtilShell.executeShellCommandWithOp( "rm -r /mnt/sdcard/appstv_data/tv_channels/backup",
                 "unzip -o /mnt/sdcard/appstv_data/tv_channels/tv_channels.zip -d /mnt/sdcard/appstv_data/tv_channels" );
 
+        // Using device_init.sh to restore program.db file
+		// Copy the program.db file to /system/appstv_data/program.db
+
+		UtilShell.executeShellCommandWithOp( "chmod -R 777 /system/appstv_data/*",
+				"cp /mnt/sdcard/appstv_data/tv_channels/backup/hdtv/program.db /system/appstv_data/program.db",
+				"chmod 777 /system/appstv_data/program.db" );
+
+
+        /*
         // 1. kill com.android.dtv
         String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
-        //UtilShell.executeShellCommandWithOp( "kill "+pid );
-
-//      UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/hdtv",
-//			"rm -r /data/hdtv/*",
-//          "cp -r /mnt/sdcard/appstv_data/tv_channels/backup/hdtv/* /data/hdtv",
-//          "chmod -R 777 /data/hdtv" );
+        UtilShell.executeShellCommandWithOp( "kill "+pid );
 
 		UtilShell.executeShellCommandWithOp( "chmod -R 777 /system/appstv_data/*",
 				"cp /mnt/sdcard/appstv_data/tv_channels/backup/hdtv/program.db /system/appstv_data/program.db",
@@ -1605,90 +1611,11 @@ public class MainActivity extends Activity {
 
         // last. kill com.android.dtv
         pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
-        //UtilShell.executeShellCommandWithOp( "kill "+pid );
+        UtilShell.executeShellCommandWithOp( "kill "+pid );
 
         setTvChannelRestored( true );
         Log.d( TAG, "tv_channels.zip extracted successfully" );
-	    /*
-		Log.i( TAG, "unzipTvChannelsZip() executed" );
-
-		UtilShell.executeShellCommandWithOp( "rm -r /mnt/sdcard/appstv_data/tv_channels/backup",
-				"unzip -o /mnt/sdcard/appstv_data/tv_channels/tv_channels.zip -d /mnt/sdcard/appstv_data/tv_channels" );
-
-		// Compare the file program.db
-		File programdb_internal = new File( "/data/hdtv/program.db" );
-		File programdb_sdcard	= new File( "/mnt/sdcard/appstv_data/tv_channels/backup/hdtv/program.db" );
-
-
-		if( !programdb_sdcard.exists() ) {
-			Log.e( TAG, "Restore terminated, program.db file does not exist on sdcard" );
-			setTvChannelRestored( true );
-			return;
-		}
-
-		try {
-
-			String md5_internal = "";
-			String md5_sdcard 	= MD5.getMD5Checksum( programdb_sdcard );
-
-			if( !programdb_internal.exists() ) {
-				md5_internal = "xxxxx";
-				Log.d( TAG, "Internal program.db does not exist" );
-				//return;
-			}
-			else{
-				md5_internal = MD5.getMD5Checksum( programdb_internal );
-			}
-
-			Log.d( TAG, md5_internal + "," +md5_sdcard );
-
-			// If the two files do not match, then restore
-			//if( ! md5_internal.equals( md5_sdcard ) ) {
-
-
-				// 1. kill com.android.dtv
-				//String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
-				//UtilShell.executeShellCommandWithOp( "kill "+pid );
-
-
-
-				UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/hdtv",
-						//"rm -r /data/hdtv/*",
-						"rm /data/hdtv/program.db",
-						"cp /mnt/sdcard/appstv_data/tv_channels/backup/hdtv/program.db /data/hdtv/program.db",
-						"chmod -R 777 /data/hdtv" );
-
-
-
-				UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/hdtv",
-						"rm -r /data/hdtv/*",
-						"cp /mnt/sdcard/appstv_data/tv_channels/backup/hdtv/blackpackagefilter.xml /data/hdtv/blackpackagefilter.xml",
-						"cp /mnt/sdcard/appstv_data/tv_channels/backup/hdtv/dtv_pass.xml /data/hdtv/dtv_pass.xml",
-						"cp /mnt/sdcard/appstv_data/tv_channels/backup/hdtv/epg.db /data/hdtv/epg.db",
-						"cp /mnt/sdcard/appstv_data/tv_channels/backup/hdtv/program.db /data/hdtv/program.db",
-						"chmod -R 777 /data/hdtv" );
-
-
-				Log.d( TAG, "tv_channels.zip extracted successfully" );
-
-				// last. kill com.android.dtv
-				//pid = UtilShell.executeShellCommandWithOp("pidof com.android.dtv");
-				//UtilShell.executeShellCommandWithOp( "kill "+pid );
-
-				Log.i( TAG, "Restored tv channels successfully !" );
-
-				//setTvChannelRestored( true );
-			}
-			else{
-				Log.i( TAG, "TV channels not restored because they are same !" );
-
-			}
-			setTvChannelRestored( true );
-		}
-		catch ( Exception e ){
-			e.printStackTrace();
-		}
-*/
+		*/
 
 	}
 
@@ -1696,7 +1623,6 @@ public class MainActivity extends Activity {
 		if( ! isTvChannelRestored() ){
 		    UtilShell.executeShellCommandWithOp( "monkey -p com.excel.datagrammonitor.secondgen -c android.intent.category.LAUNCHER 1" );
 			unzipTvChannelsZip();
-
 			restoreYoutubeSettings();
 		}
 	}
@@ -1752,6 +1678,15 @@ public class MainActivity extends Activity {
 	}
 
     /* Permission related content */
+
+
+    class GenericAsyncTask extends AsyncTask<Void,Void,Void>{
+
+		@Override
+		protected Void doInBackground(Void... voids) {
+			return null;
+		}
+	}
 
 }
 

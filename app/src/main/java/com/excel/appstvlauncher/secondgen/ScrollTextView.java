@@ -154,7 +154,7 @@ public class ScrollTextView extends android.support.v7.widget.AppCompatTextView 
 
 		if ( mSlr.isFinished() && ( !mPaused ) ) {
 
-			Log.d( "tag", "computeScroll() pausing for 60 seconds" );
+			Log.d( "tag", "computeScroll() pausing !" );
 			//pauseScroll();
 			LocalBroadcastManager.getInstance( getContext() ).sendBroadcast( new Intent( "refresh_collar_text" ) );
 
