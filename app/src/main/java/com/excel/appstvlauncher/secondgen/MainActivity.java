@@ -647,14 +647,14 @@ public class MainActivity extends Activity {
 			collar_text = ljr.getCollarText();
 		}
 
-		tv_collar_text1.setText( "          " + collar_text );
+		//tv_collar_text1.setText( "          " + collar_text );
 		//tv_collar_text1.setText( "          Welcome to the James Cook Hotel Grand Chancellor" );
 		//Animation marquee = AnimationUtils.loadAnimation( this, R.anim.marquee );
 		//tv_collar_text1.startAnimation(marquee);
 		//tv_collar_text1.setSelected( true );
-		/*tv_collar_text.setText( collar_text );
+		tv_collar_text.setText( collar_text );
 		tv_collar_text.setSpeed( new Double( configurationReader.getCollarTextSpeed() ) );
-		tv_collar_text.startScroll();*/
+		tv_collar_text.startScroll();
 
 		createCollarTextRefreshBroadcast();
 
@@ -677,7 +677,11 @@ public class MainActivity extends Activity {
 					@Override
 					public void run() {
 
+
+
 						if( !getIsScreenSaverON() ) {
+
+							Log.i( TAG, "Running ticker after 60 seconds" );
 
 							tv_collar_text = null;
 							tv_collar_text = (ScrollTextView) findViewById( R.id.tv_collar_text );
@@ -694,7 +698,7 @@ public class MainActivity extends Activity {
 					}
 
 				};
-				tickerDelayHandler.postDelayed( tickerDelayRunnable, 5000 );
+				tickerDelayHandler.postDelayed( tickerDelayRunnable, 60000 );
 
 			}
 		};
@@ -765,7 +769,7 @@ public class MainActivity extends Activity {
         startTetheringInfoSwitcher();
         //weather.resumeYahooWeatherService();
         clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
-        startClockTicker();
+        //startClockTicker();
         onUserInteraction();
 
         if ( ! isLoadingCompleted() ) {
@@ -849,8 +853,8 @@ public class MainActivity extends Activity {
 		this.main_menu_values = new String[]{"Live TV", "Information", "Settings", "Movies", "Games", "WiFi"};
 		this.sub_menu_values = new String[]{""};
 		this.sma = new SubMenuAdapter(R.layout.sub_menu_items, context, this.sub_menu_values);
-		//this.tv_collar_text = (ScrollTextView) findViewById(R.id.tv_collar_text);
-		tv_collar_text1 = (TextView) findViewById(R.id.tv_collar_text1 );
+		this.tv_collar_text = (ScrollTextView) findViewById(R.id.tv_collar_text);
+		//tv_collar_text1 = (TextView) findViewById(R.id.tv_collar_text1 );
 		this.hsv_sub_menu = (HorizontalScrollView) findViewById(R.id.hsv_sub_menu);
 		this.ll_sub_menu_items = (LinearLayout) findViewById(R.id.ll_sub_menu_items);
 		this.rl_elements = (RelativeLayout) findViewById(R.id.rl_elements);
@@ -970,9 +974,10 @@ public class MainActivity extends Activity {
 			setIsScreenSaverON( false );
 			if( tickerDelayHandler != null )
 				tickerDelayHandler.removeCallbacks( tickerDelayRunnable );
+			setTime();
 			startClockTicker();
 
-			//LocalBroadcastManager.getInstance( context ).sendBroadcast( new Intent( "refresh_collar_text" ) );
+			LocalBroadcastManager.getInstance( context ).sendBroadcast( new Intent( "refresh_collar_text" ) );
 			startLauncherIdleTimer();
 		} else {
 			startLauncherIdleTimer();
@@ -989,7 +994,6 @@ public class MainActivity extends Activity {
 
 			@Override
 			public void run() {
-				// Log.d( null, "startLauncherIdleTimer() inside run() every "+(TEN_SECONDS_MILLIS/1000)+" seconds" );
 
 				long now = System.currentTimeMillis();
 				long difference = ( now - current_timestamp )/1000;
@@ -1073,28 +1077,7 @@ public class MainActivity extends Activity {
             public void run(){
                 Log.d( TAG, "Clock Ticking !" );
 
-                Calendar cal = Calendar.getInstance();
-
-                if( clock_seconds == null )
-                    clock_seconds = "0";
-
-                int minute, hours, seconds, month, year;
-                String date_string = "";
-                String date = "";
-
-				/*if( ( seconds = cal.get( Calendar.SECOND ) ) != Integer.parseInt( tv_clock_minutes.getText().toString() ) )
-					tv_clock_minutes.setText( (seconds<10)?"0"+seconds:seconds+"" );*/
-                if( ( minute = cal.get( Calendar.MINUTE ) ) != Integer.parseInt( tv_clock_minutes.getText().toString() ) )
-                    tv_clock_minutes.setText( (minute<10)?"0"+minute:minute+"" );
-                if( ( hours = cal.get( Calendar.HOUR_OF_DAY ) ) != Integer.parseInt( tv_clock_hours.getText().toString() ) )
-                    tv_clock_hours.setText( (hours<10)?"0"+hours:hours+"" );
-                date = (cal.get( Calendar.DATE )<10)?"0"+cal.get( Calendar.DATE ):cal.get( Calendar.DATE )+"";
-                year = cal.get( Calendar.YEAR );
-                //date_string = date + " " + (new SimpleDateFormat( "MMM" )).format( cal.getTime() ) + ", " + year;
-                date_string = date + " " + Calendar.getInstance().getDisplayName( Calendar.MONTH, Calendar.SHORT, UtilMisc.getCustomLocaleLanguageConstant() ) + ", " + year;
-                tv_date.setText( date_string );
-                //tv_day_name.setText( ( new SimpleDateFormat( "EEEE" )).format( cal.getTime() ) );
-                tv_day_name.setText( Calendar.getInstance().getDisplayName( Calendar.DAY_OF_WEEK, Calendar.LONG, UtilMisc.getCustomLocaleLanguageConstant() ) );
+                setTime();
 
                 // startClockTicker();
                 clockTickerTimer.start( clockTickerRunnable );
@@ -1105,6 +1088,31 @@ public class MainActivity extends Activity {
         // new Handler().postDelayed( clockTickerRunnable, 1000*60 );
         clockTickerTimer.start( clockTickerRunnable );
 
+	}
+
+	private void setTime(){
+		Calendar cal = Calendar.getInstance();
+
+		if( clock_seconds == null )
+			clock_seconds = "0";
+
+		int minute, hours, seconds, month, year;
+		String date_string = "";
+		String date = "";
+
+				/*if( ( seconds = cal.get( Calendar.SECOND ) ) != Integer.parseInt( tv_clock_minutes.getText().toString() ) )
+					tv_clock_minutes.setText( (seconds<10)?"0"+seconds:seconds+"" );*/
+		if( ( minute = cal.get( Calendar.MINUTE ) ) != Integer.parseInt( tv_clock_minutes.getText().toString() ) )
+			tv_clock_minutes.setText( (minute<10)?"0"+minute:minute+"" );
+		if( ( hours = cal.get( Calendar.HOUR_OF_DAY ) ) != Integer.parseInt( tv_clock_hours.getText().toString() ) )
+			tv_clock_hours.setText( (hours<10)?"0"+hours:hours+"" );
+		date = (cal.get( Calendar.DATE )<10)?"0"+cal.get( Calendar.DATE ):cal.get( Calendar.DATE )+"";
+		year = cal.get( Calendar.YEAR );
+		//date_string = date + " " + (new SimpleDateFormat( "MMM" )).format( cal.getTime() ) + ", " + year;
+		date_string = date + " " + Calendar.getInstance().getDisplayName( Calendar.MONTH, Calendar.SHORT, UtilMisc.getCustomLocaleLanguageConstant() ) + ", " + year;
+		tv_date.setText( date_string );
+		//tv_day_name.setText( ( new SimpleDateFormat( "EEEE" )).format( cal.getTime() ) );
+		tv_day_name.setText( Calendar.getInstance().getDisplayName( Calendar.DAY_OF_WEEK, Calendar.LONG, UtilMisc.getCustomLocaleLanguageConstant() ) );
 	}
 
 	public void pauseClockTicker(){

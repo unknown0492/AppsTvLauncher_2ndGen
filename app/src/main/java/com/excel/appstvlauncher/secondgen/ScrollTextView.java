@@ -148,14 +148,14 @@ public class ScrollTextView extends android.support.v7.widget.AppCompatTextView 
 	public void computeScroll() {
 		super.computeScroll();
 
-		// Log.d( "tag", "computeScroll() called" );
+		//Log.d( "tag", "computeScroll() called" );
 
 		if ( null == mSlr ) return;
 
 		if ( mSlr.isFinished() && ( !mPaused ) ) {
 
 			Log.d( "tag", "computeScroll() pausing !" );
-			//pauseScroll();
+			pauseScroll();
 			LocalBroadcastManager.getInstance( getContext() ).sendBroadcast( new Intent( "refresh_collar_text" ) );
 
 
