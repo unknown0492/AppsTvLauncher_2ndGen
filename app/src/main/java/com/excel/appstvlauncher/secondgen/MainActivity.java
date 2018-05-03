@@ -187,7 +187,6 @@ public class MainActivity extends Activity {
 		createLauncheritemsUpdateBroadcast();
 		startPerfectTimeService();
 		createPerfectTimeReceiver();
-		//startClockTicker();
 		startDateAndDayNameSwitcher();
 		//initializeWeatherFeatures();
 		initializeClockWeatherHotelLogoFlipper();
@@ -749,7 +748,6 @@ public class MainActivity extends Activity {
 		//weather.pauseYahooWeatherService();
 		clock_weather_hotel_logo_flipper.pauseClockWeatherLogoFlipper();
 		pauseClockTicker();
-        //tv_collar_text.pauseScroll();
 
 		pauseLauncherIdleTimer();
 	}
@@ -769,7 +767,6 @@ public class MainActivity extends Activity {
         startTetheringInfoSwitcher();
         //weather.resumeYahooWeatherService();
         clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
-        //startClockTicker();
         onUserInteraction();
 
         if ( ! isLoadingCompleted() ) {
@@ -967,6 +964,7 @@ public class MainActivity extends Activity {
 		current_timestamp = System.currentTimeMillis();
 
 		pauseLauncherIdleTimer();
+		startClockTicker();
 
 		if (areLauncherElementsHidden) {
 			ObjectAnimator.ofFloat(rl_elements, "alpha", 0.0f, 1.0f).setDuration(500).start();
@@ -975,7 +973,7 @@ public class MainActivity extends Activity {
 			if( tickerDelayHandler != null )
 				tickerDelayHandler.removeCallbacks( tickerDelayRunnable );
 			setTime();
-			startClockTicker();
+
 
 			LocalBroadcastManager.getInstance( context ).sendBroadcast( new Intent( "refresh_collar_text" ) );
 			startLauncherIdleTimer();
@@ -1069,6 +1067,8 @@ public class MainActivity extends Activity {
 	Runnable clockTickerRunnable;
 
 	public void startClockTicker(){
+
+		Log.d( TAG, "startClockTicker()" );
 
 	    clockTickerTimer = new VirussTimer( 60000 );
 		clockTickerRunnable = new Runnable() {
