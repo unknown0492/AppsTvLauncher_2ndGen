@@ -484,7 +484,7 @@ public class MainActivity extends Activity {
 				//pts.sendUpdateToClock();
 				//startPerfectTimeService();
 				// System.gc();
-
+				configurationReader = ConfigurationReader.reInstantiate();
 				recreate();
 				/*Intent in = getIntent();
 				in.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
@@ -573,6 +573,7 @@ public class MainActivity extends Activity {
 					JSONObject jso = jsa.getJSONObject( 0 );
 					String language_code = jso.getString( "language_code" ).trim();
 					UtilShell.executeShellCommandWithOp( "setprop language_code "+language_code );
+					configurationReader = ConfigurationReader.reInstantiate();
 					recreate();
 				} catch ( JSONException e ) {
 					e.printStackTrace();
@@ -1271,10 +1272,12 @@ public class MainActivity extends Activity {
 			}
 			// P-O-P  -> Refresh Launcher
 			else if( key_1.equals( P ) && key_2.equals( O ) && key_3.equals( P ) ){
+				configurationReader = ConfigurationReader.reInstantiate();
 				recreate();
 			}
 			// 9.9  -> Refresh Launcher
 			else if( key_1.equals( NINE ) && key_2.equals( DOT ) && key_3.equals( NINE ) ){
+				configurationReader = ConfigurationReader.reInstantiate();
 				recreate();
 			}
 			key_combination.removeAllElements();
