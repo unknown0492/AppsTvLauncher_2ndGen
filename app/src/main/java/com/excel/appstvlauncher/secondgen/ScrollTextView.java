@@ -159,25 +159,8 @@ public class ScrollTextView extends android.support.v7.widget.AppCompatTextView 
 			LocalBroadcastManager.getInstance( getContext() ).sendBroadcast( new Intent( "refresh_collar_text" ) );
 
 
-			// if screensaver is OFF, then start the ticker text after 20 seconds
-			/*if( !MainActivity.getIsScreenSaverON() ) {
-
-				new Handler().postDelayed( new Runnable() {
-
-					@Override
-					public void run() {
-						startScroll();
-					}
-
-				}, 20000 );
-			}*/
-
-
 		}
-		/*if( MainActivity.getIsScreenSaverON() ) {
 
-			pauseScroll();
-		}*/
 	}
 
 	public int getRndDuration() {

@@ -2,6 +2,7 @@ package com.excel.appstvlauncher.secondgen;
 
 import android.Manifest;
 import android.animation.ObjectAnimator;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -151,6 +152,9 @@ public class MainActivity extends Activity {
 	Handler tickerDelayHandler;
 	Runnable tickerDelayRunnable;
 
+	RelativeLayout rl_temp_loading_screen;
+	AnimatedGifImageView temp_loading_screen_gif;
+
 
 	@Override
 	protected void onCreate( Bundle savedInstanceState )  {
@@ -166,6 +170,7 @@ public class MainActivity extends Activity {
 
 
 
+	@SuppressLint("NewApi")
 	@SuppressWarnings("deprecation")
 	public void init(){
 
@@ -485,6 +490,7 @@ public class MainActivity extends Activity {
 				//startPerfectTimeService();
 				// System.gc();
 
+				configurationReader = ConfigurationReader.reInstantiate();
 				recreate();
 				/*Intent in = getIntent();
 				in.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
@@ -573,6 +579,7 @@ public class MainActivity extends Activity {
 					JSONObject jso = jsa.getJSONObject( 0 );
 					String language_code = jso.getString( "language_code" ).trim();
 					UtilShell.executeShellCommandWithOp( "setprop language_code "+language_code );
+					configurationReader = ConfigurationReader.reInstantiate();
 					recreate();
 				} catch ( JSONException e ) {
 					e.printStackTrace();
@@ -783,12 +790,9 @@ public class MainActivity extends Activity {
                 Log.d(TAG, "sec : " + sec);
                 if (sec <= 10) {
                     access_onresume_time = now;
-                    //return;
                 } else {
                     access_onresume_time = now;
 
-
-                    //unzipTvChannelsZip();
 
 					clearYouTubeSdCardCacheOnResume = new GenericAsyncTask(){
 
@@ -802,20 +806,11 @@ public class MainActivity extends Activity {
 					};
 					clearYouTubeSdCardCacheOnResume.execute();
 
-					/*String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
-					UtilShell.executeShellCommandWithOp( "kill "+pid );*/
+					startScreenCastService();
 
-                    startScreenCastService();
-
-                    // UtilShell.executeShellCommandWithOp( "am force-stop com.google.android.youtube.tv" );
                 }
             }
         }
-
-
-
-
-		//configurationReader = ConfigurationReader.reInstantiate();
 
 
 	}
@@ -871,6 +866,11 @@ public class MainActivity extends Activity {
 		this.rl_tethering_info = (RelativeLayout) findViewById(R.id.rl_tethering_info);
 		this.rl_hotel_logo = (LinearLayout) findViewById(R.id.rl_hotel_logo);
 		this.ds = new DigitalSignage(context, this.rl_launcher_bg);
+
+		/*rl_temp_loading_screen = (RelativeLayout) findViewById( R.id.rl_temp_loading_screen );
+		temp_loading_screen_gif = (AnimatedGifImageView) findViewById( R.id.temp_loading_screen_gif );
+		temp_loading_screen_gif.setAnimatedGif( context.getResources().getIdentifier( "drawable/weather_icon_1" , null, context.getPackageName() ), AnimatedGifImageView.TYPE.AS_IS );
+        */
 	}
 
 	public boolean handleMainMenuOverflow( int i, KeyEvent keyevent ){
@@ -967,8 +967,8 @@ public class MainActivity extends Activity {
 		pauseClockTicker();
 		startClockTicker();
 
-		if (areLauncherElementsHidden) {
-			ObjectAnimator.ofFloat(rl_elements, "alpha", 0.0f, 1.0f).setDuration(500).start();
+		if ( areLauncherElementsHidden ) {
+			ObjectAnimator.ofFloat( rl_elements, "alpha", 0.0f, 1.0f ).setDuration( 500 ).start();
 			areLauncherElementsHidden = false;
 			setIsScreenSaverON( false );
 			if( tickerDelayHandler != null )
@@ -1115,9 +1115,10 @@ public class MainActivity extends Activity {
 	}
 
 	public void pauseClockTicker(){
+		Log.d( TAG, "pauseClockTicker()" );
+
 	    if( clockTickerTimer != null )
             clockTickerTimer.stop( clockTickerRunnable );
-        Log.d( TAG, "pauseClockTicker()" );
     }
 
 	public void startDateAndDayNameSwitcher(){
@@ -1270,10 +1271,12 @@ public class MainActivity extends Activity {
 			}
 			// P-O-P  -> Refresh Launcher
 			else if( key_1.equals( P ) && key_2.equals( O ) && key_3.equals( P ) ){
+				configurationReader = ConfigurationReader.reInstantiate();
 				recreate();
 			}
 			// 9.9  -> Refresh Launcher
 			else if( key_1.equals( NINE ) && key_2.equals( DOT ) && key_3.equals( NINE ) ){
+				configurationReader = ConfigurationReader.reInstantiate();
 				recreate();
 			}
 			key_combination.removeAllElements();

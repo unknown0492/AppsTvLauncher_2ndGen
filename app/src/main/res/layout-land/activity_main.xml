@@ -373,4 +373,21 @@
 
     </RelativeLayout>
 
+    <!--<RelativeLayout
+        android:id="@+id/rl_temp_loading_screen"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:background="@drawable/submenu_bg1">
+
+        <com.excel.appstvlauncher.secondgen.AnimatedGifImageView
+            android:id="@+id/temp_loading_screen_gif"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true" />
+
+        <requestFocus />
+
+    </RelativeLayout>-->
+
 </RelativeLayout>
