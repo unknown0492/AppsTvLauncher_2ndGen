@@ -965,6 +965,7 @@ public class MainActivity extends Activity {
 		current_timestamp = System.currentTimeMillis();
 
 		pauseLauncherIdleTimer();
+		pauseClockTicker();
 		startClockTicker();
 
 		if (areLauncherElementsHidden) {
