@@ -8,8 +8,8 @@ android {
         applicationId "com.excel.appstvlauncher.secondgen"
         minSdkVersion 17
         targetSdkVersion 23
-        versionCode 1
-        versionName "1.0.6g_static"
+        versionCode 2
+        versionName "2.0.0_static"
         project.ext.set("archivesBaseName", "0-AppsTvLauncher_2ndGen_v" + defaultConfig.versionName);
     }
     buildTypes {
