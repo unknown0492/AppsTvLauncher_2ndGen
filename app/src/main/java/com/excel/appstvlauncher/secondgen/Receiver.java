@@ -22,6 +22,12 @@ public class Receiver extends BroadcastReceiver {
         if( action.equals( "receive_update_launcher_config" ) ){
             LocalBroadcastManager.getInstance( context ).sendBroadcast( new Intent( "update_launcher_config" ) );
         }
+        else if( action.equals( "receive_update_hotspot_info" ) ){
+            LocalBroadcastManager.getInstance( context ).sendBroadcast( new Intent( "update_hotspot_info" ) );
+        }
+        else if( action.equals( "receive_update_time_on_clock" ) ){
+            LocalBroadcastManager.getInstance( context ).sendBroadcast( new Intent( "send_update_to_clock" ) );
+        }
         else if( action.equals( "receive_get_hotel_logo" ) ){ // Broadcasted from DataDownloader when the Logo is downloaded
             Intent in = new Intent( "update_hotel_logo_availability" );
             in.putExtra( "hasHotelLogoDisplay", intent.getBooleanExtra( "hasHotelLogoDisplay", false ) );

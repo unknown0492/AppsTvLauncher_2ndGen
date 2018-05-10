@@ -7,9 +7,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
+import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.RelativeLayout;
 
 import com.excel.configuration.ConfigurationReader;
 import com.excel.excelclasslibrary.UtilNetwork;
@@ -25,6 +29,13 @@ public class WebViewActivity extends Activity {
 	ConfigurationReader cr;
 	
 	final static String TAG = "WebViewActivity";
+
+	boolean timeout = true;
+	long timeout_interval = 10000;
+
+	RelativeLayout rl;
+	AnimatedGifImageView loading;
+
 	
 	@Override
 	protected void onCreate( Bundle savedInstanceState ) {
@@ -59,7 +70,7 @@ public class WebViewActivity extends Activity {
 		
 		wv_open_page.loadUrl( URL );
 				
-		setContentView( wv_open_page );
+		//setContentView( wv_open_page );
 	}
 	
 	@Override
@@ -93,8 +104,16 @@ public class WebViewActivity extends Activity {
 	}
 
 	private void init(){
-		wv_open_page = new WebView( this );
-		wv_open_page.getSettings().setJavaScriptEnabled( true );
+
+	    //rl = new RelativeLayout( this );
+
+	    loading = (AnimatedGifImageView) findViewById( R.id.loading );
+        loading.setAnimatedGif( context.getResources().getIdentifier( "drawable/small_loading1" , null, context.getPackageName() ), AnimatedGifImageView.TYPE.AS_IS );
+
+		//wv_open_page = new WebView( this );
+        wv_open_page = (WebView) findViewById( R.id.wv_open_page );
+
+        wv_open_page.getSettings().setJavaScriptEnabled( true );
 		wv_open_page.getSettings().setAppCacheEnabled( false );
 		
 		cr = ConfigurationReader.getInstance();
@@ -112,11 +131,34 @@ public class WebViewActivity extends Activity {
 			@Override
 			public void onPageStarted( WebView view, String url, Bitmap favicon ) {
 				super.onPageStarted( view, url, favicon );
+
+				Log.d( TAG, "onPageStarted()" );
+				loading.setVisibility( View.VISIBLE );
+
+				Runnable run = new Runnable() {
+					public void run() {
+
+						Log.e( TAG, "Timeout" );
+						if( timeout ) {
+
+							wv_open_page.loadUrl( "file:///android_asset/maintenance/maintenance.html" );
+
+						}
+					}
+				};
+				Handler myHandler = new Handler( Looper.myLooper() );
+				myHandler.postDelayed( run, timeout_interval );
 			}
 
 			@Override
 			public void onPageFinished( WebView view, String url ) {
 				super.onPageFinished( view, url );
+
+				Log.d( TAG, "onPageFinished()" );
+
+				loading.setVisibility( View.GONE );
+
+				timeout = false;
 			}
             
         });

@@ -10,7 +10,6 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -185,10 +184,13 @@ public class MainActivity extends Activity {
 		});
 
 		createLauncheritemsUpdateBroadcast();
+		createUpdateTimeOnClockBroadcast();
+		createHotspotUpdateBroadcast();
+
 		startPerfectTimeService();
 		createPerfectTimeReceiver();
 		startDateAndDayNameSwitcher();
-		//initializeWeatherFeatures();
+		initializeWeatherFeatures();
 		initializeClockWeatherHotelLogoFlipper();
 		checkIfHotelLogoToBeDisplayed();
 		restoreTvChannels();
@@ -479,21 +481,66 @@ public class MainActivity extends Activity {
 			@Override
 			public void onReceive( Context context, Intent intent ) {
 				Log.i( TAG, "New Launcher JSON Downloaded" );
-				//setLauncherMenuItems();
-				//PerfectTimeService pts = new PerfectTimeService();
-				//pts.sendUpdateToClock();
-				//startPerfectTimeService();
-				// System.gc();
+
 				configurationReader = ConfigurationReader.reInstantiate();
-				recreate();
-				/*Intent in = getIntent();
-				in.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-				finish();
-				startActivity( in );*/
+				ll_main_menu_items.removeAllViews();
+                new Handler().post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        setLauncherMenuItems();
+                        setMainMenuAdapter(ma);
+                        setSubMenuAdapter(sma);
+                    }
+
+                });
+
 			}
 		};
 
 		LocalBroadcastManager.getInstance( context ).registerReceiver( launcherConfigUpdateReceiver, new IntentFilter( "update_launcher_config" ) );
+	}
+
+	BroadcastReceiver hotspotUpdateReceiver;
+
+	public void createHotspotUpdateBroadcast(){
+
+		hotspotUpdateReceiver = new BroadcastReceiver() {
+
+			@Override
+			public void onReceive( Context context, Intent intent ) {
+
+				Log.i( TAG, "Updating Hotspot Info Display" );
+				configurationReader = ConfigurationReader.reInstantiate();
+				pauseTetheringInfoFlipper();
+				startTetheringInfoSwitcher();
+
+			}
+		};
+
+		LocalBroadcastManager.getInstance( context ).registerReceiver( hotspotUpdateReceiver, new IntentFilter( "update_hotspot_info" ) );
+
+	}
+
+	BroadcastReceiver updateTimeOnClockReceiver;
+
+	public void createUpdateTimeOnClockBroadcast(){
+
+		updateTimeOnClockReceiver = new BroadcastReceiver() {
+
+			@Override
+			public void onReceive( Context context, Intent intent ) {
+
+				Log.i( TAG, "Updating Time/Date/Day Name on Clock " );
+				configurationReader = ConfigurationReader.reInstantiate();
+				PerfectTimeService pts = new PerfectTimeService();
+				//tv_day_name.invalidate();
+
+			}
+		};
+
+		LocalBroadcastManager.getInstance( context ).registerReceiver( updateTimeOnClockReceiver, new IntentFilter( "update_time_on_clock " ) );
+
 	}
 
 	public void deleteLauncheritemsUpdateBroadcast(){
@@ -532,6 +579,24 @@ public class MainActivity extends Activity {
 			Log.d( TAG, ljr.getMainItemValue( index, "web_view_url" ) + "-" +ljr.getMainItemValue( index, "params" ) );
 			startWebViewActivity( ljr.getMainItemValue( index, "web_view_url" ),
 					ljr.getMainItemValue( index, "params" ) );
+			return;
+		}
+		else if( item_type.equals( "language" ) ){
+			String metadata = ljr.getMainItemValue( index, "metadata" );
+			try {
+				JSONArray jsa = new JSONArray( metadata );
+				JSONObject jso = jsa.getJSONObject( 0 );
+				String language_code = jso.getString( "language_code" ).trim();
+				UtilShell.executeShellCommandWithOp( "setprop language_code "+language_code );
+				configurationReader = ConfigurationReader.reInstantiate();
+				//recreate();
+				LocalBroadcastManager.getInstance( context ).sendBroadcast( new Intent( "update_launcher_config" ) );
+				LocalBroadcastManager.getInstance( context ).sendBroadcast( new Intent( "update_time_on_clock " ) );
+			} catch ( JSONException e ) {
+				e.printStackTrace();
+			}
+
+			//Log.d( TAG, "metadata : "+metadata );
 			return;
 		}
     	/*else if( item_type.equals( "expandable-hotspot" ) ){
@@ -574,7 +639,9 @@ public class MainActivity extends Activity {
 					String language_code = jso.getString( "language_code" ).trim();
 					UtilShell.executeShellCommandWithOp( "setprop language_code "+language_code );
 					configurationReader = ConfigurationReader.reInstantiate();
-					recreate();
+					//recreate();
+					LocalBroadcastManager.getInstance( context ).sendBroadcast( new Intent( "update_launcher_config" ) );
+					LocalBroadcastManager.getInstance( context ).sendBroadcast( new Intent( "update_time_on_clock " ) );
 				} catch ( JSONException e ) {
 					e.printStackTrace();
 				}
@@ -746,7 +813,7 @@ public class MainActivity extends Activity {
 
         ds.pauseDigitalSignageSwitcher();
 		pauseTetheringInfoFlipper();
-		//weather.pauseYahooWeatherService();
+		weather.pauseYahooWeatherService();
 		clock_weather_hotel_logo_flipper.pauseClockWeatherLogoFlipper();
 		pauseClockTicker();
 
@@ -766,14 +833,16 @@ public class MainActivity extends Activity {
 
         ds.resumeDigitalSignageSwitcher();
         startTetheringInfoSwitcher();
-        //weather.resumeYahooWeatherService();
+        weather.resumeYahooWeatherService();
         clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
         onUserInteraction();
 
-        if ( ! isLoadingCompleted() ) {
+        setIsLoadingCompleted( true );
+
+        /*if ( ! isLoadingCompleted() ) {
             showLoadingActivity();
         }
-        else {
+        else {*/
 
             if (access_onresume_time == -1) {
                 access_onresume_time = System.currentTimeMillis();
@@ -784,12 +853,8 @@ public class MainActivity extends Activity {
                 Log.d(TAG, "sec : " + sec);
                 if (sec <= 10) {
                     access_onresume_time = now;
-                    //return;
                 } else {
                     access_onresume_time = now;
-
-
-                    //unzipTvChannelsZip();
 
 					clearYouTubeSdCardCacheOnResume = new GenericAsyncTask(){
 
@@ -803,20 +868,16 @@ public class MainActivity extends Activity {
 					};
 					clearYouTubeSdCardCacheOnResume.execute();
 
-					/*String pid = UtilShell.executeShellCommandWithOp( "pidof com.android.dtv" );
-					UtilShell.executeShellCommandWithOp( "kill "+pid );*/
-
                     startScreenCastService();
 
-                    // UtilShell.executeShellCommandWithOp( "am force-stop com.google.android.youtube.tv" );
                 }
             }
-        }
+       // }
 
 
 
 
-		//configurationReader = ConfigurationReader.reInstantiate();
+
 
 
 	}
@@ -975,7 +1036,6 @@ public class MainActivity extends Activity {
 			if( tickerDelayHandler != null )
 				tickerDelayHandler.removeCallbacks( tickerDelayRunnable );
 			setTime();
-
 
 			LocalBroadcastManager.getInstance( context ).sendBroadcast( new Intent( "refresh_collar_text" ) );
 			startLauncherIdleTimer();
@@ -1477,7 +1537,9 @@ public class MainActivity extends Activity {
 	public void restoreYoutubeSettings(){
 		// This works differently  for 5.1 and 6.0, so we differentiate it
 		// Permissions for Android 6.0
-		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
+
+
+		//if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
 			Log.d( TAG, "Android is 6+" );
 
 			// Kill Youtube running in background
@@ -1516,7 +1578,7 @@ public class MainActivity extends Activity {
 
 			// 4. CHMOD -R 777 to make it executable, just in case
 			UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/data/com.google.android.youtube.tv" );
-		}
+		/*}
 		else {
 			Log.d( TAG, "Android is below 6" );
 
@@ -1572,7 +1634,7 @@ public class MainActivity extends Activity {
 			UtilShell.executeShellCommandWithOp("rm /data/system/users/0/accounts.db-journal");
 
 			UtilShell.executeShellCommandWithOp("am force-stop com.google.android.youtube.tv");
-		}
+		}*/
 	}
 
 	public void clearYouTubeSDCardCache(){
