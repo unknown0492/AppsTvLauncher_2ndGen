@@ -62,7 +62,7 @@
             android:scrollbars="none"
             android:layout_alignParentBottom="true"
             android:overScrollMode="always"
-            android:background="@drawable/menu_bg7"
+            android:background="@drawable/menu_bg9"
             android:fillViewport="false">
 
             <LinearLayout
@@ -232,6 +232,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="3"
                         android:paddingRight="10dp"
+                        android:background="@drawable/weather_bg"
                         android:layout_gravity="center_vertical"
                         />
 
@@ -285,8 +286,8 @@
                     <ImageView
                         android:layout_width="369dp"
                         android:layout_height="75dp"
-                        android:src="@drawable/transparent_logo"
-                        android:layout_gravity="center" />
+                        android:layout_gravity="center"
+                        android:src="@drawable/transparent_logo" />
 
                 </LinearLayout>
                 <!--/ Hotel Logo -->

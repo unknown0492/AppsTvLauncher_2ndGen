@@ -57,9 +57,13 @@ public class Weather {
                 String temp = intent.getStringExtra( "temp" );
                 String text = intent.getStringExtra( "text" );
 
+                Log.d( TAG, "drawable/weather_icon_"+code  );
+
                 //iv_weather.setBackgroundResource( context.getResources().getIdentifier( "drawable/weather_icon_"+code, null, context.getPackageName() ) );
                 //iv_weather.setBackgroundResource( context.getResources().getIdentifier( "drawable/anim_weather", null, context.getPackageName() ) );
                 ((AnimatedGifImageView)iv_weather).setAnimatedGif( context.getResources().getIdentifier( "drawable/weather_icon_"+code , null, context.getPackageName() ), AnimatedGifImageView.TYPE.AS_IS );
+                //((AnimatedGifImageView)iv_weather).setAnimatedGif( context.getResources().getIdentifier( "drawable/small_loading1" , null, context.getPackageName() ), AnimatedGifImageView.TYPE.AS_IS );
+
                 //((AnimatedGifImageView)iv_weather).setAnimatedGif( context.getResources().getIdentifier( "drawable/anim_weather", null, context.getPackageName() ), TYPE.AS_IS );
                 ((TextView)tv_temperature).setText( temp + "°C" );
                 ((TextView)tv_text).setText( text );

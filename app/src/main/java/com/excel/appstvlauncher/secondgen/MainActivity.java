@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -100,7 +101,7 @@ public class MainActivity extends Activity {
 
 
 	//ImageView iv_weather;
-	AnimatedGifImageView iv_weather;
+	AnimatedGifImageView iv_weather, iv_weather1;
 	TextView tv_temperature, tv_text;
 	Weather weather;
 	RelativeLayout rl_clock;
@@ -135,6 +136,7 @@ public class MainActivity extends Activity {
 	static String ONE = "KEYCODE_1";
 	static String THREE = "KEYCODE_3";
 	static String NINE = "KEYCODE_9";
+	static String SEVEN = "KEYCODE_7";
 	static String DOT = "KEYCODE_PERIOD";
 	String ALPHABET = "KEYCODE_";
 
@@ -190,7 +192,7 @@ public class MainActivity extends Activity {
 		startPerfectTimeService();
 		createPerfectTimeReceiver();
 		startDateAndDayNameSwitcher();
-		initializeWeatherFeatures();
+		//initializeWeatherFeatures();
 		initializeClockWeatherHotelLogoFlipper();
 		checkIfHotelLogoToBeDisplayed();
 		restoreTvChannels();
@@ -284,7 +286,13 @@ public class MainActivity extends Activity {
                                         setSubMenuAdapter( sma );
 
                                         // Show its Sub-Menu
-                                        ObjectAnimator oaa = ObjectAnimator.ofFloat( hsv_sub_menu, "translationY", 40 );
+										ObjectAnimator oaa= null;
+										if( Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT ) {
+											oaa = ObjectAnimator.ofFloat( hsv_sub_menu, "translationY", 30 );
+										}
+										else{
+											oaa = ObjectAnimator.ofFloat( hsv_sub_menu, "translationY", 40 );
+										}
                                         //oaa.setStartDelay( 250 );
                                         oaa.setDuration( 250 );
                                         oaa.start();
@@ -374,12 +382,30 @@ public class MainActivity extends Activity {
         }
 	}
 
-	public void scrollCenter( LinearLayout ll, View viewToScroll ) {
+	public void scrollCenter(LinearLayout ll, final View viewToScroll ) {
 		// Source : http://stackoverflow.com/questions/8642677/reduce-speed-of-smooth-scroll-in-scroll-view
 		int endPos    = (int) ll.getX();
 		int halfWidth = (int) ll.getWidth() / 2;
+		// float endPos    = ll.getX();
+		// float halfWidth = ll.getWidth() / 2;
 
+		// ObjectAnimator.ofFloat( viewToScroll, "scrollX",  endPos + halfWidth - viewToScroll.getWidth() / 2 ).setDuration( 500 ).start();
 		ObjectAnimator.ofInt( viewToScroll, "scrollX",  endPos + halfWidth - viewToScroll.getWidth() / 2 ).setDuration( 500 ).start();
+		//((HorizontalScrollView)viewToScroll).smoothScrollBy( endPos + halfWidth - viewToScroll.getWidth() / 2, 0 );
+
+		/*ValueAnimator realSmoothScrollAnimation =
+				ValueAnimator.ofInt( viewToScroll.getScrollX(), endPos + halfWidth - viewToScroll.getWidth() / 2 );
+		realSmoothScrollAnimation.setDuration(500);
+		realSmoothScrollAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener()
+		{
+			@Override
+			public void onAnimationUpdate(ValueAnimator animation)
+			{
+				int scrollTo = (Integer) animation.getAnimatedValue();
+				viewToScroll.scrollTo(0, scrollTo);
+			}
+		});
+		realSmoothScrollAnimation.start();*/
 	}
 
 	public void setLauncherMenuItems() {
@@ -813,7 +839,7 @@ public class MainActivity extends Activity {
 
         ds.pauseDigitalSignageSwitcher();
 		pauseTetheringInfoFlipper();
-		weather.pauseYahooWeatherService();
+		//weather.pauseYahooWeatherService();
 		clock_weather_hotel_logo_flipper.pauseClockWeatherLogoFlipper();
 		pauseClockTicker();
 
@@ -833,7 +859,7 @@ public class MainActivity extends Activity {
 
         ds.resumeDigitalSignageSwitcher();
         startTetheringInfoSwitcher();
-        weather.resumeYahooWeatherService();
+        //weather.resumeYahooWeatherService();
         clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
         onUserInteraction();
 
@@ -922,6 +948,9 @@ public class MainActivity extends Activity {
 		this.tv_date = (TextView) findViewById(R.id.tv_date);
 		this.tv_day_name = (TextView) findViewById(R.id.tv_day_name);
 		this.iv_weather = (AnimatedGifImageView) findViewById(R.id.iv_weather);
+		//this.iv_weather1 = (AnimatedGifImageView) findViewById(R.id.iv_weather1 );
+		//iv_weather1.setAnimatedGif( context.getResources().getIdentifier( "drawable/small_loading1" , null, context.getPackageName() ), AnimatedGifImageView.TYPE.AS_IS );
+
 		this.tv_temperature = (TextView) findViewById(R.id.tv_temperature);
 		this.tv_text = (TextView) findViewById(R.id.tv_text);
 		this.rl_weather = (LinearLayout) findViewById(R.id.rl_weather);
@@ -1321,6 +1350,12 @@ public class MainActivity extends Activity {
 				in.putExtra( "who", "zkz" );
 				startActivity( in );
 			}
+			// 1-7-1 -> ZKZ
+			if( key_1.equals( ONE ) && key_2.equals( SEVEN ) && key_3.equals( ONE ) ){
+				Intent in = new Intent( context, ShortcutsActivity.class );
+				in.putExtra( "who", "zkz" );
+				startActivity( in );
+			}
 			// 3-1-3  -> XKX
 			else if( key_1.equals( THREE ) && key_2.equals( ONE ) && key_3.equals( THREE ) ){
 				Intent in = new Intent( context, ShortcutsActivity.class );
@@ -1663,16 +1698,40 @@ public class MainActivity extends Activity {
 
         Log.i( TAG, "unzipTvChannelsZip() executed" );
 
-        UtilShell.executeShellCommandWithOp( "rm -r /mnt/sdcard/appstv_data/tv_channels/backup",
-                "unzip -o /mnt/sdcard/appstv_data/tv_channels/tv_channels.zip -d /mnt/sdcard/appstv_data/tv_channels" );
 
-        // Using device_init.sh to restore program.db file
-		// Copy the program.db file to /system/appstv_data/program.db
+        if( Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT ) {
+            // For GIEC Boxes
+            UtilShell.executeShellCommandWithOp( "rm -r /mnt/sdcard/appstv_data/tv_channels/backup",
+                    "unzip -o /mnt/sdcard/appstv_data/tv_channels/tv_channels.zip -d /mnt/sdcard/appstv_data/tv_channels" );
 
-		UtilShell.executeShellCommandWithOp( "chmod -R 777 /system/appstv_data/*",
-				"cp /mnt/sdcard/appstv_data/tv_channels/backup/hdtv/program.db /system/appstv_data/program.db",
-				"chmod 777 /system/appstv_data/program.db" );
+            /*UtilShell.executeShellCommandWithOp( "mount -o remount,rw /system",
+                    "chmod -R 777 /system/appstv_data",
+                    "chmod -R 777 /system/appstv_data/*",
+                    "rm -r com.amlogic.tvservice",
+                    "cp -r /mnt/sdcard/appstv_data/tv_channels/backup/com.amlogic.tvservice /system/appstv_data",
+                    "chmod -R 777 /system/appstv_data/com.amlogic.tvservice",
+                    "chmod -R 777 /data/data/com.amlogic.tvservice" );*/
 
+			UtilShell.executeShellCommandWithOp( "mount -o remount,rw /system",
+					"chmod -R 777 /data/data/com.amlogic.tvservice",
+					"rm -r /data/data/com.amlogic.tvservice/*",
+					"cp -r /mnt/sdcard/appstv_data/tv_channels/backup/com.amlogic.tvservice/* /data/data/com.amlogic.tvservice",
+					"chmod -R 777 /data/data/com.amlogic.tvservice" );
+
+
+        }
+        else {
+
+            UtilShell.executeShellCommandWithOp("rm -r /mnt/sdcard/appstv_data/tv_channels/backup",
+                    "unzip -o /mnt/sdcard/appstv_data/tv_channels/tv_channels.zip -d /mnt/sdcard/appstv_data/tv_channels");
+
+            // Using device_init.sh to restore program.db file
+            // Copy the program.db file to /system/appstv_data/program.db
+
+            UtilShell.executeShellCommandWithOp( "chmod -R 777 /system/appstv_data/*",
+                    "cp /mnt/sdcard/appstv_data/tv_channels/backup/hdtv/program.db /system/appstv_data/program.db",
+                    "chmod 777 /system/appstv_data/program.db");
+        }
 
         /*
         // 1. kill com.android.dtv
@@ -1698,6 +1757,7 @@ public class MainActivity extends Activity {
 		    UtilShell.executeShellCommandWithOp( "monkey -p com.excel.datagrammonitor.secondgen -c android.intent.category.LAUNCHER 1" );
 			unzipTvChannelsZip();
 			restoreYoutubeSettings();
+			setTvChannelRestored( true );
 		}
 	}
 

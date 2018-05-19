@@ -108,7 +108,7 @@ public class WebViewActivity extends Activity {
 	    //rl = new RelativeLayout( this );
 
 	    loading = (AnimatedGifImageView) findViewById( R.id.loading );
-        loading.setAnimatedGif( context.getResources().getIdentifier( "drawable/small_loading1" , null, context.getPackageName() ), AnimatedGifImageView.TYPE.AS_IS );
+		loading.setAnimatedGif( context.getResources().getIdentifier( "drawable/small_loading1" , null, context.getPackageName() ), AnimatedGifImageView.TYPE.AS_IS );
 
 		//wv_open_page = new WebView( this );
         wv_open_page = (WebView) findViewById( R.id.wv_open_page );

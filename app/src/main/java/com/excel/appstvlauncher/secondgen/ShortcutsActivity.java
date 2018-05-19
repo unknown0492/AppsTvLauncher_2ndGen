@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -279,7 +280,7 @@ public class ShortcutsActivity extends Activity {
 			
 			@Override
 			public void onClick( View v ) {
-				UtilShell.executeShellCommand( "reboot" );
+				UtilShell.executeShellCommandWithOp( "reboot" );
 			}
 		});
 	}
@@ -347,10 +348,18 @@ public class ShortcutsActivity extends Activity {
 			
 			@Override
 			public void onClick( View v ) {
-				if( !UtilMisc.startApplicationUsingPackageName( context, "com.sdmc.settings" ) ){
-				//if( !UtilMisc.startApplicationUsingPackageName( context, "com.mbx.settingsmbox" ) ){
-					CustomItems.showCustomToast( context, "error", "SDMC Settings not found", 5000 );
-				}
+                if( Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT ) {
+                    if (!UtilMisc.startApplicationUsingPackageName(context, "com.mbx.settingsmbox") ) {
+                        //if( !UtilMisc.startApplicationUsingPackageName( context, "com.mbx.settingsmbox" ) ){
+                        CustomItems.showCustomToast(context, "error", "GIEC Settings not found", 5000);
+                    }
+                }
+                else {
+                    if (!UtilMisc.startApplicationUsingPackageName(context, "com.sdmc.settings")) {
+                        //if( !UtilMisc.startApplicationUsingPackageName( context, "com.mbx.settingsmbox" ) ){
+                        CustomItems.showCustomToast(context, "error", "SDMC Settings not found", 5000);
+                    }
+                }
 			}
 		});
 	}
@@ -360,7 +369,14 @@ public class ShortcutsActivity extends Activity {
 			
 			@Override
 			public void onClick( View v ) {
-				UtilShell.executeShellCommand( "am start -a android.intent.action.MAIN -n com.android.settings/.Settings" );
+				Log.d( TAG, "Open Settings" );
+
+				if( Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT ) {
+					UtilShell.executeShellCommandWithOp( "monkey -p com.android.settings -c android.intent.category.LAUNCHER 1" );
+				}
+				else {
+					UtilShell.executeShellCommandWithOp( "am start -a android.intent.action.MAIN -n com.android.settings/.Settings" );
+				}
 			}
 		});
 	}
@@ -394,7 +410,7 @@ public class ShortcutsActivity extends Activity {
 			
 			@Override
 			public void onClick( View v ) {
-				UtilShell.executeShellCommand( "reboot recovery" );
+				UtilShell.executeShellCommandWithOp( "reboot recovery" );
 			}
 		});
 	}
