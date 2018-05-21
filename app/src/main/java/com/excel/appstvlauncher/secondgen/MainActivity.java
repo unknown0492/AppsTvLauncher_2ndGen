@@ -192,7 +192,7 @@ public class MainActivity extends Activity {
 		startPerfectTimeService();
 		createPerfectTimeReceiver();
 		startDateAndDayNameSwitcher();
-		//initializeWeatherFeatures();
+		initializeWeatherFeatures();
 		initializeClockWeatherHotelLogoFlipper();
 		checkIfHotelLogoToBeDisplayed();
 		restoreTvChannels();
@@ -839,7 +839,7 @@ public class MainActivity extends Activity {
 
         ds.pauseDigitalSignageSwitcher();
 		pauseTetheringInfoFlipper();
-		//weather.pauseYahooWeatherService();
+		weather.pauseYahooWeatherService();
 		clock_weather_hotel_logo_flipper.pauseClockWeatherLogoFlipper();
 		pauseClockTicker();
 
@@ -859,7 +859,7 @@ public class MainActivity extends Activity {
 
         ds.resumeDigitalSignageSwitcher();
         startTetheringInfoSwitcher();
-        //weather.resumeYahooWeatherService();
+        weather.resumeYahooWeatherService();
         clock_weather_hotel_logo_flipper.startClockWeatherLogoFlipper();
         onUserInteraction();
 
@@ -1311,10 +1311,18 @@ public class MainActivity extends Activity {
 	}
 
 	public void initializeWeatherFeatures(){
+
 		weather = new Weather( context, configurationReader, iv_weather, tv_temperature, tv_text );
+
+		// Start weather service only if weather is enabled in the CMS
+		if( !configurationReader.getIsWeatherEnabled() ) {
+			Log.e( TAG, "Weather is not enabled on the CMS !" );
+			return;
+		}
 
 		weather.startYahooWeatherService();
 		weather.createYahooWeatherReceiver();
+
 	}
 
 	public void initializeClockWeatherHotelLogoFlipper(){
@@ -1573,9 +1581,65 @@ public class MainActivity extends Activity {
 		// This works differently  for 5.1 and 6.0, so we differentiate it
 		// Permissions for Android 6.0
 
+		Log.e( TAG, "Build.VERSION.SDK_INT:" + Build.VERSION.SDK_INT + ", Build.VERSION_CODES.KITKAT:"+Build.VERSION_CODES.KITKAT );
+		if( Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT ) {
 
-		//if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
-			Log.d( TAG, "Android is 6+" );
+			// Kill Youtube running in background
+			String pid = UtilShell.executeShellCommandWithOp("pidof com.google.android.youtube.tv").trim();
+			UtilShell.executeShellCommandWithOp("kill " + pid);
+
+			// 1. Check if youtube package exist com.google.android.youtube.tv
+			File file = new File("/data/data/com.google.android.youtube.tv");
+			String s_file = UtilShell.executeShellCommandWithOp("[ -d \"/data/data/com.google.android.youtube.tv\" ] && echo \"yes\"");
+			Log.d(TAG, s_file);
+			//if( ! file.exists() )
+			if (!s_file.trim().equals("yes"))
+				return;
+			Log.i(TAG, "/data/data/com.google.android.youtube.tv : exist");
+
+			// 2. Check if the Directory shared_prefs exist inside com.google.android.youtube.tv
+			File file1 = new File("/data/data/com.google.android.youtube.tv/shared_prefs");
+			String s_file1 = UtilShell.executeShellCommandWithOp("[ -d \"/data/data/com.google.android.youtube.tv/shared_prefs\" ] && echo \"yes\"");
+			Log.d(TAG, s_file1);
+			//if( ! file1.exists() ){
+			if (!s_file1.trim().equals("yes")) {
+				Log.e(TAG, "/data/data/com.google.android.youtube.tv/shared_prefs : Not exist, hence creating it");
+				UtilShell.executeShellCommandWithOp("chmod -R 777 /data/data/com.google.android.youtube.tv");
+				UtilShell.executeShellCommandWithOp("mkdir /data/data/com.google.android.youtube.tv/shared_prefs");
+			}
+
+			// 3. Check if the youtube.xml exist at /system/appstv_data/youtube.xml
+			File file2 = new File("/system/appstv_data/youtube.xml");
+			String s_file2 = UtilShell.executeShellCommandWithOp("[ -f \"/system/appstv_data/youtube.xml\" ] && echo \"yes\"");
+			if (!s_file2.trim().equals("yes")) {
+				// if( ! file2.exists() ){
+				Log.e(TAG, "/system/appstv_data/youtube.xml : not exist, hence exiting !");
+				return;
+			}
+
+			// 4. Copy /system/appstv_data/youtube.xml TO /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml
+			UtilShell.executeShellCommandWithOp("chmod -R 777 /data/data/com.google.android.youtube.tv");
+			UtilShell.executeShellCommandWithOp("chmod -R 777 /data/data/com.google.android.youtube.tv/shared_prefs");
+			UtilShell.executeShellCommandWithOp("chmod 777 /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml");
+
+			UtilShell.executeShellCommandWithOp("chmod -R 777 /system/appstv_data");
+			UtilShell.executeShellCommandWithOp("chmod -R 777 /system/appstv_data/youtube.xml");
+
+			UtilShell.executeShellCommandWithOp("rm /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml");
+			UtilShell.executeShellCommandWithOp("cp /system/appstv_data/youtube.xml /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml");
+
+			Log.i(TAG, "restored youtube.xml");
+
+			// 5. Delete Google Account Database
+			UtilShell.executeShellCommandWithOp("chmod -R 777 /data/system/users/0");
+			UtilShell.executeShellCommandWithOp("rm /data/system/users/0/accounts.db");
+			UtilShell.executeShellCommandWithOp("rm /data/system/users/0/accounts.db-journal");
+
+			UtilShell.executeShellCommandWithOp("am force-stop com.google.android.youtube.tv");
+
+		}
+		else {
+			Log.d( TAG, "Android is 5.1 or 6+" );
 
 			// Kill Youtube running in background
 			String pid = UtilShell.executeShellCommandWithOp("pidof com.google.android.youtube.tv").trim();
@@ -1586,33 +1650,33 @@ public class MainActivity extends Activity {
 			UtilShell.executeShellCommandWithOp("kill " + pid);
 
 			// 1. Check if youtube package exist com.google.android.youtube.tv
-			File file = new File( "/data/data/com.google.android.youtube.tv" );
+			File file = new File("/data/data/com.google.android.youtube.tv");
 			String s_file = UtilShell.executeShellCommandWithOp("[ -d \"/data/data/com.google.android.youtube.tv\" ] && echo \"yes\"");
-			Log.d( TAG, s_file );
+			Log.d(TAG, s_file);
 			//if( ! file.exists() )
 			if (!s_file.trim().equals("yes"))
 				return;
 			Log.i(TAG, "/data/data/com.google.android.youtube.tv : exist");
 
 			// 2. Remove all data from /data/data/com.google.android.youtube.tv
-			UtilShell.executeShellCommandWithOp( "rm -r /data/data/com.google.android.youtube.tv/*" );
+			UtilShell.executeShellCommandWithOp("rm -r /data/data/com.google.android.youtube.tv/*");
 
 
 			// Copy the youtube settings from assets folder to sdcard
-            copyAssets();
-            // Unzip the youtube backup file
-            UtilShell.executeShellCommandWithOp( "mkdir /mnt/sdcard", "rm -r /mnt/sdcard/com.google.android.youtube.tv/*",
-                    "unzip -o /mnt/sdcard/com.google.android.youtube.tv.zip -d /mnt/sdcard" );
+			copyAssets();
+			// Unzip the youtube backup file
+			UtilShell.executeShellCommandWithOp("mkdir /mnt/sdcard", "rm -r /mnt/sdcard/com.google.android.youtube.tv/*",
+					"unzip -o /mnt/sdcard/com.google.android.youtube.tv.zip -d /mnt/sdcard");
 
-            //moveAssetToStorageDir( "" );
+			//moveAssetToStorageDir( "" );
 
 
 			// 3. Copy the default data for youtube from /system/appstv_data/com.google.android.youtube.tv
 			//UtilShell.executeShellCommandWithOp( "cp -r /system/appstv_data/com.google.android.youtube.tv/* /data/data/com.google.android.youtube.tv" );
-			UtilShell.executeShellCommandWithOp( "cp -r /mnt/sdcard/com.google.android.youtube.tv/* /data/data/com.google.android.youtube.tv" );
+			UtilShell.executeShellCommandWithOp("cp -r /mnt/sdcard/com.google.android.youtube.tv/* /data/data/com.google.android.youtube.tv");
 
 			// 4. CHMOD -R 777 to make it executable, just in case
-			UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/data/com.google.android.youtube.tv" );
+			UtilShell.executeShellCommandWithOp("chmod -R 777 /data/data/com.google.android.youtube.tv");
 		/*}
 		else {
 			Log.d( TAG, "Android is below 6" );
@@ -1670,6 +1734,7 @@ public class MainActivity extends Activity {
 
 			UtilShell.executeShellCommandWithOp("am force-stop com.google.android.youtube.tv");
 		}*/
+		}
 	}
 
 	public void clearYouTubeSDCardCache(){
@@ -1699,7 +1764,7 @@ public class MainActivity extends Activity {
         Log.i( TAG, "unzipTvChannelsZip() executed" );
 
 
-        if( Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT ) {
+        if( Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT ) {
             // For GIEC Boxes
             UtilShell.executeShellCommandWithOp( "rm -r /mnt/sdcard/appstv_data/tv_channels/backup",
                     "unzip -o /mnt/sdcard/appstv_data/tv_channels/tv_channels.zip -d /mnt/sdcard/appstv_data/tv_channels" );

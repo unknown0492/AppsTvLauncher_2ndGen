@@ -1,1 +1,2 @@
-include ':app', ':ExcelClassLibrary-debug'
+include ':app', ':ExcelClassLibrary'
+project (':ExcelClassLibrary').projectDir = new File('G:\\Workspaces\\android_studio\\ExcelClassLibrary\\app')

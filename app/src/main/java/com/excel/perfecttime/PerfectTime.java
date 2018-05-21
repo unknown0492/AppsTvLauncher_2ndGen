@@ -176,7 +176,7 @@ public class PerfectTime {
 
 		Log.d( TAG, data );
 
-		UtilShell.executeShellCommand( data );
+		UtilShell.executeShellCommandWithOp( data );
 	}
 	
 	public void resetRetryTimer(){

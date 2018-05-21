@@ -83,13 +83,33 @@ public class Weather {
 
     public void pauseYahooWeatherService(){
         isYahooWeatherServicePaused = true;
+
     }
 
     public void resumeYahooWeatherService(){
         isYahooWeatherServicePaused = false;
-    	/*if( ! isYahooWeatherServicePaused ){
-    		isYahooWeatherServicePaused = false;
-    	}*/
+
+        /*if( ! configurationReader.getIsWeatherEnabled() ){
+            isWeatherAvailable = false;
+            Log.e( TAG, "Weather disabled !" );
+        }
+        else{
+            isWeatherAvailable = true;
+            Log.i( TAG, "Weather enabled !" );
+        }*/
+    }
+
+    public void resumeYahooWeatherService( ConfigurationReader configurationReader ){
+        isYahooWeatherServicePaused = false;
+
+        if( ! configurationReader.getIsWeatherEnabled() ){
+            isWeatherAvailable = false;
+            Log.e( TAG, "Weather disabled !" );
+        }
+        else{
+            isWeatherAvailable = true;
+            Log.i( TAG, "Weather enabled !" );
+        }
     }
 
     public static boolean isYahooWeatherServicePaused(){

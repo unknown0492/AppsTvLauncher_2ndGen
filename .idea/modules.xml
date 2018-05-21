@@ -3,7 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/AppsTvLauncher_2ndGen_v3.0.iml" filepath="$PROJECT_DIR$/AppsTvLauncher_2ndGen_v3.0.iml" />
-      <module fileurl="file://$PROJECT_DIR$/ExcelClassLibrary-debug/ExcelClassLibrary-debug.iml" filepath="$PROJECT_DIR$/ExcelClassLibrary-debug/ExcelClassLibrary-debug.iml" />
+      <module fileurl="file://$PROJECT_DIR$/AppsTvLauncher_2ndGen_v3.0.iml" filepath="$PROJECT_DIR$/AppsTvLauncher_2ndGen_v3.0.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../ExcelClassLibrary/app/ExcelClassLibrary.iml" filepath="$PROJECT_DIR$/../ExcelClassLibrary/app/ExcelClassLibrary.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
