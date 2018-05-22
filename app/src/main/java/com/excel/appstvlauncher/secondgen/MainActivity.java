@@ -809,10 +809,11 @@ public class MainActivity extends Activity {
 		String key_name = KeyEvent.keyCodeToString( i );
 		Log.i( TAG, "KeyPressed : "+i+","+key_name );
 		//if( ( i == 19 ) || ( i == 20 ) || ( i == 21 ) || ( i == 22 ) )
-		//	return true;
+		//return true;
 
 		// Handle the Overflow left and right key movements for MAIN menu
 		//if( handleMainMenuOverflow( i, keyevent ) ) return true;
+
 
 		// Handle the Overflow left and right key movements for SUB menu
 		if( handleSubMenuOverflow( i, keyevent ) ) return true;
