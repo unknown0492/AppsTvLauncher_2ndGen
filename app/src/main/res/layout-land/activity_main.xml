@@ -300,7 +300,9 @@
 
             <!-- Collar Text -->
 
-            <com.excel.appstvlauncher.secondgen.ScrollTextView
+
+
+            <com.excel.appstvlauncher.secondgen.MarqueeView
                 android:id="@+id/tv_collar_text"
                 android:layout_width="0dp"
                 android:layout_height="50dp"
@@ -311,10 +313,11 @@
                 android:singleLine="true"
                 android:textColor="#ffffff"
                 android:textSize="25dp"
-
                 android:paddingLeft="10dp"
                 android:paddingTop="7dp"
                 android:layout_weight="8" />
+
+
 
 
 
