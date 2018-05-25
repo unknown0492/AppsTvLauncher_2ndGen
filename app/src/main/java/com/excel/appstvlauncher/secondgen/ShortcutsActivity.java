@@ -64,9 +64,14 @@ public class ShortcutsActivity extends Activity {
 			ll_right_remaining.setVisibility( View.VISIBLE );
 		}
 		
-		// Set Mac Address
-		setMacAddress();
-		
+		try {
+			// Set Mac Address
+			setMacAddress();
+		}
+		catch( Exception e ){
+			e.printStackTrace();
+		}
+
 		// Set Firmware Version
 		setFirmwareVersion();
 		
@@ -76,8 +81,13 @@ public class ShortcutsActivity extends Activity {
 		// Reboot Box
 		rebootBoxButtonClick();
 
-		// show IP Address
-		ipAddressRetrieve();
+		try {
+			// show IP Address
+			ipAddressRetrieve();
+		}
+		catch( Exception e ){
+			e.printStackTrace();
+		}
 
 		// Run OTS
 		runOTSButtonClick();

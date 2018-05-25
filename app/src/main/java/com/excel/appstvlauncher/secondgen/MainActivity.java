@@ -245,69 +245,70 @@ public class MainActivity extends Activity {
 
                         current_main_item = ll;
 
-                        // Hide its sub-menu
-                        ObjectAnimator oa = ObjectAnimator.ofFloat( hsv_sub_menu, "translationY", 0 );
-                        oa.setDuration( 250 );
-                        oa.start();
+						if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 ) {
 
-                        ObjectAnimator oa1 = ObjectAnimator.ofFloat( hsv_sub_menu, "alpha", 1.0f, 0.0f );
-                        oa1.setDuration( 250 );
-                        oa1.start();
+							// Hide its sub-menu
+							ObjectAnimator oa = ObjectAnimator.ofFloat(hsv_sub_menu, "translationY", 0);
+							oa.setDuration(250);
+							oa.start();
+
+							ObjectAnimator oa1 = ObjectAnimator.ofFloat(hsv_sub_menu, "alpha", 1.0f, 0.0f);
+							oa1.setDuration(250);
+							oa1.start();
 
 
-                        new AsyncTask<Void, Void, Void>(){
+							new AsyncTask<Void, Void, Void>() {
 
-                            @Override
-                            protected Void doInBackground(Void... voids) {
-                                sub_menu_values = ljr.getSubMenuItemNames( last_index_of_main_menu );
-                                for( int i = 0 ; i < sub_menu_values.length ; i++ ){
-                                    //String item_name = ljr.getSubItemValue( last_index_of_main_menu, i , "item_name_translated" );
-                                    String item_name_json = ljr.getSubItemValue( last_index_of_main_menu, i, "item_name_translated" );
-                                    try {
-                                        JSONObject jso = new JSONObject( item_name_json );
-                                        //Log.d( TAG, "display name : "+UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
-                                        sub_menu_values[ i ] = jso.getString( UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
-                                    }
-                                    catch ( Exception e ){
-                                        //e.printStackTrace();
-                                    }
-                                }
-                                return null;
-                            }
-
-                            @Override
-                            protected void onPostExecute(Void aVoid) {
-                                new Handler().postDelayed( new Runnable() {
-
-                                    @Override
-                                    public void run() {
-
-                                        sma = new SubMenuAdapter( R.layout.sub_menu_items, context, sub_menu_values );
-                                        setSubMenuAdapter( sma );
-
-                                        // Show its Sub-Menu
-										ObjectAnimator oaa= null;
-										if( Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT ) {
-											oaa = ObjectAnimator.ofFloat( hsv_sub_menu, "translationY", 30 );
+								@Override
+								protected Void doInBackground(Void... voids) {
+									sub_menu_values = ljr.getSubMenuItemNames(last_index_of_main_menu);
+									for (int i = 0; i < sub_menu_values.length; i++) {
+										//String item_name = ljr.getSubItemValue( last_index_of_main_menu, i , "item_name_translated" );
+										String item_name_json = ljr.getSubItemValue(last_index_of_main_menu, i, "item_name_translated");
+										try {
+											JSONObject jso = new JSONObject(item_name_json);
+											//Log.d( TAG, "display name : "+UtilMisc.getCustomLocaleLanguageConstant().getLanguage() );
+											sub_menu_values[i] = jso.getString(UtilMisc.getCustomLocaleLanguageConstant().getLanguage());
+										} catch (Exception e) {
+											//e.printStackTrace();
 										}
-										else{
-											oaa = ObjectAnimator.ofFloat( hsv_sub_menu, "translationY", 40 );
+									}
+									return null;
+								}
+
+								@Override
+								protected void onPostExecute(Void aVoid) {
+									new Handler().postDelayed(new Runnable() {
+
+										@Override
+										public void run() {
+
+											sma = new SubMenuAdapter(R.layout.sub_menu_items, context, sub_menu_values);
+											setSubMenuAdapter(sma);
+
+											// Show its Sub-Menu
+											ObjectAnimator oaa = null;
+											if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+												oaa = ObjectAnimator.ofFloat(hsv_sub_menu, "translationY", 30);
+											} else {
+												oaa = ObjectAnimator.ofFloat(hsv_sub_menu, "translationY", 40);
+											}
+											//oaa.setStartDelay( 250 );
+											oaa.setDuration(250);
+											oaa.start();
+
+											ObjectAnimator oaa1 = ObjectAnimator.ofFloat(hsv_sub_menu, "alpha", 0.0f, 1.0f);
+											//oaa1.setStartDelay( 250 );
+											oaa1.setDuration(250);
+											oaa1.start();
+
 										}
-                                        //oaa.setStartDelay( 250 );
-                                        oaa.setDuration( 250 );
-                                        oaa.start();
+									}, 250);
 
-                                        ObjectAnimator oaa1 = ObjectAnimator.ofFloat( hsv_sub_menu, "alpha", 0.0f, 1.0f );
-                                        //oaa1.setStartDelay( 250 );
-                                        oaa1.setDuration( 250 );
-                                        oaa1.start();
-
-                                    }
-                                }, 250 );
-
-                                super.onPostExecute(aVoid);
-                            }
-                        }.execute();
+									super.onPostExecute(aVoid);
+								}
+							}.execute();
+						}
 
                         last_index_of_main_menu = Integer.parseInt( v.getTag().toString() );
                     }
@@ -1583,7 +1584,7 @@ public class MainActivity extends Activity {
 		// Permissions for Android 6.0
 
 		Log.e( TAG, "Build.VERSION.SDK_INT:" + Build.VERSION.SDK_INT + ", Build.VERSION_CODES.KITKAT:"+Build.VERSION_CODES.KITKAT );
-		if( Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT ) {
+		if( Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT ) {
 
 			// Kill Youtube running in background
 			String pid = UtilShell.executeShellCommandWithOp("pidof com.google.android.youtube.tv").trim();
