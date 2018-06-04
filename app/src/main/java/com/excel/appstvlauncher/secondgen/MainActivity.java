@@ -206,6 +206,13 @@ public class MainActivity extends Activity {
         onUserInteraction();
 
 		//restoreYoutubeSettings();
+		/*if( Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT ) {
+			hsv_sub_menu.setFocusable( false );
+			hsv_sub_menu.setFocusableInTouchMode( false );
+			ll_sub_menu_items.setFocusable( false );
+			ll_sub_menu_items.setFocusableInTouchMode( false );
+		}*/
+
 
 	}
 
@@ -815,6 +822,13 @@ public class MainActivity extends Activity {
 		// Handle the Overflow left and right key movements for MAIN menu
 		//if( handleMainMenuOverflow( i, keyevent ) ) return true;
 
+		// Do not allow pressing down on Dual Core box because we have disabled the Sub Menu
+		if( Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT ) {
+		    Log.e( TAG, "inside here" );
+			if( i == 20 ){ // Keypad Down
+				return true;
+			}
+		}
 
 		// Handle the Overflow left and right key movements for SUB menu
 		if( handleSubMenuOverflow( i, keyevent ) ) return true;
@@ -1584,7 +1598,51 @@ public class MainActivity extends Activity {
 		// Permissions for Android 6.0
 
 		Log.e( TAG, "Build.VERSION.SDK_INT:" + Build.VERSION.SDK_INT + ", Build.VERSION_CODES.KITKAT:"+Build.VERSION_CODES.KITKAT );
-		if( Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT ) {
+
+
+		if( Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT ) {
+			Log.e( TAG, "This is Dual Core" );
+
+			// Kill Youtube running in background
+			String pid = UtilShell.executeShellCommandWithOp("pidof com.google.android.youtube.tv").trim();
+			UtilShell.executeShellCommandWithOp("kill " + pid);
+
+			pid = UtilShell.executeShellCommandWithOp("pidof com.google.android.youtube.tv").trim();
+			UtilShell.executeShellCommandWithOp("kill " + pid);
+
+
+			// Clear YouTube Cache
+			UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/data/com.google.android.youtube.tv" );
+			UtilShell.executeShellCommandWithOp( "rm -r /data/data/com.google.android.youtube.tv/cache" );
+			UtilShell.executeShellCommandWithOp( "rm -r /data/data/com.google.android.youtube.tv/shared_prefs" );
+			UtilShell.executeShellCommandWithOp( "rm -r /data/data/com.google.android.youtube.tv/databases" );
+
+			UtilShell.executeShellCommandWithOp( "chmod -R 777 /system/appstv_data" );
+			UtilShell.executeShellCommandWithOp( "chmod -R 777 /system/appstv_data/youtube.xml" );
+			UtilShell.executeShellCommandWithOp( "mkdir /data/data/com.google.android.youtube.tv/shared_prefs" );
+			UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/data/com.google.android.youtube.tv/shared_prefs" );
+
+			UtilShell.executeShellCommandWithOp( "cp /system/appstv_data/youtube.xml /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml" );
+
+			UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/data/com.google.android.youtube.tv/shared_prefs" );
+
+			Log.i(TAG, "restored youtube.xml");
+
+			// 5. Delete Google Account Database
+			UtilShell.executeShellCommandWithOp( "chmod -R 777 /data/system/users/0" );
+			UtilShell.executeShellCommandWithOp( "rm /data/system/users/0/accounts.db" );
+			UtilShell.executeShellCommandWithOp( "rm /data/system/users/0/accounts.db-journal" );
+
+			pid = UtilShell.executeShellCommandWithOp( "pidof com.google.android.youtube.tv" ).trim();
+			UtilShell.executeShellCommandWithOp( "kill " + pid);
+
+			pid = UtilShell.executeShellCommandWithOp( "pidof com.google.android.youtube.tv" ).trim();
+			UtilShell.executeShellCommandWithOp( "kill " + pid );
+
+		}
+		else if( Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT ) {
+
+			Log.e( TAG, "This is Quad Core" );
 
 			// Kill Youtube running in background
 			String pid = UtilShell.executeShellCommandWithOp("pidof com.google.android.youtube.tv").trim();
@@ -1630,6 +1688,8 @@ public class MainActivity extends Activity {
 			UtilShell.executeShellCommandWithOp("rm /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml");
 			UtilShell.executeShellCommandWithOp("cp /system/appstv_data/youtube.xml /data/data/com.google.android.youtube.tv/shared_prefs/youtube.xml");
 
+			UtilShell.executeShellCommandWithOp("chmod -R 777 /data/data/com.google.android.youtube.tv/shared_prefs");
+
 			Log.i(TAG, "restored youtube.xml");
 
 			// 5. Delete Google Account Database
@@ -1638,6 +1698,9 @@ public class MainActivity extends Activity {
 			UtilShell.executeShellCommandWithOp("rm /data/system/users/0/accounts.db-journal");
 
 			UtilShell.executeShellCommandWithOp("am force-stop com.google.android.youtube.tv");
+			/*pid = UtilShell.executeShellCommandWithOp("pidof com.google.android.youtube.tv").trim();
+			UtilShell.executeShellCommandWithOp("kill " + pid);*/
+
 
 		}
 		else {
@@ -1765,8 +1828,7 @@ public class MainActivity extends Activity {
 
         Log.i( TAG, "unzipTvChannelsZip() executed" );
 
-
-        if( Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT ) {
+        if( Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT ) {
             // For GIEC Boxes
             UtilShell.executeShellCommandWithOp( "rm -r /mnt/sdcard/appstv_data/tv_channels/backup",
                     "unzip -o /mnt/sdcard/appstv_data/tv_channels/tv_channels.zip -d /mnt/sdcard/appstv_data/tv_channels" );
@@ -1780,8 +1842,9 @@ public class MainActivity extends Activity {
                     "chmod -R 777 /data/data/com.amlogic.tvservice" );*/
 
 			UtilShell.executeShellCommandWithOp( "mount -o remount,rw /system",
-					"chmod -R 777 /data/data/com.amlogic.tvservice",
-					"rm -r /data/data/com.amlogic.tvservice/*",
+					"chmod -R 777 /data/data/com.amlogic.tvservice" );
+
+			UtilShell.executeShellCommandWithOp( "rm -r /data/data/com.amlogic.tvservice/*",
 					"cp -r /mnt/sdcard/appstv_data/tv_channels/backup/com.amlogic.tvservice/* /data/data/com.amlogic.tvservice",
 					"chmod -R 777 /data/data/com.amlogic.tvservice" );
 
