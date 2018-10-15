@@ -139,7 +139,7 @@ public class PerfectTimeService extends Service {
 				pt.setWasInternetTimeSyncSuccessful( true );
 				
 				String data = String.format( "%s-%s-%s  %s:%s:%s", pt.getDate(), pt.getMonth(), pt.getYear(), pt.getHours(), pt.getMinutes(), pt.getSeconds() );
-				Log.d( TAG, "Internet Time : " + data );
+				Log.d( TAG, "Internet Time : " + data + "," +millis );
 				// Toast.makeText( context, "Internet Time : " + data, Toast.LENGTH_LONG ).show();
 				  
 			}

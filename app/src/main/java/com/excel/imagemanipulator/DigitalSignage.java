@@ -93,6 +93,7 @@ public class DigitalSignage{
             public void run() {
                 setDigitalSignageAsWallpaper();
             }
+
         };
 
         // Start a postDelayed after xx seconds

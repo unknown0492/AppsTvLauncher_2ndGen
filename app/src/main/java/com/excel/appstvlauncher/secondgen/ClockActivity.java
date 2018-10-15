@@ -1,9 +1,9 @@
 package com.excel.appstvlauncher.secondgen;
 
+import android.app.ActionBar;
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
 import android.widget.GridView;
 
 import java.util.Calendar;
@@ -12,7 +12,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-public class ClockActivity extends ActionBarActivity {
+public class ClockActivity extends Activity {
 
 	final static String TAG = "WorldClock";
 	Timer time_updater;
@@ -46,7 +46,7 @@ public class ClockActivity extends ActionBarActivity {
     }
     
     private void init(){
-    	ActionBar ab = getSupportActionBar();
+    	ActionBar ab = getActionBar();
     	ab.hide();
     	
     	clock_container = (GridView) findViewById( R.id.clock_container );

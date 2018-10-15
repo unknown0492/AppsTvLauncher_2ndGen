@@ -30,10 +30,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.excel.configuration.ConfigurationReader;
+import com.excel.configuration.ConfigurationWriter;
 import com.excel.configuration.LauncherJSONReader;
 import com.excel.customitems.CustomItems;
 import com.excel.excelclasslibrary.UtilFile;
 import com.excel.excelclasslibrary.UtilMisc;
+import com.excel.excelclasslibrary.UtilNetwork;
 import com.excel.excelclasslibrary.UtilShell;
 import com.excel.flipper.Flipper;
 import com.excel.imagemanipulator.DigitalSignage;
@@ -152,6 +154,8 @@ public class MainActivity extends Activity {
 	Handler tickerDelayHandler;
 	Runnable tickerDelayRunnable;
 
+	int pauseCountSetTime = 0;
+
 
 	@Override
 	protected void onCreate( Bundle savedInstanceState )  {
@@ -159,6 +163,16 @@ public class MainActivity extends Activity {
 		hideActionBar();
 
 		setContentView( R.layout.activity_main );
+
+		/*File file = new File( "/mnt/sdcard/appstv_data/configuration" );
+		try {
+			file.createNewFile();
+			Log.e( TAG, "cccccc" );
+		}
+		catch ( Exception e ){
+			e.printStackTrace();
+		}*/
+		validateNonEmptinessOfConfigFile();
 
 		init();
 	}
@@ -216,6 +230,32 @@ public class MainActivity extends Activity {
 
 	}
 
+	public void validateNonEmptinessOfConfigFile(){
+		configurationReader = ConfigurationReader.getInstance();
+		File configuration = configurationReader.getConfigurationFile( false );
+		if( configuration.exists() ) {
+			String data = UtilFile.readData(configuration);
+			data = data.trim();
+			if ( data.length() == 0 ) {
+				// CHeck if LAN is connected
+				if( UtilNetwork.isConnectedToInternet( context ) ){
+					// Since the configuration file is empty, delete it, so that the cms ip would be read from the system
+					configuration.delete();
+
+					UtilShell.executeShellCommandWithOp("monkey -p com.excel.remotelycontrolappstv.secondgen -c android.intent.category.LAUNCHER 1");
+
+					context.sendBroadcast(new Intent("get_box_configuration"));
+
+				}
+				else{
+					// Restore from configuration.backup file
+					File configuration_backup = new File( configurationReader.getConfigurationFile( false ).getAbsolutePath() + ".backup" );
+					UtilFile.saveDataToFile( configuration, UtilFile.readData( configuration_backup ) );
+				}
+
+			}
+		}
+	}
 
 	public void setMainMenuAdapter(final MenuAdapter adapter) {
 		for (int i = 0; i < ma.getCount(); i++) {
@@ -1177,7 +1217,7 @@ public class MainActivity extends Activity {
 
 		Log.d( TAG, "startClockTicker()" );
 
-	    clockTickerTimer = new VirussTimer( 60000 );
+	    clockTickerTimer = new VirussTimer( 15000 );
 		clockTickerRunnable = new Runnable() {
 
             @Override
@@ -1225,98 +1265,117 @@ public class MainActivity extends Activity {
 	public void pauseClockTicker(){
 	    if( clockTickerTimer != null )
             clockTickerTimer.stop( clockTickerRunnable );
+
+	    /*if( pauseCountSetTime%3 == 0 ){
+	        setTime();
+        }
+        pauseCountSetTime++;*/
         Log.d( TAG, "pauseClockTicker()" );
     }
 
 	public void startDateAndDayNameSwitcher(){
 		// configurationReader = ConfigurationReader.reInstantiate();
-		new Handler().postDelayed( new Runnable() {
+		try {
+			new Handler().postDelayed(new Runnable() {
 
-			@Override
-			public void run() {
-				if( isDateShowingOnClock ){
-					//tv_date.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
+				@Override
+				public void run() {
+					if (isDateShowingOnClock) {
+						//tv_date.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
 
-					tv_date.animate().alpha( 0.0f ).setDuration( 300 ).start();
-					tv_day_name.animate().alpha(1.0f).setDuration(300).start();
+						tv_date.animate().alpha(0.0f).setDuration(300).start();
+						tv_day_name.animate().alpha(1.0f).setDuration(300).start();
 
-					//ObjectAnimator.ofFloat( tv_date, "rotationX", 0.0f, 90f ).setDuration( 1500 ).start();
+						//ObjectAnimator.ofFloat( tv_date, "rotationX", 0.0f, 90f ).setDuration( 1500 ).start();
 
+					} else {
+						// ObjectAnimator.ofFloat( tv_day_name, "rotationX", 0.0f, 90f ).setDuration( 1500 ).start();
+						//tv_day_name.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
+						tv_day_name.animate().alpha(0.0f).setDuration(300).start();
+						tv_date.animate().alpha(1.0f).setDuration(300).start();
+
+						// ObjectAnimator.ofFloat( tv_date, "rotationX", 270f, 360f ).setDuration( 1500 ).start();
+					}
+					isDateShowingOnClock = !isDateShowingOnClock;
+					startDateAndDayNameSwitcher();
 				}
-				else{
-					// ObjectAnimator.ofFloat( tv_day_name, "rotationX", 0.0f, 90f ).setDuration( 1500 ).start();
-					//tv_day_name.animate().rotationXBy( 90f ).setDuration( 300 ).withEndAction(new Runnable() {
-					tv_day_name.animate().alpha( 0.0f ).setDuration( 300 ).start();
-					tv_date.animate().alpha( 1.0f ).setDuration( 300 ).start();
-
-					// ObjectAnimator.ofFloat( tv_date, "rotationX", 270f, 360f ).setDuration( 1500 ).start();
-				}
-				isDateShowingOnClock = !isDateShowingOnClock;
-				startDateAndDayNameSwitcher();
-			}
-		}, Long.parseLong( configurationReader.getDateTimeFlipInterval() ) );
-
+			}, Long.parseLong(configurationReader.getDateTimeFlipInterval()));
+		}
+		catch ( NullPointerException npe ){
+			validateNonEmptinessOfConfigFile();
+		}
+		catch ( NumberFormatException nfe ){
+			validateNonEmptinessOfConfigFile();
+		}
 
 	}
 
 	public void startTetheringInfoSwitcher(){
-		Log.d( TAG, "startTetheringInfoSwitcher()" );
-		tv_tethering_password.setRotationX( 0f );
-		tv_tethering_password.setAlpha( 0.0f );
-		//tv_text.setTextSize( 18 );
+		try{
 
-		String hotspot_enabled = configurationReader.getHotspotEnabled();
-		Log.d( TAG, "Hotspot Enabled : "+hotspot_enabled );
-		if( hotspot_enabled.equals( "1" ) ) {
-			tv_ssid.setText("WiFi : " + configurationReader.getSSID());
-			tv_tethering_password.setText("Password : " + configurationReader.getHotspotPassword());
+			Log.d( TAG, "startTetheringInfoSwitcher()" );
+			tv_tethering_password.setRotationX( 0f );
+			tv_tethering_password.setAlpha( 0.0f );
+			//tv_text.setTextSize( 18 );
 
-			rl_tethering_info.setVisibility( View.VISIBLE );
+			String hotspot_enabled = configurationReader.getHotspotEnabled();
+			Log.d( TAG, "Hotspot Enabled : "+hotspot_enabled );
+			if( hotspot_enabled.equals( "1" ) ) {
+				tv_ssid.setText("WiFi : " + configurationReader.getSSID());
+				tv_tethering_password.setText("Password : " + configurationReader.getHotspotPassword());
 
-			ssid_password_flipper = new VirussTimer( Long.parseLong( configurationReader.getTetheringInfoFlipInterval() ) );
-			ssid_password_runnable = new Runnable() {
+				rl_tethering_info.setVisibility( View.VISIBLE );
 
-				@Override
-				public void run() {
+				ssid_password_flipper = new VirussTimer( Long.parseLong( configurationReader.getTetheringInfoFlipInterval() ) );
+				ssid_password_runnable = new Runnable() {
 
-					if (isSSIDShowing) {
-						tv_ssid.animate().alpha( 0.0f ).setDuration(300).withEndAction(new Runnable() {
-							//tv_ssid.animate().rotationXBy(90f).setDuration(300).withEndAction(new Runnable() {
-							@Override
-							public void run() {
-								//ObjectAnimator.ofFloat( tv_day_name, "rotationX", 270f, 360f ).setDuration( 300 ).start();
-								//tv_tethering_password.animate().rotationXBy(-90f).setDuration(300);
-								tv_tethering_password.animate().alpha( 1.0f ).setDuration( 300 );
-							}
-						}).start();
-						//ObjectAnimator.ofFloat( tv_date, "rotationX", 0.0f, 90f ).setDuration( 1500 ).start();
+					@Override
+					public void run() {
 
-					} else {
-						tv_tethering_password.animate().alpha( 0.0f ).setDuration( 300 ).withEndAction(new Runnable() {
-							//tv_tethering_password.animate().rotationXBy(90f).setDuration(300).withEndAction(new Runnable() {
-							@Override
-							public void run() {
-								// ObjectAnimator.ofFloat( tv_date, "rotationX", 270f, 360f ).setDuration( 300 ).start();
-								//tv_ssid.animate().rotationXBy(-90f).setDuration(300).start();
-								tv_ssid.animate().alpha( 1.0f ).setDuration( 300 );
-							}
-						}).start();
-						// ObjectAnimator.ofFloat( tv_day_name, "rotationX", 0.0f, 90f ).setDuration( 1500 ).start();
-						// ObjectAnimator.ofFloat( tv_date, "rotationX", 270f, 360f ).setDuration( 1500 ).start();
+						if (isSSIDShowing) {
+							tv_ssid.animate().alpha( 0.0f ).setDuration(300).withEndAction(new Runnable() {
+								//tv_ssid.animate().rotationXBy(90f).setDuration(300).withEndAction(new Runnable() {
+								@Override
+								public void run() {
+									//ObjectAnimator.ofFloat( tv_day_name, "rotationX", 270f, 360f ).setDuration( 300 ).start();
+									//tv_tethering_password.animate().rotationXBy(-90f).setDuration(300);
+									tv_tethering_password.animate().alpha( 1.0f ).setDuration( 300 );
+								}
+							}).start();
+							//ObjectAnimator.ofFloat( tv_date, "rotationX", 0.0f, 90f ).setDuration( 1500 ).start();
+
+						} else {
+							tv_tethering_password.animate().alpha( 0.0f ).setDuration( 300 ).withEndAction(new Runnable() {
+								//tv_tethering_password.animate().rotationXBy(90f).setDuration(300).withEndAction(new Runnable() {
+								@Override
+								public void run() {
+									// ObjectAnimator.ofFloat( tv_date, "rotationX", 270f, 360f ).setDuration( 300 ).start();
+									//tv_ssid.animate().rotationXBy(-90f).setDuration(300).start();
+									tv_ssid.animate().alpha( 1.0f ).setDuration( 300 );
+								}
+							}).start();
+							// ObjectAnimator.ofFloat( tv_day_name, "rotationX", 0.0f, 90f ).setDuration( 1500 ).start();
+							// ObjectAnimator.ofFloat( tv_date, "rotationX", 270f, 360f ).setDuration( 1500 ).start();
+						}
+
+						isSSIDShowing = !isSSIDShowing;
+						ssid_password_flipper.start(ssid_password_runnable);
+
 					}
 
-					isSSIDShowing = !isSSIDShowing;
-					ssid_password_flipper.start(ssid_password_runnable);
-
-				}
-
-			};
-			ssid_password_flipper.start( ssid_password_runnable );
+				};
+				ssid_password_flipper.start( ssid_password_runnable );
+			}
+			else{
+				rl_tethering_info.setVisibility( View.INVISIBLE );
+			}
 		}
-		else{
-			rl_tethering_info.setVisibility( View.INVISIBLE );
+		catch ( NullPointerException npe ){
+			validateNonEmptinessOfConfigFile();
 		}
-
+		catch ( NumberFormatException nfe ){
+			validateNonEmptinessOfConfigFile();
+		}
 
 	}
 
@@ -1884,7 +1943,8 @@ public class MainActivity extends Activity {
 
 	public void restoreTvChannels(){
 		if( ! isTvChannelRestored() ){
-		    UtilShell.executeShellCommandWithOp( "monkey -p com.excel.datagrammonitor.secondgen -c android.intent.category.LAUNCHER 1" );
+		    //UtilShell.executeShellCommandWithOp( "monkey -p com.excel.datagrammonitor.secondgen -c android.intent.category.LAUNCHER 1" );
+		    UtilShell.executeShellCommandWithOp( "monkey -p com.excel.deviceinitpatch -c android.intent.category.LAUNCHER 1" );
 			unzipTvChannelsZip();
 			restoreYoutubeSettings();
 			setTvChannelRestored( true );
