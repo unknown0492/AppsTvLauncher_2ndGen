@@ -25,7 +25,7 @@ android {
         minSdkVersion 19
         targetSdkVersion 27
         versionCode 1
-        versionName "1.0.6h"
+        versionName "1.0.8"
         project.ext.set("archivesBaseName", "0-AppsTvLauncher_2ndGen_v" + defaultConfig.versionName);
         signingConfig signingConfigs.release
     }

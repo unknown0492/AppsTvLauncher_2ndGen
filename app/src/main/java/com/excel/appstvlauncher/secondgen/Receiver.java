@@ -22,6 +22,9 @@ public class Receiver extends BroadcastReceiver {
         if( action.equals( "receive_update_launcher_config" ) ){
             LocalBroadcastManager.getInstance( context ).sendBroadcast( new Intent( "update_launcher_config" ) );
         }
+        if( action.equals( "receive_outside_update_launcher_config" ) ){ // To update time/day for language change from outside of launcher
+            LocalBroadcastManager.getInstance( context ).sendBroadcast( new Intent( "update_time_on_clock" ) );
+        }
         else if( action.equals( "receive_update_hotspot_info" ) ){
             LocalBroadcastManager.getInstance( context ).sendBroadcast( new Intent( "update_hotspot_info" ) );
         }

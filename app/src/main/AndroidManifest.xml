@@ -43,6 +43,7 @@
                 <action android:name="receive_update_launcher_config" />
                 <action android:name="receive_get_hotel_logo" />
                 <action android:name="receive_update_hotspot_info" />
+                <action android:name="receive_outside_update_launcher_config" />
             </intent-filter>
         </receiver>
 
