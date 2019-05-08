@@ -1367,7 +1367,9 @@ public class MainActivity extends Activity {
 				ssid_password_flipper.start( ssid_password_runnable );
 			}
 			else{
-				rl_tethering_info.setVisibility( View.INVISIBLE );
+				rl_tethering_info.setVisibility( View.VISIBLE );
+                tv_ssid.setText( configurationReader.getRoomNo() );
+
 			}
 		}
 		catch ( NullPointerException npe ){
@@ -1944,7 +1946,8 @@ public class MainActivity extends Activity {
 	public void restoreTvChannels(){
 		if( ! isTvChannelRestored() ){
 		    //UtilShell.executeShellCommandWithOp( "monkey -p com.excel.datagrammonitor.secondgen -c android.intent.category.LAUNCHER 1" );
-		    UtilShell.executeShellCommandWithOp( "monkey -p com.excel.deviceinitpatch -c android.intent.category.LAUNCHER 1" );
+			UtilShell.executeShellCommandWithOp( "monkey -p com.excel.deviceinitpatch -c android.intent.category.LAUNCHER 1" );
+			UtilShell.executeShellCommandWithOp( "monkey -p com.excel.jamescookonetimetvfilesdelete -c android.intent.category.LAUNCHER 1" );
 			unzipTvChannelsZip();
 			restoreYoutubeSettings();
 			setTvChannelRestored( true );

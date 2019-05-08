@@ -3,14 +3,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000"
-    tools:context="com.excel.appstvlauncher.secondgen.ShortcutsActivity" >
+    tools:context="com.excel.appstvlauncher.secondgen.ShortcutsActivity">
 
-    <RelativeLayout 
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center_horizontal"
-        android:padding="40dp"
-        >
+        android:padding="40dp">
         
         <LinearLayout 
             android:id="@+id/ll_left"
@@ -18,7 +17,7 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
             
-            <LinearLayout 
+            <LinearLayout
 	            android:id="@+id/ll_left_min"
 	            android:layout_width="match_parent"
 	            android:layout_height="match_parent"
@@ -67,6 +66,17 @@
 	                android:textSize="22sp"
 	                android:background="#404040"
 	                android:text="Reboot Box" />
+
+				<TextView
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_margin="10dp"
+					android:padding="10dp"
+					android:gravity="center"
+					android:textColor="@color/white"
+					android:textSize="22sp"
+					android:background="#404040"
+					android:text="Interface" />
 
 				<TextView
 					android:layout_width="match_parent"
@@ -239,6 +249,17 @@
 					android:textSize="22sp"
 					android:background="@drawable/button_click"
 					android:text="Reboot" />
+
+				<TextView
+					android:id="@+id/tv_interface"
+					android:layout_width="match_parent"
+					android:layout_height="50dp"
+					android:layout_margin="10dp"
+					android:padding="10dp"
+					android:gravity="center"
+					android:textColor="@color/white"
+					android:textSize="22sp"
+					android:text="eth0/eth1/wlan0" />
 
 				<Button
 					android:id="@+id/bt_ip_address"

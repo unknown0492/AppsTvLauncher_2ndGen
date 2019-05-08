@@ -46,8 +46,8 @@ public class ClockActivity extends Activity {
     }
     
     private void init(){
-    	ActionBar ab = getActionBar();
-    	ab.hide();
+    //	ActionBar ab = getActionBar();
+    	//ab.hide();
     	
     	clock_container = (GridView) findViewById( R.id.clock_container );
     	

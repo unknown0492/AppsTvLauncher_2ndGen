@@ -29,13 +29,13 @@ import org.json.JSONObject;
 
 public class ShortcutsActivity extends Activity {
 	
-	TextView tv_mac_address, tv_firmware_version, tv_cms_ip;
+	TextView tv_mac_address, tv_firmware_version, tv_cms_ip, tv_interface;
 	Button  bt_reboot, bt_root_browser, bt_mbox, bt_settings,
 			bt_terminal, bt_tv_channels_backup, bt_reboot_recovery, bt_ip_address,
 			bt_run_ots;
 	Button bt_room_no;
 	Context context = this;
-	final static String TAG = "MinimumShortcutsActivity";
+	final static String TAG = "MinShortcutsActivity";
 	ConfigurationReader configurationReader;
 	ConfigurationWriter configurationWriter;
 	LinearLayout ll_left_remaining, ll_right_remaining;
@@ -81,6 +81,9 @@ public class ShortcutsActivity extends Activity {
 		// Reboot Box
 		rebootBoxButtonClick();
 
+		// set Interface
+		setInterface();
+
 		try {
 			// show IP Address
 			ipAddressRetrieve();
@@ -125,6 +128,7 @@ public class ShortcutsActivity extends Activity {
 		tv_firmware_version = (TextView) findViewById( R.id.tv_firmware_version );
 		tv_mac_address = (TextView) findViewById( R.id.tv_mac_address );
 		tv_cms_ip = (TextView) findViewById( R.id.tv_cms_ip );
+		tv_interface = (TextView) findViewById( R.id.tv_interface );
 		bt_room_no = (Button) findViewById( R.id.bt_room_no );
 		bt_reboot = (Button) findViewById( R.id.bt_reboot_box );
 		configurationReader = ConfigurationReader.reInstantiate();
@@ -293,6 +297,17 @@ public class ShortcutsActivity extends Activity {
 				UtilShell.executeShellCommandWithOp( "reboot" );
 			}
 		});
+	}
+
+	public void setInterface(){
+		try {
+			String interfaceName = UtilNetwork.getActiveInterfaceShortName( context );
+			Log.d( TAG, "interfaceName" );
+		    tv_interface.setText( interfaceName );
+		}
+		catch ( Exception e ){
+			e.printStackTrace();
+		}
 	}
 
 	public void ipAddressRetrieve(){
