@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <com.excel.appstvlauncher.secondgen.AnimatedGifImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/loading"
+        android:layout_centerInParent="true" />
+
+
+    <!-- WebView for Welcome Screen -->
+    <RelativeLayout
+        android:id="@+id/rl_webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <WebView
+            android:id="@+id/wv_welcome_screen"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+
+    </RelativeLayout>
+    <!--/ WebView for Welcome Screen -->
+
+
+    <!-- Video Screen -->
+    <RelativeLayout
+        android:id="@+id/rl_video_screen"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <VideoView
+            android:id="@+id/vv_video_bg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <RelativeLayout
+            android:layout_width="600dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="500dp"
+            android:paddingLeft="60dp"
+            android:paddingRight="60dp"
+            android:background="@drawable/transparent_op80">
+
+            <android.support.v7.widget.AppCompatImageView
+                android:id="@+id/iv_hotel_logo_vs"
+                android:layout_width="wrap_content"
+                android:layout_above="@+id/tv_native_welcome_text_vs"
+                android:layout_height="150dp"
+                android:layout_marginBottom="20dp" />
+
+            <TextView
+                android:id="@+id/tv_native_welcome_text_vs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#ffffff"
+                android:textSize="20sp"
+                android:layout_centerInParent="true"
+                android:layout_marginBottom="30dp"
+                android:text=""/>
+
+            <Button
+                android:id="@+id/bt_native_language_vs_en"
+                android:layout_width="150dp"
+                android:layout_height="35dp"
+                android:layout_below="@+id/tv_native_welcome_text_vs"
+                android:background="@drawable/native_welcome_language_buttons_bg"
+                android:clickable="true"
+                android:text="English">
+                <requestFocus />
+            </Button>
+
+            <Button
+                android:id="@+id/bt_native_language_vs_zh"
+                android:layout_width="150dp"
+                android:layout_height="35dp"
+                android:background="@drawable/native_welcome_language_buttons_bg"
+                android:layout_below="@+id/tv_native_welcome_text_vs"
+                android:layout_toRightOf="@+id/bt_native_language_vs_en"
+                android:layout_marginLeft="20dp"
+                android:clickable="true"
+                android:text="中文">
+            </Button>
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+    <!--/ Video Screen -->
+
+
+    <!-- Native Screen -->
+    <RelativeLayout
+        android:id="@+id/rl_native_welcome"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <android.support.v7.widget.AppCompatImageView
+            android:id="@+id/iv_native_bg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <RelativeLayout
+            android:layout_width="420dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="30dp"
+            android:paddingLeft="50dp"
+            android:paddingRight="50dp"
+            android:background="@drawable/transparent_op45">
+
+            <android.support.v7.widget.AppCompatImageView
+                android:id="@+id/iv_hotel_logo"
+                android:layout_width="wrap_content"
+                android:layout_height="150dp"
+                android:visibility="gone"
+                android:layout_marginBottom="20dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="225dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_native_welcome_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="275dp"
+                    android:textColor="#ffffff"
+                    android:textSize="26sp"
+                    android:lineHeight="22sp"
+                    android:text="" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_gravity="center_horizontal"
+                    android:gravity="center_horizontal"
+                    android:layout_marginTop="0dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/bt_native_language_en"
+                        android:layout_width="110dp"
+                        android:layout_height="25dp"
+                        android:background="@drawable/native_welcome_language_buttons_bg"
+                        android:clickable="true"
+                        android:text="English">
+                    </Button>
+
+                    <Button
+                        android:id="@+id/bt_native_language_zh"
+                        android:layout_width="110dp"
+                        android:layout_height="25dp"
+                        android:background="@drawable/native_welcome_language_buttons_bg"
+                        android:layout_marginLeft="10dp"
+                        android:clickable="true"
+                        android:text="中文">
+                    </Button>
+
+                    <Button
+                        android:id="@+id/bt_native_language_ja"
+                        android:layout_width="110dp"
+                        android:layout_height="25dp"
+                        android:background="@drawable/native_welcome_language_buttons_bg"
+                        android:layout_marginLeft="10dp"
+                        android:clickable="true"
+                        android:visibility="gone"
+                        android:text="日本語">
+                    </Button>
+
+                </LinearLayout>
+
+
+
+            </LinearLayout>
+
+
+
+
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+    <!--/ Native Screen -->
+
+
+    <!-- Custom Screen -->
+    <RelativeLayout
+        android:id="@+id/rl_custom_welcome"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+
+
+    </RelativeLayout>
+    <!--/ Custom Screen -->
+
+</RelativeLayout>

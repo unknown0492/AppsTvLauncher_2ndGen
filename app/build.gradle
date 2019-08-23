@@ -27,7 +27,7 @@ android {
         minSdkVersion 17
         targetSdkVersion 28
         versionCode 1
-        versionName "3.0.0"
+        versionName "h81_3.0.0"
         project.ext.set("archivesBaseName", "0-AppsTvLauncher_2ndGen_v" + defaultConfig.versionName);
         signingConfig signingConfigs.release
     }
@@ -43,6 +43,8 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation project(':ExcelClassLibrary')
     testImplementation 'junit:junit:4.12'
+    implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation files('libs/YouTubeAndroidPlayerApi.jar')
 }
 
 repositories {

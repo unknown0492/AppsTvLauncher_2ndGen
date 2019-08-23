@@ -370,8 +370,51 @@
         </RelativeLayout>
 
 
+        <!-- For Hotel 81 WiFi info on top right corner -->
+        <LinearLayout
+            android:id="@+id/ll_h81wifi"
+            android:layout_width="275dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/transparent_op30"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:paddingTop="10dp"
+            android:paddingLeft="40dp"
+            android:paddingBottom="10dp"
+            android:visibility="gone"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_h81ssid"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="WiFi"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:textSize="19sp" />
+
+            <TextView
+                android:id="@+id/tv_h81password"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PASSWORD"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:textSize="19sp" />
+
+        </LinearLayout>
+        <!--/ For Hotel 81 WiFi info on top right corner -->
 
 
     </RelativeLayout>
 
+
+    <RelativeLayout
+        android:id="@+id/welcome_screen"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:focusable="true">
+
+    </RelativeLayout>
 </RelativeLayout>
