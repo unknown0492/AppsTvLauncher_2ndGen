@@ -12,7 +12,7 @@ public class Constants {
     // Read the following values from the file configuration.txt , this is only for test purposes
     public final static int DIGITAL_SIGNAGE_SWITCH_INTERVAL_MILLIS = 10000;
 
-
+	public static final String WELCOME_SCREEN_SHOWN = "welcome_screen_shown";
 
     
 }

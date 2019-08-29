@@ -41,6 +41,7 @@ import com.excel.flipper.Flipper;
 import com.excel.imagemanipulator.DigitalSignage;
 import com.excel.imagemanipulator.DigitalSignageHolder;
 import com.excel.perfecttime.PerfectTimeService;
+import com.excel.welcome.WelcomeScreenProducer;
 import com.excel.yahooweather.Weather;
 
 import org.json.JSONArray;
@@ -57,6 +58,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Stack;
 
+import static com.excel.appstvlauncher.secondgen.Constants.WELCOME_SCREEN_SHOWN;
 import static com.excel.configuration.Constants.PATH_LAUNCHER_CONFIG_FILE;
 import static com.excel.configuration.Constants.PATH_LAUNCHER_CONFIG_FILE_SYSTEM;
 
@@ -86,7 +88,7 @@ public class MainActivity extends Activity {
 
 	long current_timestamp;
 
-	RelativeLayout rl_elements, rl_launcher_bg, rl_tethering_info;
+	RelativeLayout rl_elements, rl_launcher_bg, rl_tethering_info, welcome_screen;
 
 	boolean areLauncherElementsHidden = false;
 
@@ -211,6 +213,8 @@ public class MainActivity extends Activity {
 		checkIfHotelLogoToBeDisplayed();
 		restoreTvChannels();
 		startScreenCastService();
+
+		registerLocalWelcomeScreenBroadcast();
 
 		//ds.resumeDigitalSignageSwitcher();
         /*startTetheringInfoSwitcher();
@@ -859,6 +863,24 @@ public class MainActivity extends Activity {
 		//if( ( i == 19 ) || ( i == 20 ) || ( i == 21 ) || ( i == 22 ) )
 		//return true;
 
+		// Short-Cut key toggling
+		shortCutKeyMonitor( key_name );
+
+		// If the Welcome Screen is not finished, do not let any keys pass except the OK button which is supposed to close the welcome screen
+		if( !isWelcomeScreenShown() ){
+			if( ( i == KeyEvent.KEYCODE_DPAD_CENTER ) ||
+					( i == 23 ) ||
+					( i == 66 ) ){
+				// close the welcome screen here
+				welcome_screen.setVisibility( View.GONE );
+				welcome_screen.removeAllViews();
+				ll_main_menu_items.getChildAt( 0 ).requestFocus();
+				UtilShell.executeShellCommandWithOp( "setprop " + WELCOME_SCREEN_SHOWN + " 1" );
+			}
+			return true;
+		}
+		Log.i( TAG, "Reached here" );
+
 		// Handle the Overflow left and right key movements for MAIN menu
 		//if( handleMainMenuOverflow( i, keyevent ) ) return true;
 
@@ -880,7 +902,7 @@ public class MainActivity extends Activity {
 		if( handleMainMenuToSubMenuFocus( i, keyevent ) ) return true;
 
 		// Short-Cut key toggling
-		shortCutKeyMonitor( key_name );
+		//shortCutKeyMonitor( key_name );
 
 		if (i != 4) {
 			return super.onKeyDown(i, keyevent);
@@ -1018,6 +1040,8 @@ public class MainActivity extends Activity {
 		this.rl_tethering_info = (RelativeLayout) findViewById(R.id.rl_tethering_info);
 		this.rl_hotel_logo = (LinearLayout) findViewById(R.id.rl_hotel_logo);
 		this.ds = new DigitalSignage(context, this.rl_launcher_bg);
+
+		this.welcome_screen = (RelativeLayout) findViewById( R.id.welcome_screen );
 	}
 
 	public boolean handleMainMenuOverflow( int i, KeyEvent keyevent ){
@@ -1871,6 +1895,70 @@ public class MainActivity extends Activity {
 				"rm -r /mnt/sdcard/Android/data/com.google.android.youtube.tv" );
 
 	}
+
+
+
+	/* Welcome screen combined inside Launcher related functions - BEGINS */
+	private void registerLocalWelcomeScreenBroadcast(){
+		LocalBroadcastManager.getInstance( context ).registerReceiver(new BroadcastReceiver() {
+			@Override
+			public void onReceive( Context context, Intent intent ) {
+				configurationReader = ConfigurationReader.reInstantiate();
+				Log.d( TAG, "Welcome screen broadcast triggered on the Launcher,"+configurationReader.getIsOtsCompleted()+"," );
+
+				if( configurationReader.getIsOtsCompleted().equals( "0" ) ){		// Do not trigger welcome screen if ots is not completed
+					Log.e( TAG, "OTS not completed, so welcome screen will not trigger !" );
+				}
+				else if( !isWelcomeScreenShown() ){
+					if( configurationReader.getIsWelcomeScreenEnabled() ){
+						showLauncherWelcomeScreen();
+					}
+					else{
+						Log.e( TAG, "Welcome screen has been disabled on the CMS !" );
+					}
+				}
+				else{
+					Log.e( TAG, "Welcome screen already shown and exited by the Guest !" );
+				}
+			}
+		}, new IntentFilter( "trigger_welcome_screen" ));
+	}
+
+	public boolean isWelcomeScreenShown(){
+		String is_shown = UtilShell.executeShellCommandWithOp( "getprop " + WELCOME_SCREEN_SHOWN );
+		is_shown = is_shown.trim();
+		return (is_shown.equals( "1" ))?true:false;
+	}
+
+	public void showLauncherWelcomeScreen(){
+		WelcomeScreenProducer welcomeScreenProducer = new WelcomeScreenProducer();
+		View welcomeScreen = welcomeScreenProducer.produce( context );
+		welcome_screen.addView( welcomeScreen );
+		//welcome_screen.setFocusable( true );
+		//welcome_screen.requestFocus();
+		welcome_screen.setVisibility( View.VISIBLE );
+					/*welcome_screen.setOnKeyListener(new View.OnKeyListener() {
+						@Override
+						public boolean onKey(View v, int keyCode, KeyEvent event) {
+							Log.d( TAG, "WelcomeScreen is catching the keys !" );
+							if( ( keyCode == 23 ) ||
+									(keyCode == 66 ) ){ // For OK Button
+								welcome_screen.setVisibility( View.GONE );
+								welcome_screen.setFocusable( false );
+								welcome_screen.removeAllViews();
+								//return true;
+							}
+							return false;
+						}
+					});*/
+		//rl_elements.setFocusable( false );
+		//rl_elements.setVisibility( View.GONE );
+		//rl_elements.setEnabled( false );
+
+	}
+	/* Welcome screen combined inside Launcher related functions - ENDS */
+
+
 
 
     /* TV Channels restore related functions BEGINS */

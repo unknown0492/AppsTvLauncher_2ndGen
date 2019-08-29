@@ -35,7 +35,10 @@ public class Receiver extends BroadcastReceiver {
             Intent in = new Intent( "update_hotel_logo_availability" );
             in.putExtra( "hasHotelLogoDisplay", intent.getBooleanExtra( "hasHotelLogoDisplay", false ) );
             LocalBroadcastManager.getInstance( context ).sendBroadcast( in ); // Catch this Local Broadcast inside the AppsTvLauncher
-
+        }
+        else if( action.equals( "android.net.conn.CONNECTIVITY_CHANGE" ) || action.equals( "connectivity_change" ) ){
+            // Trigger Welcome Screen
+            LocalBroadcastManager.getInstance( context ).sendBroadcast( new Intent( "trigger_welcome_screen" ) );
         }
     }
 }
