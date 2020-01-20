@@ -3,16 +3,19 @@ package com.excel.appstvlauncher.secondgen;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
-import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.animation.LinearInterpolator;
 import android.widget.Scroller;
 
+import androidx.appcompat.widget.AppCompatTextView;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
+import static android.view.View.INVISIBLE;
 
 
-public class ScrollTextView extends android.support.v7.widget.AppCompatTextView {
+public class ScrollTextView extends AppCompatTextView {
 
 	// scrolling feature
 	private Scroller mSlr;

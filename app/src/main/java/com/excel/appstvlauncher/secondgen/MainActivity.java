@@ -14,9 +14,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -30,7 +31,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.excel.configuration.ConfigurationReader;
-import com.excel.configuration.ConfigurationWriter;
 import com.excel.configuration.LauncherJSONReader;
 import com.excel.customitems.CustomItems;
 import com.excel.excelclasslibrary.UtilFile;

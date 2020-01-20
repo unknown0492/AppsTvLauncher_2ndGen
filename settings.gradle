@@ -1,2 +1,2 @@
 include ':app', ':ExcelClassLibrary'
-project (':ExcelClassLibrary').projectDir = new File('G:\\Workspaces\\android_studio\\ExcelClassLibrary\\app')
+project (':ExcelClassLibrary').projectDir = new File('E:\\Workspaces\\android\\excel\\appstv\\ExcelClassLibrary\\app')
