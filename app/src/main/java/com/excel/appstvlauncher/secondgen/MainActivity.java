@@ -14,9 +14,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -28,6 +25,10 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.excel.configuration.ConfigurationReader;
 import com.excel.configuration.ConfigurationWriter;
@@ -867,7 +868,7 @@ public class MainActivity extends Activity {
 		shortCutKeyMonitor( key_name );
 
 		// If the Welcome Screen is not finished, do not let any keys pass except the OK button which is supposed to close the welcome screen
-		if( !isWelcomeScreenShown() ){
+		if( !isWelcomeScreenShown() && configurationReader.getIsOtsCompleted().equals( "1" ) ){
 			if( ( i == KeyEvent.KEYCODE_DPAD_CENTER ) ||
 					( i == 23 ) ||
 					( i == 66 ) ){
@@ -1343,10 +1344,12 @@ public class MainActivity extends Activity {
 			//tv_text.setTextSize( 18 );
 
 			String hotspot_enabled = configurationReader.getHotspotEnabled();
+			String chromecast_mode = configurationReader.getChromecastModeOn();
 			Log.d( TAG, "Hotspot Enabled : "+hotspot_enabled );
-			if( hotspot_enabled.equals( "1" ) ) {
-				tv_ssid.setText("WiFi : " + configurationReader.getSSID());
-				tv_tethering_password.setText("Password : " + configurationReader.getHotspotPassword());
+			if( hotspot_enabled.equals( "1" ) && chromecast_mode.equals( "0" ) )
+			{
+				tv_ssid.setText( "WiFi : " + configurationReader.getSSID() );
+				tv_tethering_password.setText( "Password : " + configurationReader.getHotspotPassword() );
 
 				rl_tethering_info.setVisibility( View.VISIBLE );
 
@@ -1914,10 +1917,12 @@ public class MainActivity extends Activity {
 						showLauncherWelcomeScreen();
 					}
 					else{
+						UtilShell.executeShellCommandWithOp( "setprop " + WELCOME_SCREEN_SHOWN + " 1" );
 						Log.e( TAG, "Welcome screen has been disabled on the CMS !" );
 					}
 				}
 				else{
+					UtilShell.executeShellCommandWithOp( "setprop " + WELCOME_SCREEN_SHOWN + " 1" );
 					Log.e( TAG, "Welcome screen already shown and exited by the Guest !" );
 				}
 			}
