@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
@@ -89,6 +90,17 @@
         <activity
             android:name=".WorldClockWeb"
             android:theme="@style/Theme.AppCompat.Translucent" />
+
+        <receiver
+            android:name="com.excel.receivers.ConnectivityReceiver"
+            android:enabled="true"
+            android:exported="true"></receiver>
+
+        <!-- Define your service, make sure to add the permision! -->
+        <service
+            android:name="com.excel.services.NetworkSchedulerService"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE"/>
     </application>
 
 </manifest>

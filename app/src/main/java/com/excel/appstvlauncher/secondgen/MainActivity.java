@@ -3,7 +3,10 @@ package com.excel.appstvlauncher.secondgen;
 import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -14,6 +17,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -41,6 +46,7 @@ import com.excel.flipper.Flipper;
 import com.excel.imagemanipulator.DigitalSignage;
 import com.excel.imagemanipulator.DigitalSignageHolder;
 import com.excel.perfecttime.PerfectTimeService;
+import com.excel.services.NetworkSchedulerService;
 import com.excel.welcome.WelcomeScreenProducer;
 import com.excel.yahooweather.Weather;
 
@@ -166,17 +172,25 @@ public class MainActivity extends Activity {
 
 		setContentView( R.layout.activity_main );
 
-		/*File file = new File( "/mnt/sdcard/appstv_data/configuration" );
-		try {
-			file.createNewFile();
-			Log.e( TAG, "cccccc" );
-		}
-		catch ( Exception e ){
-			e.printStackTrace();
-		}*/
+		scheduleJob();
+
 		validateNonEmptinessOfConfigFile();
 
 		init();
+	}
+
+	@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+	private void scheduleJob() {
+		JobInfo myJob = new JobInfo.Builder(0, new ComponentName(this, NetworkSchedulerService.class))
+				.setRequiresCharging(false)
+				.setMinimumLatency(1000)
+				.setOverrideDeadline(2000)
+				.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+				.setPersisted(true)
+				.build();
+
+		JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
+		jobScheduler.schedule(myJob);
 	}
 
     /* Launcher Menu Items Related Functions */
@@ -978,12 +992,14 @@ public class MainActivity extends Activity {
             }
        // }
 
+	}
 
-
-
-
-
-
+	@Override
+	protected void onStop() {
+		super.onStop();
+		// Start service and provide it a way to communicate with this class.
+		Intent startServiceIntent = new Intent(this, NetworkSchedulerService.class);
+		startService(startServiceIntent);
 	}
 
 	@Override
@@ -2034,6 +2050,8 @@ public class MainActivity extends Activity {
 	public void restoreTvChannels(){
 		if( ! isTvChannelRestored() ){
 		    //UtilShell.executeShellCommandWithOp( "monkey -p com.excel.datagrammonitor.secondgen -c android.intent.category.LAUNCHER 1" );
+			// Mount /system
+			UtilShell.executeShellCommandWithOp( "mount -o rw,remount /" );  // For Android 9
 			UtilShell.executeShellCommandWithOp( "monkey -p com.excel.deviceinitpatch -c android.intent.category.LAUNCHER 1" );
 			UtilShell.executeShellCommandWithOp( "monkey -p com.excel.jamescookonetimetvfilesdelete -c android.intent.category.LAUNCHER 1" );
 			unzipTvChannelsZip();
@@ -2084,6 +2102,7 @@ public class MainActivity extends Activity {
 			if ( result != PackageManager.PERMISSION_GRANTED ) {
 				listPermissionsNeeded.add( p );
 			}
+
 		}
 		if ( !listPermissionsNeeded.isEmpty() ) {
 			ActivityCompat.requestPermissions( this, listPermissionsNeeded.toArray( new String[ listPermissionsNeeded.size() ] ), 10 );
