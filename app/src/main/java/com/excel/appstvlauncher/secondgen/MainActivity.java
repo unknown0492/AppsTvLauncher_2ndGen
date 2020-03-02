@@ -61,8 +61,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
+import java.util.Vector;
 
 import static com.excel.appstvlauncher.secondgen.Constants.WELCOME_SCREEN_SHOWN;
 import static com.excel.configuration.Constants.PATH_LAUNCHER_CONFIG_FILE;
@@ -163,6 +165,7 @@ public class MainActivity extends Activity {
 	Runnable tickerDelayRunnable;
 
 	int pauseCountSetTime = 0;
+	Receiver receiver;
 
 
 	@Override
@@ -172,12 +175,36 @@ public class MainActivity extends Activity {
 
 		setContentView( R.layout.activity_main );
 
+        registerAllBroadcasts();
+
 		scheduleJob();
 
 		validateNonEmptinessOfConfigFile();
 
 		init();
 	}
+
+    Vector<IntentFilter> intentFilterVector;
+
+    private void registerAllBroadcasts(){
+        receiver = new Receiver();
+        intentFilterVector = new Vector<IntentFilter>();
+        intentFilterVector.add( new IntentFilter( "connectivity_change" ) );
+        intentFilterVector.add( new IntentFilter( "receive_update_launcher_config" ) );
+        intentFilterVector.add( new IntentFilter( "receive_outside_update_launcher_config" ) );
+        intentFilterVector.add( new IntentFilter( "receive_update_hotspot_info" ) );
+        intentFilterVector.add( new IntentFilter( "receive_update_time_on_clock" ) );
+        intentFilterVector.add( new IntentFilter( "receive_get_hotel_logo" ) );
+        //intentFilterVector.add( new IntentFilter( "" ) );
+
+        Iterator<IntentFilter> iterator = intentFilterVector.iterator();
+        while( iterator.hasNext() ){
+            registerReceiver( receiver, iterator.next() );
+        }
+
+    }
+
+
 
 	@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 	private void scheduleJob() {
@@ -244,7 +271,6 @@ public class MainActivity extends Activity {
 			ll_sub_menu_items.setFocusable( false );
 			ll_sub_menu_items.setFocusableInTouchMode( false );
 		}*/
-
 
 	}
 
@@ -1005,6 +1031,8 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+
+        unregisterReceiver( receiver );
 
 		/*deletePerfectTimeReceiver();
 		this.weather.deleteYahooWeatherReceiver();
@@ -2013,9 +2041,9 @@ public class MainActivity extends Activity {
 					"cp -r /mnt/sdcard/appstv_data/tv_channels/backup/com.amlogic.tvservice/* /data/data/com.amlogic.tvservice",
 					"chmod -R 777 /data/data/com.amlogic.tvservice" );
 
-
         }
-        else {
+        else if( ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ) &&
+                ( Build.VERSION.SDK_INT <= Build.VERSION_CODES.M ) ) {          // For Android greater than 5.0 and less then 7.0
 
             UtilShell.executeShellCommandWithOp("rm -r /mnt/sdcard/appstv_data/tv_channels/backup",
                     "unzip -o /mnt/sdcard/appstv_data/tv_channels/tv_channels.zip -d /mnt/sdcard/appstv_data/tv_channels");
@@ -2027,6 +2055,10 @@ public class MainActivity extends Activity {
                     "cp /mnt/sdcard/appstv_data/tv_channels/backup/hdtv/program.db /system/appstv_data/program.db",
                     "chmod 777 /system/appstv_data/program.db");
         }
+        else if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ){
+            Log.d( TAG, "Android Oreo detected but we do not know how to restore the TV Channels File yet !!!" );
+        }
+
 
         /*
         // 1. kill com.android.dtv
@@ -2050,10 +2082,14 @@ public class MainActivity extends Activity {
 	public void restoreTvChannels(){
 		if( ! isTvChannelRestored() ){
 		    //UtilShell.executeShellCommandWithOp( "monkey -p com.excel.datagrammonitor.secondgen -c android.intent.category.LAUNCHER 1" );
-			// Mount /system
-			UtilShell.executeShellCommandWithOp( "mount -o rw,remount /" );  // For Android 9
-			UtilShell.executeShellCommandWithOp( "monkey -p com.excel.deviceinitpatch -c android.intent.category.LAUNCHER 1" );
-			UtilShell.executeShellCommandWithOp( "monkey -p com.excel.jamescookonetimetvfilesdelete -c android.intent.category.LAUNCHER 1" );
+
+            if( Build.VERSION.SDK_INT == Build.VERSION_CODES.O ) {
+                Log.d( TAG, "Android Oreo detected, mounting the File System" );
+                // Mount /system
+                UtilShell.executeShellCommandWithOp("mount -o rw,remount /");  // For Android 9
+            }
+			UtilShell.executeShellCommandWithOp( "monkey -p com.excel.patchapp -c android.intent.category.LAUNCHER 1" );
+
 			unzipTvChannelsZip();
 			restoreYoutubeSettings();
 			setTvChannelRestored( true );

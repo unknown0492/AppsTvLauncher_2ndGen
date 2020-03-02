@@ -13,7 +13,8 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true">
 
         <!--<activity android:name="com.excel.appstvlauncher.HomeScreen"></activity>-->
 
@@ -58,11 +59,7 @@
 
         <receiver android:name=".Receiver">
             <intent-filter>
-                <action android:name="receive_update_launcher_config" />
-                <action android:name="receive_get_hotel_logo" />
-                <action android:name="receive_update_hotspot_info" />
-                <action android:name="receive_outside_update_launcher_config" />
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+
                 <action android:name="connectivity_change" />
             </intent-filter>
         </receiver>
