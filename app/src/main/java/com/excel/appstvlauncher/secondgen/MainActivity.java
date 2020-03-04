@@ -10,6 +10,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.os.AsyncTask;
@@ -41,6 +42,7 @@ import com.excel.customitems.CustomItems;
 import com.excel.excelclasslibrary.UtilFile;
 import com.excel.excelclasslibrary.UtilMisc;
 import com.excel.excelclasslibrary.UtilNetwork;
+import com.excel.excelclasslibrary.UtilSharedPreferences;
 import com.excel.excelclasslibrary.UtilShell;
 import com.excel.flipper.Flipper;
 import com.excel.imagemanipulator.DigitalSignage;
@@ -167,11 +169,28 @@ public class MainActivity extends Activity {
 	int pauseCountSetTime = 0;
 	Receiver receiver;
 
+	SharedPreferences spfs;
 
 	@Override
 	protected void onCreate( Bundle savedInstanceState )  {
 		super.onCreate( savedInstanceState );
 		hideActionBar();
+
+		spfs = (SharedPreferences) UtilSharedPreferences.createSharedPreference( this, Constants.PERMISSION_SPFS );
+        /*if (Build.VERSION.SDK_INT >= 23 ) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("package:");
+            sb.append(getPackageName());
+            startActivityForResult(new Intent("android.settings.action.MANAGE_WRITE_SETTINGS"), 1 );
+        }*/
+		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
+			if ( checkPermissions() ) {
+				// permissions  granted.
+				UtilSharedPreferences.editSharedPreference( spfs, Constants.IS_PERMISSION_GRANTED, Constants.PERMISSION_GRANTED_YES );
+				//finish();
+			}
+		}
+
 
 		setContentView( R.layout.activity_main );
 
@@ -183,6 +202,30 @@ public class MainActivity extends Activity {
 
 		init();
 	}
+
+	@Override
+	public void onRequestPermissionsResult( int requestCode, String permissions[], int[] grantResults ) {
+		switch ( requestCode ) {
+			case 10:
+			{
+				if( grantResults.length > 0 && grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED ){
+					// permissions granted.
+					Log.d( TAG, grantResults.length + " Permissions granted : " );
+					UtilSharedPreferences.editSharedPreference( spfs, Constants.IS_PERMISSION_GRANTED, Constants.PERMISSION_GRANTED_YES );
+				} else {
+					String permission = "";
+					for ( String per : permissions ) {
+						permission += "\n" + per;
+					}
+					// permissions list of don't granted permission
+					Log.d( TAG, "Permissions not granted : "+permission );
+					UtilSharedPreferences.editSharedPreference( spfs, Constants.IS_PERMISSION_GRANTED, Constants.PERMISSION_GRANTED_NO );
+				}
+				return;
+			}
+		}
+	}
+
 
     Vector<IntentFilter> intentFilterVector;
 
@@ -208,16 +251,17 @@ public class MainActivity extends Activity {
 
 	@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 	private void scheduleJob() {
-		JobInfo myJob = new JobInfo.Builder(0, new ComponentName(this, NetworkSchedulerService.class))
-				.setRequiresCharging(false)
-				.setMinimumLatency(1000)
-				.setOverrideDeadline(2000)
-				.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-				.setPersisted(true)
+
+		JobInfo myJob = new JobInfo.Builder(0, new ComponentName(this, NetworkSchedulerService.class ) )
+				.setRequiresCharging( false )
+				.setMinimumLatency( 1000 )
+				.setOverrideDeadline( 2000 )
+				.setRequiredNetworkType( JobInfo.NETWORK_TYPE_ANY )
+				.setPersisted( true )
 				.build();
 
-		JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
-		jobScheduler.schedule(myJob);
+		JobScheduler jobScheduler = (JobScheduler) getSystemService( Context.JOB_SCHEDULER_SERVICE );
+		jobScheduler.schedule( myJob );
 	}
 
     /* Launcher Menu Items Related Functions */
@@ -275,14 +319,20 @@ public class MainActivity extends Activity {
 	}
 
 	public void validateNonEmptinessOfConfigFile(){
+
 		configurationReader = ConfigurationReader.getInstance();
 		File configuration = configurationReader.getConfigurationFile( false );
+
 		if( configuration.exists() ) {
-			String data = UtilFile.readData(configuration);
+
+			String data = UtilFile.readData( configuration );
 			data = data.trim();
+
 			if ( data.length() == 0 ) {
+
 				// CHeck if LAN is connected
 				if( UtilNetwork.isConnectedToInternet( context ) ){
+
 					// Since the configuration file is empty, delete it, so that the cms ip would be read from the system
 					configuration.delete();
 
@@ -292,27 +342,33 @@ public class MainActivity extends Activity {
 
 				}
 				else{
+
 					// Restore from configuration.backup file
 					File configuration_backup = new File( configurationReader.getConfigurationFile( false ).getAbsolutePath() + ".backup" );
 					UtilFile.saveDataToFile( configuration, UtilFile.readData( configuration_backup ) );
-				}
 
+				}
 			}
 		}
 	}
 
 	public void setMainMenuAdapter(final MenuAdapter adapter) {
-		for (int i = 0; i < ma.getCount(); i++) {
+
+		for ( int i = 0; i < ma.getCount(); i++ ) {
+
 			//Log.d( TAG, "Setting main adapter " + i );
 			LinearLayout v = (LinearLayout) ma.getView( i, null, null );
 			ll_main_menu_items.addView( v );
+
 			if ( i == 0 ) {
 				this.first_main_item = v;
 			}
+
 			v.setOnFocusChangeListener( new View.OnFocusChangeListener() {
 
 			    public void onFocusChange( View v, boolean hasFocus ) {
-                    LinearLayout ll = (LinearLayout) v;
+
+			    	LinearLayout ll = (LinearLayout) v;
                     TextView tv = (TextView) ll.findViewById( R.id.tv_menu_item_name );
 
                     scrollCenter( ll, hsv_menu );
@@ -351,10 +407,11 @@ public class MainActivity extends Activity {
 							new AsyncTask<Void, Void, Void>() {
 
 								@Override
-								protected Void doInBackground(Void... voids) {
-									sub_menu_values = ljr.getSubMenuItemNames(last_index_of_main_menu);
-									for (int i = 0; i < sub_menu_values.length; i++) {
-										//String item_name = ljr.getSubItemValue( last_index_of_main_menu, i , "item_name_translated" );
+								protected Void doInBackground( Void... voids ) {
+
+									sub_menu_values = ljr.getSubMenuItemNames( last_index_of_main_menu );
+									for ( int i = 0; i < sub_menu_values.length; i++ ) {
+
 										String item_name_json = ljr.getSubItemValue(last_index_of_main_menu, i, "item_name_translated");
 										try {
 											JSONObject jso = new JSONObject(item_name_json);
@@ -911,11 +968,13 @@ public class MainActivity extends Activity {
 			if( ( i == KeyEvent.KEYCODE_DPAD_CENTER ) ||
 					( i == 23 ) ||
 					( i == 66 ) ){
+
 				// close the welcome screen here
 				welcome_screen.setVisibility( View.GONE );
 				welcome_screen.removeAllViews();
 				ll_main_menu_items.getChildAt( 0 ).requestFocus();
 				UtilShell.executeShellCommandWithOp( "setprop " + WELCOME_SCREEN_SHOWN + " 1" );
+				rl_elements.setVisibility( View.VISIBLE );
 			}
 			return true;
 		}
@@ -1149,9 +1208,11 @@ public class MainActivity extends Activity {
 	}
 
 	public boolean handleMainMenuToSubMenuFocus( int i, KeyEvent keyevent ){
-		if( i == 20 ){
+		Log.d( TAG, "inside handleMainMenuToSubMenuFocus" );
+		if( i == KeyEvent.KEYCODE_DPAD_DOWN ){		// 20
+			Log.i( TAG, "inside handleMainMenuToSubMenuFocus caught KeyDown" );
 			try {
-				ll_sub_menu_items.getChildAt(0).requestFocus();
+				ll_sub_menu_items.getChildAt(0 ).requestFocus();
 
 				TextView tv = (TextView) current_main_item.findViewById( R.id.tv_menu_item_name );
 				tv.setTextColor( context.getResources().getColor( R.color.light_blue ) );
@@ -1555,12 +1616,15 @@ public class MainActivity extends Activity {
 
 	private void checkIfHotelLogoToBeDisplayed(){
 
-		new Handler().post(new Runnable() {
+		new Handler().post( new Runnable() {
+
 			@Override
 			public void run() {
+
 				Log.d( TAG, "checkIfHotelLogoToBeDisplayed()" );
 				String hasHotelLogoDisplay = configurationReader.getHasHotelLogoDisplay();
 				File hotel_logo_file = new File( configurationReader.getHotelLogoDirectoryPath() + File.separator + "hotel_logo.png" );
+
 				if( hasHotelLogoDisplay.equals( "1" ) ){
 
 					if( hotel_logo_file.exists() ){
@@ -1625,61 +1689,6 @@ public class MainActivity extends Activity {
                 }
             }
         }
-        /*if (files != null) for (String filename : files) {
-            InputStream in = null;
-            OutputStream out = null;
-            try {
-                in = assetManager.open(filename);
-                File outFile = new File(getExternalFilesDir(null), filename);
-                out = new FileOutputStream(outFile);
-                copyFile(in, out);
-            } catch(IOException e) {
-                Log.e("tag", "Failed to copy asset file: " + filename, e);
-            }
-            finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException e) {
-                        // NOOP
-                    }
-                }
-                if (out != null) {
-                    try {
-                        out.close();
-                    } catch (IOException e) {
-                        // NOOP
-                    }
-                }
-            }
-        }*/
-        /*InputStream stream = null;
-        OutputStream output = null;
-
-        try {
-            for (String fileName : this.getAssets().list( "youtube_new" ) ) {
-                Log.d( "ADA", fileName );
-                stream = this.getAssets().open( "youtube_new/" + fileName);
-                output = new BufferedOutputStream( new FileOutputStream( this.getFilesDir() + "/newDirectory/" + fileName));
-
-                byte data[] = new byte[1024];
-                int count;
-
-                while ((count = stream.read(data)) != -1) {
-                    output.write(data, 0, count);
-                }
-
-                output.flush();
-                output.close();
-                stream.close();
-
-                //stream = null;
-                //output = null;
-            }
-        }
-        catch ( Exception e ){
-            e.printStackTrace();
-        }*/
     }
     public void moveAssetToStorageDir(String path){
         File file = getExternalFilesDir(null);
@@ -1710,15 +1719,16 @@ public class MainActivity extends Activity {
                     in.close();
                 }
             }
-        }catch (Exception exp){
+        }
+        catch ( Exception exp ){
             exp.printStackTrace();
         }
     }
-    private void copyFile(InputStream in, OutputStream out) throws IOException {
-        byte[] buffer = new byte[1024];
+    private void copyFile( InputStream in, OutputStream out ) throws IOException {
+        byte[] buffer = new byte[ 1024 ];
         int read;
-        while((read = in.read(buffer)) != -1){
-            out.write(buffer, 0, read);
+        while( ( read = in.read( buffer ) ) != -1 ){
+            out.write( buffer, 0, read );
         }
     }
 
@@ -1944,16 +1954,20 @@ public class MainActivity extends Activity {
 
 	/* Welcome screen combined inside Launcher related functions - BEGINS */
 	private void registerLocalWelcomeScreenBroadcast(){
+
 		LocalBroadcastManager.getInstance( context ).registerReceiver(new BroadcastReceiver() {
+
 			@Override
 			public void onReceive( Context context, Intent intent ) {
 				configurationReader = ConfigurationReader.reInstantiate();
+
 				Log.d( TAG, "Welcome screen broadcast triggered on the Launcher,"+configurationReader.getIsOtsCompleted()+"," );
 
 				if( configurationReader.getIsOtsCompleted().equals( "0" ) ){		// Do not trigger welcome screen if ots is not completed
 					Log.e( TAG, "OTS not completed, so welcome screen will not trigger !" );
 				}
 				else if( !isWelcomeScreenShown() ){
+
 					if( configurationReader.getIsWelcomeScreenEnabled() ){
 						showLauncherWelcomeScreen();
 					}
@@ -1975,29 +1989,12 @@ public class MainActivity extends Activity {
 	}
 
 	public void showLauncherWelcomeScreen(){
+
 		WelcomeScreenProducer welcomeScreenProducer = new WelcomeScreenProducer();
 		View welcomeScreen = welcomeScreenProducer.produce( context );
 		welcome_screen.addView( welcomeScreen );
-		//welcome_screen.setFocusable( true );
-		//welcome_screen.requestFocus();
 		welcome_screen.setVisibility( View.VISIBLE );
-					/*welcome_screen.setOnKeyListener(new View.OnKeyListener() {
-						@Override
-						public boolean onKey(View v, int keyCode, KeyEvent event) {
-							Log.d( TAG, "WelcomeScreen is catching the keys !" );
-							if( ( keyCode == 23 ) ||
-									(keyCode == 66 ) ){ // For OK Button
-								welcome_screen.setVisibility( View.GONE );
-								welcome_screen.setFocusable( false );
-								welcome_screen.removeAllViews();
-								//return true;
-							}
-							return false;
-						}
-					});*/
-		//rl_elements.setFocusable( false );
-		//rl_elements.setVisibility( View.GONE );
-		//rl_elements.setEnabled( false );
+		rl_elements.setVisibility( View.GONE );
 
 	}
 	/* Welcome screen combined inside Launcher related functions - ENDS */
@@ -2080,18 +2077,18 @@ public class MainActivity extends Activity {
 	}
 
 	public void restoreTvChannels(){
-		if( ! isTvChannelRestored() ){
-		    //UtilShell.executeShellCommandWithOp( "monkey -p com.excel.datagrammonitor.secondgen -c android.intent.category.LAUNCHER 1" );
+		Log.d( TAG, "restoreTvChannels()" );
 
-            if( Build.VERSION.SDK_INT == Build.VERSION_CODES.O ) {
-                Log.d( TAG, "Android Oreo detected, mounting the File System" );
-                // Mount /system
-                UtilShell.executeShellCommandWithOp("mount -o rw,remount /");  // For Android 9
-            }
+		if( ! isTvChannelRestored() ){
+			if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ) {
+				Log.d( TAG, "Android Oreo detected, mounting the File System" );
+				// Mount /system
+				UtilShell.executeShellCommandWithOp( "mount -o rw,remount / " );  // For Android 9
+			}
 			UtilShell.executeShellCommandWithOp( "monkey -p com.excel.patchapp -c android.intent.category.LAUNCHER 1" );
 
 			unzipTvChannelsZip();
-			restoreYoutubeSettings();
+			// restoreYoutubeSettings();
 			setTvChannelRestored( true );
 		}
 	}
@@ -2109,26 +2106,7 @@ public class MainActivity extends Activity {
 			Manifest.permission.INTERNET,
 	};
 
-	@Override
-	public void onRequestPermissionsResult( int requestCode, String permissions[], int[] grantResults ) {
-		switch ( requestCode ) {
-			case 10:
-			{
-				if( grantResults.length > 0 && grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED ){
-					// permissions granted.
-					Log.d( TAG, grantResults.length + " Permissions granted : " );
-				} else {
-					String permission = "";
-					for ( String per : permissions ) {
-						permission += "\n" + per;
-					}
-					// permissions list of don't granted permission
-					Log.d( TAG, "Permissions not granted : "+permission );
-				}
-				return;
-			}
-		}
-	}
+
 
 	private  boolean checkPermissions() {
 		int result;

@@ -399,8 +399,12 @@ public class ShortcutsActivity extends Activity {
 				if( Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT ) {
 					UtilShell.executeShellCommandWithOp( "monkey -p com.android.settings -c android.intent.category.LAUNCHER 1" );
 				}
-				else {
+				else if( ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ) &&
+						( Build.VERSION.SDK_INT <= Build.VERSION_CODES.M ) ) {          // For Android greater than 5.0 and less then 7.0
 					UtilShell.executeShellCommandWithOp( "am start -a android.intent.action.MAIN -n com.android.settings/.Settings" );
+				}
+				else {
+					UtilShell.executeShellCommandWithOp( "am start -a android.settings.SETTINGS" );
 				}
 			}
 		});

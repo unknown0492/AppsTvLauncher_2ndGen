@@ -45,14 +45,20 @@ android {
 
     productFlavors {
     }
+
+    packagingOptions {
+        exclude 'META-INF/androidx.legacy_legacy-support-core-utils.version'
+        exclude 'META-INF/androidx.vectordrawable_vectordrawable.version'
+
+    }
 }
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.0.2'
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation project(':ExcelClassLibrary')
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation files('libs/YouTubeAndroidPlayerApi.jar')
+    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
 }
 
 repositories {
