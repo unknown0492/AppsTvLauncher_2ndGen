@@ -6,6 +6,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
@@ -17,6 +19,8 @@ import com.excel.appstvlauncher.secondgen.Receiver;
 import com.excel.excelclasslibrary.UtilMisc;
 import com.excel.receivers.ConnectivityReceiver;
 
+import java.util.List;
+
 import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 import static com.excel.excelclasslibrary.Constants.DATADOWNLOADER_PACKAGE_NAME;
 import static com.excel.excelclasslibrary.Constants.DATADOWNLOADER_RECEIVER_NAME;
@@ -24,6 +28,8 @@ import static com.excel.excelclasslibrary.Constants.DATAGRAMMONITOR_PACKAGE_NAME
 import static com.excel.excelclasslibrary.Constants.DATAGRAMMONITOR_RECEIVER_NAME;
 import static com.excel.excelclasslibrary.Constants.DISPLAYPROJECT_PACKAGE_NAME;
 import static com.excel.excelclasslibrary.Constants.DISPLAYPROJECT_RECEIVER_NAME;
+import static com.excel.excelclasslibrary.Constants.ONETIMESETUP_PACKAGE_NAME;
+import static com.excel.excelclasslibrary.Constants.ONETIMESETUP_RECEIVER_NAME;
 import static com.excel.excelclasslibrary.Constants.REMOTELYCONTROL_PACKAGE_NAME;
 import static com.excel.excelclasslibrary.Constants.REMOTELYCONTROL_RECEIVER_NAME;
 
@@ -93,7 +99,22 @@ public class NetworkSchedulerService extends JobService implements ConnectivityR
         sendBroadcast( in );*/
 
         //LocalBroadcastManager.getInstance( context ).sendBroadcast( new Intent( "trigger_welcome_screen" ) );
+
+        Intent intent = new Intent( "connectivity_change" );
+        PackageManager pm = getPackageManager();
+        List<ResolveInfo> infos = pm.queryBroadcastReceivers( intent, 0 );
+
+        for( ResolveInfo info : infos ){
+            ComponentName cn = new ComponentName( info.activityInfo.packageName, info.activityInfo.name );
+            Log.d( TAG, info.activityInfo.packageName + "," + info.activityInfo.name );
+            intent.setComponent( cn );
+            sendBroadcast( intent );
+        }
+
         UtilMisc.sendExplicitInternalBroadcast( context, "connectivity_change", Receiver.class );
+        /*
+        Intent in0 = new Intent();
+        UtilMisc.sendExplicitExternalBroadcast( context, in0, "connectivity_change", ONETIMESETUP_PACKAGE_NAME, ONETIMESETUP_RECEIVER_NAME );
 
         Intent in = new Intent();
         UtilMisc.sendExplicitExternalBroadcast( context, in, "connectivity_change", REMOTELYCONTROL_PACKAGE_NAME, REMOTELYCONTROL_RECEIVER_NAME );
@@ -106,6 +127,6 @@ public class NetworkSchedulerService extends JobService implements ConnectivityR
 
         Intent in3 = new Intent();
         UtilMisc.sendExplicitExternalBroadcast( context, in3, "connectivity_change", DATAGRAMMONITOR_PACKAGE_NAME, DATAGRAMMONITOR_RECEIVER_NAME );
-
+*/
     }
 }
