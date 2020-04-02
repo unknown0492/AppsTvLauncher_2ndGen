@@ -191,7 +191,6 @@ public class MainActivity extends Activity {
 			}
 		}
 
-
 		setContentView( R.layout.activity_main );
 
         registerAllBroadcasts();
@@ -1056,7 +1055,9 @@ public class MainActivity extends Activity {
                 Log.d(TAG, "sec : " + sec);
                 if (sec <= 10) {
                     access_onresume_time = now;
-                } else {
+                }
+                else
+                {
                     access_onresume_time = now;
 
 					clearYouTubeSdCardCacheOnResume = new GenericAsyncTask(){
@@ -1302,7 +1303,12 @@ public class MainActivity extends Activity {
 
 	public void startPerfectTimeService(){
 		Intent in = new Intent( context, PerfectTimeService.class );
-		startService( in );
+		if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ){
+			context.startForegroundService( in );
+		}
+		else{
+			context.startService( in );
+		}
 	}
 
 	public void createPerfectTimeReceiver(){
@@ -1995,7 +2001,7 @@ public class MainActivity extends Activity {
 		welcome_screen.addView( welcomeScreen );
 		welcome_screen.setVisibility( View.VISIBLE );
 		rl_elements.setVisibility( View.GONE );
-
+		welcome_screen.requestFocus();
 	}
 	/* Welcome screen combined inside Launcher related functions - ENDS */
 

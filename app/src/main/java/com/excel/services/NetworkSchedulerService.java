@@ -71,7 +71,12 @@ public class NetworkSchedulerService extends JobService implements ConnectivityR
     public boolean onStopJob( JobParameters params ){
         Log.i( TAG, "onStopJob" );
         if( mConnectivityReceiver != null ){
-            unregisterReceiver(mConnectivityReceiver);
+            try {
+                unregisterReceiver(mConnectivityReceiver);
+            }
+            catch ( Exception e ){
+                e.printStackTrace();
+            }
             mConnectivityReceiver = null;
         }
 
@@ -82,7 +87,12 @@ public class NetworkSchedulerService extends JobService implements ConnectivityR
     public void onDestroy() {
         super.onDestroy();
         if( mConnectivityReceiver != null ){
-            unregisterReceiver(mConnectivityReceiver);
+            try {
+                unregisterReceiver(mConnectivityReceiver);
+            }
+            catch ( Exception e ){
+                e.printStackTrace();
+            }
             mConnectivityReceiver = null;
         }
     }
