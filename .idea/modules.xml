@@ -2,8 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/AppsTvLauncher_2ndGen.iml" filepath="$PROJECT_DIR$/AppsTvLauncher_2ndGen.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../../ExcelClassLibrary/app/ExcelClassLibrary.iml" filepath="$PROJECT_DIR$/../../ExcelClassLibrary/app/ExcelClassLibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/AppsTvLauncher_2ndGen.iml" filepath="$PROJECT_DIR$/AppsTvLauncher_2ndGen.iml" group="AppsTvLauncher_2ndGen" />
+      <module fileurl="file://$PROJECT_DIR$/app/AppsTvLauncher_2ndGen-app.iml" filepath="$PROJECT_DIR$/app/AppsTvLauncher_2ndGen-app.iml" group="AppsTvLauncher_2ndGen/app" />
+      <module fileurl="file://$PROJECT_DIR$/../../ExcelClassLibrary/app/ExcelClassLibrary.iml" filepath="$PROJECT_DIR$/../../ExcelClassLibrary/app/ExcelClassLibrary.iml" group="AppsTvLauncher_2ndGen/ExcelClassLibrary" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

@@ -75,6 +75,7 @@ public class NetworkSchedulerService extends JobService implements ConnectivityR
                 unregisterReceiver(mConnectivityReceiver);
             }
             catch ( Exception e ){
+
                 e.printStackTrace();
             }
             mConnectivityReceiver = null;
