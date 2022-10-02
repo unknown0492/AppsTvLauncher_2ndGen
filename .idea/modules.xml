@@ -2,10 +2,15 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/AppsTvLauncher_2ndGen.iml" filepath="$PROJECT_DIR$/AppsTvLauncher_2ndGen.iml" group="AppsTvLauncher_2ndGen" />
-      <module fileurl="file://$PROJECT_DIR$/app/AppsTvLauncher_2ndGen-app.iml" filepath="$PROJECT_DIR$/app/AppsTvLauncher_2ndGen-app.iml" group="AppsTvLauncher_2ndGen/app" />
-      <module fileurl="file://$PROJECT_DIR$/../../ExcelClassLibrary/app/ExcelClassLibrary.iml" filepath="$PROJECT_DIR$/../../ExcelClassLibrary/app/ExcelClassLibrary.iml" group="AppsTvLauncher_2ndGen/ExcelClassLibrary" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/AppsTvLauncher_2ndGen.iml" filepath="$PROJECT_DIR$/AppsTvLauncher_2ndGen.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-1486521155/AppsTvLauncher_2ndGen.ExcelClassLibrary.iml" filepath="$PROJECT_DIR$/.idea/modules/-1486521155/AppsTvLauncher_2ndGen.ExcelClassLibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-1486521155/AppsTvLauncher_2ndGen.ExcelClassLibrary.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/-1486521155/AppsTvLauncher_2ndGen.ExcelClassLibrary.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-1486521155/AppsTvLauncher_2ndGen.ExcelClassLibrary.main.iml" filepath="$PROJECT_DIR$/.idea/modules/-1486521155/AppsTvLauncher_2ndGen.ExcelClassLibrary.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-1486521155/AppsTvLauncher_2ndGen.ExcelClassLibrary.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/-1486521155/AppsTvLauncher_2ndGen.ExcelClassLibrary.unitTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/AppsTvLauncher_2ndGen.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/AppsTvLauncher_2ndGen.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/AppsTvLauncher_2ndGen.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/AppsTvLauncher_2ndGen.app.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/AppsTvLauncher_2ndGen.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/AppsTvLauncher_2ndGen.app.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/AppsTvLauncher_2ndGen.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/AppsTvLauncher_2ndGen.app.unitTest.iml" />
     </modules>
   </component>
 </project>

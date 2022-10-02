@@ -47,6 +47,7 @@ import com.excel.excelclasslibrary.UtilShell;
 import com.excel.flipper.Flipper;
 import com.excel.imagemanipulator.DigitalSignage;
 import com.excel.imagemanipulator.DigitalSignageHolder;
+import com.excel.onetimesetup.OTS;
 import com.excel.perfecttime.PerfectTimeService;
 import com.excel.services.NetworkSchedulerService;
 import com.excel.welcome.WelcomeScreenProducer;
@@ -261,6 +262,7 @@ public class MainActivity extends Activity {
 
 		JobScheduler jobScheduler = (JobScheduler) getSystemService( Context.JOB_SCHEDULER_SERVICE );
 		jobScheduler.schedule( myJob );
+
 	}
 
     /* Launcher Menu Items Related Functions */
@@ -315,22 +317,35 @@ public class MainActivity extends Activity {
 			ll_sub_menu_items.setFocusableInTouchMode( false );
 		}*/
 
+		startDataDownloader();
+
+	}
+
+	private void startDataDownloader(){
+		UtilMisc.startApplicationUsingPackageName( context, "com.excel.datadownloader.secondgen" );
+		UtilMisc.startApplicationUsingPackageName( context, "com.excel.remotelycontrolappstv.secondgen" );
+		UtilMisc.startApplicationUsingPackageName( context, "com.excel.datagrammonitor.secondgen" );
+		UtilMisc.startApplicationUsingPackageName( context, "com.excel.displayproject.secondgen" );
 	}
 
 	public void validateNonEmptinessOfConfigFile(){
+
+		// Log.d( TAG, "validateNonEmptinessOfConfigFile()" );
 
 		configurationReader = ConfigurationReader.getInstance();
 		File configuration = configurationReader.getConfigurationFile( false );
 
 		if( configuration.exists() ) {
+			// Log.d( TAG, "configuration exists" );
 
 			String data = UtilFile.readData( configuration );
 			data = data.trim();
 
 			if ( data.length() == 0 ) {
 
-				// CHeck if LAN is connected
+				// Check if LAN is connected
 				if( UtilNetwork.isConnectedToInternet( context ) ){
+					Log.d( TAG, "Connected to the Internet !" );
 
 					// Since the configuration file is empty, delete it, so that the cms ip would be read from the system
 					configuration.delete();
@@ -342,6 +357,7 @@ public class MainActivity extends Activity {
 				}
 				else{
 
+					Log.e( TAG, "Not Connected to the Internet !" );
 					// Restore from configuration.backup file
 					File configuration_backup = new File( configurationReader.getConfigurationFile( false ).getAbsolutePath() + ".backup" );
 					UtilFile.saveDataToFile( configuration, UtilFile.readData( configuration_backup ) );
@@ -1971,6 +1987,11 @@ public class MainActivity extends Activity {
 
 				if( configurationReader.getIsOtsCompleted().equals( "0" ) ){		// Do not trigger welcome screen if ots is not completed
 					Log.e( TAG, "OTS not completed, so welcome screen will not trigger !" );
+					Log.e( TAG, "Trigger the OTS" );
+
+					Intent otsIntent = new Intent( context, OTS.class );
+					startActivity( otsIntent );
+
 				}
 				else if( !isWelcomeScreenShown() ){
 

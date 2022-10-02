@@ -145,7 +145,7 @@
                                 android:id="@+id/tv_clock_hours"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textSize="28dp"
+                                android:textSize="18dp"
                                 android:textColor="@color/white"
                                 android:textStyle="normal"
                                 android:layout_marginLeft="0dp"
@@ -155,7 +155,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textSize="28dp"
+                                android:textSize="18dp"
                                 android:textColor="@color/white"
                                 android:textStyle="normal"
                                 android:text=":" />
@@ -166,7 +166,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="45"
                                 android:textColor="@color/white"
-                                android:textSize="28dp"
+                                android:textSize="18dp"
                                 android:textStyle="normal" />
 
                         </LinearLayout>

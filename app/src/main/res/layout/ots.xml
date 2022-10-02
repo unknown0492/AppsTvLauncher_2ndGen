@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="30dp"
+    android:paddingLeft="30dp"
+    android:paddingRight="30dp"
+    android:paddingTop="30dp"
+    android:background="#3c3c3c"
+    tools:context="com.excel.onetimesetup.secondgen.MainActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="30sp"
+        android:text="Welcome To APPS TV\nOne Time Setup"
+        android:gravity="center_horizontal"
+        android:textColor="#ffffff"
+        android:textStyle="bold"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/textView" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/scrollView"
+        android:layout_below="@+id/textView"
+        android:layout_centerHorizontal="true"
+        android:paddingLeft="100dp"
+        android:paddingRight="100dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <!-- Select Language -->
+            <LinearLayout
+                android:id="@+id/ll_select_language"
+                style="@style/ll_settings_item"
+                android:visibility="gone"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_select_language"
+                    android:text="Language"
+                    style="@style/tv_settings_heading" />
+
+                <TextView
+                    android:id="@+id/tv_language_value"
+                    android:text="Selected Language"
+                    style="@style/tv_settings_value" />
+
+            </LinearLayout>
+            <!--/ Select Language -->
+
+            <!-- Item Separator -->
+            <ImageView android:visibility="gone"
+                style="@style/iv_item_separator" />
+            <!--/ Item Separator -->
+
+            <!-- Select Country -->
+            <LinearLayout
+                android:id="@+id/ll_select_country"
+                android:visibility="gone"
+                style="@style/ll_settings_item">
+
+                <TextView
+                    android:id="@+id/tv_select_country"
+                    android:text="Country"
+                    style="@style/tv_settings_heading" />
+
+                <TextView
+                    android:id="@+id/tv_country_value"
+                    android:text="Selected Country"
+                    style="@style/tv_settings_value" />
+
+            </LinearLayout>
+            <!--/ Select Country -->
+
+            <!-- Item Separator -->
+            <ImageView android:visibility="gone"
+                style="@style/iv_item_separator" />
+            <!--/ Item Separator -->
+
+            <!-- Select TimeZone -->
+            <LinearLayout
+                android:id="@+id/ll_select_timezone"
+                android:visibility="gone"
+                style="@style/ll_settings_item">
+
+                <TextView
+                    android:id="@+id/tv_select_timezone"
+                    android:text="TimeZone"
+                    style="@style/tv_settings_heading" />
+
+                <TextView
+                    android:id="@+id/tv_timezone_value"
+                    android:text="Selected TimeZone"
+                    style="@style/tv_settings_value" />
+
+            </LinearLayout>
+            <!--/ Select TimeZone -->
+
+            <!-- Item Separator -->
+            <ImageView android:visibility="gone"
+                style="@style/iv_item_separator" />
+            <!--/ Item Separator -->
+
+            <!-- Select City -->
+            <LinearLayout
+                android:id="@+id/ll_select_city"
+                android:visibility="gone"
+                style="@style/ll_settings_item">
+
+                <TextView
+                    android:id="@+id/tv_select_city"
+                    android:text="City"
+                    style="@style/tv_settings_heading" />
+
+                <TextView
+                    android:id="@+id/tv_city_value"
+                    android:text="Selected City"
+                    style="@style/tv_settings_value" />
+
+            </LinearLayout>
+            <!--/ Select City -->
+
+            <!-- Item Separator -->
+            <ImageView android:visibility="gone"
+                style="@style/iv_item_separator" />
+            <!--/ Item Separator -->
+
+            <!-- Select Network -->
+            <LinearLayout
+                android:id="@+id/ll_select_network"
+                style="@style/ll_settings_item">
+
+                <TextView
+                    android:id="@+id/tv_select_network"
+                    android:text="Select Network"
+                    style="@style/tv_settings_heading" />
+
+                <TextView
+                    android:id="@+id/tv_network_value"
+                    android:text="Selected Network : IP Address"
+                    style="@style/tv_settings_value" />
+
+                <requestFocus />
+
+            </LinearLayout>
+            <!--/ Select Network -->
+
+            <!-- Item Separator -->
+            <ImageView style="@style/iv_item_separator" />
+            <!--/ Item Separator -->
+
+            <!-- Set Room Number -->
+            <LinearLayout
+                android:id="@+id/ll_set_room_no"
+                style="@style/ll_settings_item">
+
+                <TextView
+                    android:id="@+id/tv_room_no"
+                    android:text="Room Number"
+                    style="@style/tv_settings_heading" />
+
+                <TextView
+                    android:id="@+id/tv_room_no_value"
+                    android:text="Set Room Number"
+                    style="@style/tv_settings_value" />
+
+            </LinearLayout>
+            <!--/ Set Room Number -->
+
+            <!-- Item Separator -->
+            <ImageView style="@style/iv_item_separator" />
+            <!--/ Item Separator -->
+
+            <!-- CMS IP -->
+            <LinearLayout
+                android:id="@+id/ll_set_cms_ip"
+                style="@style/ll_settings_item">
+
+                <TextView
+                    android:id="@+id/tv_cms_ip"
+                    android:text="CMS IP"
+                    style="@style/tv_settings_heading" />
+
+                <TextView
+                    android:id="@+id/tv_cms_ip_value"
+                    android:text="Set CMS IP"
+                    style="@style/tv_settings_value" />
+
+
+
+            </LinearLayout>
+            <!--/ CMS IP -->
+
+            <!-- Item Separator -->
+            <ImageView style="@style/iv_item_separator" />
+            <!--/ Item Separator -->
+
+            <!-- Mac Address -->
+            <LinearLayout
+                android:id="@+id/ll_mac_address"
+                style="@style/ll_settings_item">
+
+                <TextView
+                    android:id="@+id/tv_mac_address_label"
+                    android:text="Mac Address"
+                    style="@style/tv_settings_heading" />
+
+                <TextView
+                    android:id="@+id/tv_mac_address"
+                    android:text="Mac Address"
+                    style="@style/tv_settings_value" />
+
+            </LinearLayout>
+            <!--/ Mac Address -->
+
+            <!-- Item Separator -->
+            <ImageView style="@style/iv_item_separator" />
+            <!--/ Item Separator -->
+
+            <Button
+                android:layout_width="185dp"
+                android:layout_height="60dp"
+                android:text="Verify Settings"
+                android:id="@+id/bt_verify_settings"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center"
+                android:layout_margin="20dp"
+                android:padding="20dp"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:background="@drawable/button_verify_settings" />
+
+        </LinearLayout>
+
+
+
+    </ScrollView>
+
+
+
+</RelativeLayout>
