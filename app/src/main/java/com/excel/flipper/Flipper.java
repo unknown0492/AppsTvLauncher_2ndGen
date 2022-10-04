@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Handler;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
 
@@ -16,6 +15,8 @@ import com.excel.yahooweather.Weather;
 import java.io.File;
 
 import static com.excel.imagemanipulator.DigitalSignage.setImageFromPathOnView;
+
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 /**
  * Created by Sohail on 26-01-2017.

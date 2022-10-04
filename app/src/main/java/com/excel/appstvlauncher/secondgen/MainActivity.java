@@ -14,9 +14,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -62,6 +59,10 @@ import java.util.Stack;
 import static com.excel.appstvlauncher.secondgen.Constants.WELCOME_SCREEN_SHOWN;
 import static com.excel.configuration.Constants.PATH_LAUNCHER_CONFIG_FILE;
 import static com.excel.configuration.Constants.PATH_LAUNCHER_CONFIG_FILE_SYSTEM;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 public class MainActivity extends Activity {
 
@@ -1986,11 +1987,18 @@ public class MainActivity extends Activity {
         Log.i( TAG, "unzipTvChannelsZip() executed" );
 
         if( Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT ) {
-            // For GIEC Boxes
-            UtilShell.executeShellCommandWithOp( "rm -r /mnt/sdcard/appstv_data/tv_channels/backup",
-                    "unzip -o /mnt/sdcard/appstv_data/tv_channels/tv_channels.zip -d /mnt/sdcard/appstv_data/tv_channels" );
 
-            /*UtilShell.executeShellCommandWithOp( "mount -o remount,rw /system",
+			// We first check if tv_channels.zip exist (To prevent tv channel list missing problem)
+			File tv_ch_file = new File( "/mnt/sdcard/appstv_data/tv_channels/tv_channels.zip" );
+			String tvChExist = (tv_ch_file.exists())?"TV Channels Zip exist":"Tv Channels Zip does not exist";
+			Log.i( TAG, "TV Zip: " + tvChExist );
+			if( tv_ch_file.exists() ){
+				Log.i( TAG, "Extracting the tv_channels.zip file" );
+				// For GIEC Boxes
+				UtilShell.executeShellCommandWithOp( "rm -r /mnt/sdcard/appstv_data/tv_channels/backup",
+						"unzip -o /mnt/sdcard/appstv_data/tv_channels/tv_channels.zip -d /mnt/sdcard/appstv_data/tv_channels" );
+
+            	/*UtilShell.executeShellCommandWithOp( "mount -o remount,rw /system",
                     "chmod -R 777 /system/appstv_data",
                     "chmod -R 777 /system/appstv_data/*",
                     "rm -r com.amlogic.tvservice",
@@ -1998,14 +2006,13 @@ public class MainActivity extends Activity {
                     "chmod -R 777 /system/appstv_data/com.amlogic.tvservice",
                     "chmod -R 777 /data/data/com.amlogic.tvservice" );*/
 
-			UtilShell.executeShellCommandWithOp( "mount -o remount,rw /system",
-					"chmod -R 777 /data/data/com.amlogic.tvservice" );
+				UtilShell.executeShellCommandWithOp( "mount -o remount,rw /system",
+						"chmod -R 777 /data/data/com.amlogic.tvservice" );
 
-			UtilShell.executeShellCommandWithOp( "rm -r /data/data/com.amlogic.tvservice/*",
-					"cp -r /mnt/sdcard/appstv_data/tv_channels/backup/com.amlogic.tvservice/* /data/data/com.amlogic.tvservice",
-					"chmod -R 777 /data/data/com.amlogic.tvservice" );
-
-
+				UtilShell.executeShellCommandWithOp( "rm -r /data/data/com.amlogic.tvservice/*",
+						"cp -r /mnt/sdcard/appstv_data/tv_channels/backup/com.amlogic.tvservice/* /data/data/com.amlogic.tvservice",
+						"chmod -R 777 /data/data/com.amlogic.tvservice" );
+			}
         }
         else {
 

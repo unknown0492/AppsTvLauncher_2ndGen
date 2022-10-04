@@ -10,12 +10,14 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
 
+import androidx.appcompat.widget.AppCompatImageView;
+
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-public class AnimatedGifImageView extends android.support.v7.widget.AppCompatImageView {
+public class AnimatedGifImageView extends AppCompatImageView {
 	public static enum TYPE {
 		FIT_CENTER, STREACH_TO_FIT, AS_IS
 	};
